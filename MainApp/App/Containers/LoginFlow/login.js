@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView, Image, Alert } from 'react-native';
 import { height, width, totalSize } from 'react-native-dimension'
 import { Icon, Overlay, CheckBox } from 'react-native-elements'
 //import store from '../../Stores/orderStore'
@@ -8,6 +8,9 @@ import Toast from 'react-native-simple-toast'
 import Modal from 'react-native-modal'
 import images from '../../Themes/Images';
 import colors from '../../Themes/Colors'
+import {connectFirebase} from './../../backend/firebase/utility';
+import {signIn} from './../../backend/firebase/auth';
+
 class Login extends Component {
     constructor(props) {
         super(props);
@@ -27,6 +30,10 @@ class Login extends Component {
         header: null
     }
 
+    componentDidMount() {
+        connectFirebase();
+    }
+
     _toggleModalForgetPassword = () =>
         this.setState({ isModalVisibleForgetPassword: !this.state.isModalVisibleForgetPassword });
 
@@ -43,13 +50,23 @@ class Login extends Component {
         this.props.navigation.navigate('signUpTechnician')
         this._toggleModalSelectSignUp()
     }
+
     Login = () => {
-        if (this.state.userType === 'user') {
-            this.props.navigation.replace('clientTab')
-        } else {
-            this.props.navigation.replace('technicianTab')
+        try {
+            signIn(this.state.email, this.state.password);
+            Alert.alert('Success', 'Logged In Successfully.', [ {text: 'OK', onPress: () => {this.props.navigation.navigate('login')}} ] );
+            if (this.state.userType === 'user') {
+                this.props.navigation.replace('clientTab')
+            } else {
+                this.props.navigation.replace('technicianTab')
+            }
+        } catch (e) {
+            Alert.alert('Failure', 'Failed to sign in. Please try again.', [ {text: 'OK', onPress: () => {}} ] );
+        } finally {
+
         }
     }
+
     render() {
         return (
             <View style={styles.container}>
@@ -103,6 +120,8 @@ class Login extends Component {
                                     placeholderTextColor='rgb(217,217,217)'
                                     underlineColorAndroid='transparent'
                                     style={styles.TxtInput}
+                                    value={this.state.email}
+                                    onChangeText={(text) => this.setState({email: text})}
                                 />
                             </View>
                             <View style={styles.InputContainer}>
@@ -114,6 +133,8 @@ class Login extends Component {
                                     underlineColorAndroid='transparent'
                                     secureTextEntry={true}
                                     style={styles.TxtInput}
+                                    value={this.state.password}
+                                    onChangeText={(text) => this.setState({password: text})}
                                 />
                             </View>
                             <View style={[styles.InputContainer, { backgroundColor: 'transparent', elevation: 0, justifyContent: 'flex-start', marginVertical: height(1) }]}>

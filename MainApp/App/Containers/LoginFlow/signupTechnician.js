@@ -1,37 +1,41 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, ActivityIndicator, Image, Alert } from 'react-native';
 import { height, width, totalSize } from 'react-native-dimension'
 import { Icon } from 'react-native-elements'
 import ImagePicker from 'react-native-image-picker';
 import Toast from 'react-native-simple-toast';
 import images from '../../Themes/Images';
+import uuid from 'uuid';
+import {connectFirebase} from './../../backend/firebase/utility';
+import {signUp} from './../../backend/firebase/auth';
 
 class SignUpTechnician extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            school_pridictions: [],
-            loading_getSchools: false,
-            isModalVisible: false,
-            school_id: '',
-            school: 'SCHOOL',
-            first_name: '',
-            last_name: '',
+        this.state = ({
+            name: '',
             email: '',
             password: '',
+            confirm_password: '',
+            location: '',
             loading: false,
             camera: false,
             avatarSource: null,
             image: null,
+        });
 
-
-        };
+        this.image_picker = this.image_picker.bind(this);
+        this.register = this.register.bind(this);
+        this.onChange = this.onChange.bind(this);
     }
 
     static navigationOptions = {
         header: null
     }
 
+    componentDidMount() {
+        connectFirebase();
+    }
 
     image_picker = () => {
         const options = {
@@ -68,7 +72,24 @@ class SignUpTechnician extends Component {
         });
     }
 
+    async register() {
+        try {
+            if (this.state.password != this.state.confirm_password) {
+                Alert.alert('Failure', 'Password and Confirm Password do not match.', [ {text: 'OK', onPress: () => {}} ] );
+                return;
+            }
+            await signUp(this.state.email, this.state.password, this.state.name, '', '', 'technician');
+            Alert.alert('Success', 'User signed up successfully.', [ {text: 'OK', onPress: () => {this.props.navigation.navigate('login')}} ] );
+        } catch (e) {
+            Alert.alert('Failure', 'Failed to sign up. Please try again.', [ {text: 'OK', onPress: () => {}} ] );
+        } finally {
 
+        }
+    }
+
+    async onChange(text, fieldValue){
+        await this.setState({fieldValue: text});
+    }
 
     render() {
         return (
@@ -97,6 +118,8 @@ class SignUpTechnician extends Component {
                                     placeholderTextColor='rgb(217,217,217)'
                                     underlineColorAndroid='transparent'
                                     style={styles.TxtInput}
+                                    value={this.state.name}
+                                    onChangeText={(text) => this.setState({name: text})}
                                 />
                             </View>
                             <View style={styles.InputContainer}>
@@ -107,6 +130,8 @@ class SignUpTechnician extends Component {
                                     placeholderTextColor='rgb(217,217,217)'
                                     underlineColorAndroid='transparent'
                                     style={styles.TxtInput}
+                                    value={this.state.email}
+                                    onChangeText={(text) => this.setState({email: text})}
                                 />
                             </View>
                             <View style={styles.InputContainer}>
@@ -118,6 +143,8 @@ class SignUpTechnician extends Component {
                                     underlineColorAndroid='transparent'
                                     secureTextEntry={true}
                                     style={[styles.TxtInput, { width: width(66) }]}
+                                    value={this.state.password}
+                                    onChangeText={(text) => this.setState({password: text})}
                                 />
                                 <TouchableOpacity>
                                     <Icon name='eye' color='rgb(217,217,217)' size={totalSize(2)} type='font-awesome' />
@@ -132,6 +159,8 @@ class SignUpTechnician extends Component {
                                     underlineColorAndroid='transparent'
                                     secureTextEntry={true}
                                     style={[styles.TxtInput, { width: width(66) }]}
+                                    value={this.state.confirm_password}
+                                    onChangeText={(text) => this.setState({confirm_password: text})}
                                 />
                                 <TouchableOpacity>
                                     <Icon name='eye' color='rgb(217,217,217)' size={totalSize(2)} type='font-awesome' />
@@ -145,6 +174,8 @@ class SignUpTechnician extends Component {
                                     placeholderTextColor='rgb(217,217,217)'
                                     underlineColorAndroid='transparent'
                                     style={styles.TxtInput}
+                                    value={this.state.location}
+                                    onChangeText={(text) => this.setState({location: text})}
                                 />
                             </View>
                             <View style={[styles.txtContainer, { flexDirection: 'row', width: width(80), height: height(8), justifyContent: 'flex-start', backgroundColor: 'transparent', marginVertical: 0 }]}>
@@ -162,7 +193,7 @@ class SignUpTechnician extends Component {
                             
                             <View style={styles.btnContainer}>
 
-                                <TouchableOpacity style={styles.button} onPress={() => this.props.navigation.navigate('login')}>
+                                <TouchableOpacity style={styles.button} onPress={() => this.register()}>
                                     {
                                         this.state.loading === true ?
                                             <ActivityIndicator size={'small'} color='white' />
