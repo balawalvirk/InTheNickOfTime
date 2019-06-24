@@ -9,7 +9,7 @@ import uuid from 'uuid';
 
 export function connectFirebase(){
  // Initialize Firebase
-  const firebaseConfig = {
+  const config = {
   apiKey: "AIzaSyAFKti4If-PVBNUmYHu78wTySElOZQ3by0",
   authDomain: "inthenameoftimespa-f27fa.firebaseapp.com",
   databaseURL: "https://inthenameoftimespa-f27fa.firebaseio.com",
