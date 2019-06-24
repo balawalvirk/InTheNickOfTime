@@ -9,15 +9,15 @@ import uuid from 'uuid';
 
 export function connectFirebase(){
  // Initialize Firebase
-  var config = {
-    apiKey: "AIzaSyCHqHt2EW5KwLL6W26A2b8MZrBHvH-Xo6U",
-    authDomain: "inthenickoftimespa-e084d.firebaseapp.com",
-    databaseURL: "https://inthenickoftimespa-e084d.firebaseio.com",
-    projectId: "inthenickoftimespa-e084d",
-    storageBucket: "inthenickoftimespa-e084d.appspot.com",
-    messagingSenderId: "937102312832",
-    appId: "1:937102312832:web:18e5bdce731e7a2f"
-  };
+  const firebaseConfig = {
+  apiKey: "AIzaSyAFKti4If-PVBNUmYHu78wTySElOZQ3by0",
+  authDomain: "inthenameoftimespa-f27fa.firebaseapp.com",
+  databaseURL: "https://inthenameoftimespa-f27fa.firebaseio.com",
+  projectId: "inthenameoftimespa-f27fa",
+  storageBucket: "",
+  messagingSenderId: "154243893765",
+  appId: "1:154243893765:web:cc82e42099f50c8a"
+};
  if (!firebase.apps.length) {
    firebase.initializeApp(config);
  }
