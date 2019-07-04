@@ -7,6 +7,9 @@ import { Icon } from 'react-native-elements'
 import colors from '../../../../../Themes/Colors';
 import { totalSize, width, height } from 'react-native-dimension';
 import images from '../../../../../Themes/Images';
+import { saveData, createData } from '../../../../../backend/firebase/utility'
+import firebase from 'firebase';
+import AsyncStorage from '@react-native-community/async-storage';
 
 class Payment extends Component {
     constructor(props) {
@@ -21,12 +24,61 @@ class Payment extends Component {
 
     };
 
+    checkOut = async () => {
+        let Booking = {
+            userId: '',
+            userName: '',
+            amount: 0,
+            status: 'pending',
+            comments: '',
+            date_time: '',
+            location: '',
+            services: {},
+            services_cost: 0,
+            travel_cost: 0,
+            technicianId: '',
+            technicianName: '',
+            servicesList: ''
+
+        }
+
+        user = AsyncStorage.getItem('user', (error, data) => {
+            console.log
+                ("USER", data)
+            if (data) {
+                res = JSON.parse(data)
+                Booking.userId = res.UserId
+                Booking.userName = res.firstName
+            }
+            for (i = 0; i < this.props.navigation.getParam('services', 0).length; i++) {
+                Booking.servicesList= Booking.servicesList +" " +this.props.navigation.getParam('services', '')[i].service_name
+            }
+            Booking.services_cost = this.props.navigation.getParam('services_cost', '')
+            Booking.travel_cost = this.props.navigation.getParam('travel_cost', '')
+            Booking.date_time = this.props.navigation.getParam('date_time', '')
+            Booking.location = this.props.navigation.getParam('location', '')[0].location
+            Booking.services = this.props.navigation.getParam('services', '')
+            Booking.technicianId = this.props.navigation.getParam('technician', '').UserId
+            Booking.technicianName = this.props.navigation.getParam('technician', '').firstName
+            Booking.amount = Booking.services_cost + Booking.travel_cost
+            createData("Bookings", Booking)
+        })
+        console.log("Normal Booking", Booking);
+        //console.log("String Booking", JSON.parse(JSON.stringify(Booking)));
+
+
+
+
+        //await saveData("Bookings", "cavkb6V8EWMTP28Wi3y5", Booking)
+
+
+    }
     render() {
         return (
             <View style={styles.Container}>
                 <View style={styles.topContainer}>
                     <Image source={images.VisaLogo} style={{ height: height(5), width: width(20) }} />
-                    <Image source={images.masterCardLogo} style={{ height: height(10), width: width(20),marginHorizontal:width(5)}} />
+                    <Image source={images.masterCardLogo} style={{ height: height(10), width: width(20), marginHorizontal: width(5) }} />
                     <Image source={images.AMEXlogo} style={{ height: height(4), width: width(15) }} />
                 </View>
                 {/* <View style={styles.topContainer}>
@@ -107,12 +159,12 @@ class Payment extends Component {
                 style={styles.input}
             />
         </View> */}
-                <View style={{width:width(90),marginTop:height(2),}}>
-                    <Text style={[styles.formTxt2,{textAlign:'justify'}]}>{this.state.instruction}</Text>
+                <View style={{ width: width(90), marginTop: height(2), }}>
+                    <Text style={[styles.formTxt2, { textAlign: 'justify' }]}>{this.state.instruction}</Text>
                 </View>
 
                 <View style={styles.btnContainer}>
-                    <TouchableOpacity style={styles.btn} >
+                    <TouchableOpacity style={styles.btn} onPress={() => { this.checkOut() }} >
                         {
                             this.state.loading === true ?
                                 <ActivityIndicator size='small' color='white' />
@@ -212,14 +264,14 @@ const styles = StyleSheet.create({
         //fontWeight: 'bold',
         //marginBottom: height(0.5),
         //alignSelf: 'flex-start',
-        color:colors.SPA_graycolor
+        color: colors.SPA_graycolor
 
     },
     formTxt2: {
         fontSize: totalSize(1.3),
         //color: 'rgb(207,207,207)',
         //marginTop:height(1),
-        color:colors.SPA_graycolor
+        color: colors.SPA_graycolor
 
 
     },

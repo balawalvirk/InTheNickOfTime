@@ -4,19 +4,29 @@ import images from '../../../../Themes/Images';
 import { width, height, totalSize } from 'react-native-dimension'
 import { Icon } from 'react-native-elements'
 import colors from '../../../../Themes/Colors';
+import { getAllOfCollection } from '../../../../backend/firebase/utility'
 class MyBookings extends Component {
   constructor(props) {
     super(props);
-    this.state = {
 
+   
+    
+    this.state = {
       Booking_list: [
-        { id: 1, client_name: 'Lina', client_profile_pic: images.profilePic, service_name: 'Hand massage', service_code: '025012', Address: '18002 Sea Island olace, New York, USA', service_price: '50', dateTime: '8:00AM 06-15-19', status: 'Accepted',Categories:['Care','NailCare','Facials','Hair'] },
-        { id: 2, client_name: 'Salish', client_profile_pic: images.profilePic, service_name: 'Face Cleaning & Facial', Address: '18002 Sea Island olace, New York, USA', service_duration: '30', service_price: '50', dateTime: '8:00AM 06-15-19', status: 'Declined',Categories:['Care','NailCare','Facials','Hair']  },
-        { id: 3, client_name: 'Hanana', client_profile_pic: images.profilePic, service_name: 'Hair Diy', Address: '18002 Sea Island olace, New York, USA', service_duration: '30', service_price: '50', dateTime: '8:00AM 06-15-19', status: 'Pending',Categories:['Care','NailCare','Facials','Hair'] },
-        { id: 4, client_name: 'Hanana', client_profile_pic: images.profilePic, service_name: 'Hair Diy', Address: '18002 Sea Island olace, New York, USA', service_duration: '30', service_price: '50', dateTime: '8:00AM 06-15-19', status: 'Declined',Categories:['Care','NailCare','Facials','Hair'] },
-        { id: 5, client_name: 'Hanana', client_profile_pic: images.profilePic, service_name: 'Hair Diy', Address: '18002 Sea Island olace, New York, USA', service_duration: '30', service_price: '50', dateTime: '8:00AM 06-15-19', status: 'Accepted',Categories:['Care','NailCare','Facials','Hair']  },
+        { id: 1, client_name: 'Lina', client_profile_pic: images.profilePic, service_name: 'Hand massage', service_code: '025012', Address: '18002 Sea Island olace, New York, USA', service_price: '50', dateTime: '8:00AM 06-15-19', status: 'Accepted', Categories: ['Care', 'NailCare', 'Facials', 'Hair'] },
+        { id: 2, client_name: 'Salish', client_profile_pic: images.profilePic, service_name: 'Face Cleaning & Facial', Address: '18002 Sea Island olace, New York, USA', service_duration: '30', service_price: '50', dateTime: '8:00AM 06-15-19', status: 'Declined', Categories: ['Care', 'NailCare', 'Facials', 'Hair'] },
+        { id: 3, client_name: 'Hanana', client_profile_pic: images.profilePic, service_name: 'Hair Diy', Address: '18002 Sea Island olace, New York, USA', service_duration: '30', service_price: '50', dateTime: '8:00AM 06-15-19', status: 'Pending', Categories: ['Care', 'NailCare', 'Facials', 'Hair'] },
+        { id: 4, client_name: 'Hanana', client_profile_pic: images.profilePic, service_name: 'Hair Diy', Address: '18002 Sea Island olace, New York, USA', service_duration: '30', service_price: '50', dateTime: '8:00AM 06-15-19', status: 'Declined', Categories: ['Care', 'NailCare', 'Facials', 'Hair'] },
+        { id: 5, client_name: 'Hanana', client_profile_pic: images.profilePic, service_name: 'Hair Diy', Address: '18002 Sea Island olace, New York, USA', service_duration: '30', service_price: '50', dateTime: '8:00AM 06-15-19', status: 'Accepted', Categories: ['Care', 'NailCare', 'Facials', 'Hair'] },
       ]
     };
+  }
+
+  async componentDidMount(){
+    bookings = await getAllOfCollection('Bookings')
+    this.setState({Booking_list: bookings})
+  
+    console.log("Loaded",bookings);
   }
 
   render() {
@@ -24,7 +34,7 @@ class MyBookings extends Component {
       <View style={styles.Container}>
         <View style={{ flex: 1 }}>
           <View style={{ flex: 0.5, alignItems: 'flex-start', justifyContent: 'flex-end', }}>
-            <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(3),left:width(5)}]}>My Bookings</Text>
+            <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(3), left: width(5) }]}>My Bookings</Text>
           </View>
 
           <View style={{ flex: 4, alignItems: 'center' }}>
@@ -40,26 +50,27 @@ class MyBookings extends Component {
                     return (
                       <View key={key} style={styles.shopContainer}>
                         <View style={styles.shopImageContainer}>
-                          <Image source={items.client_profile_pic} style={styles.shopImage} />
+                          <Image source={images.profilePic} style={styles.shopImage} />
                         </View>
                         <View style={styles.shopTxtContainer}>
-                          <Text style={styles.shopName}>{items.service_name}</Text>
-                          <Text style={styles.shopDetail}>At {items.dateTime}</Text>
-                          <Text style={styles.shopDetail}>{items.Address}</Text>
+                          <Text style={styles.shopName}>{items.technicianName}</Text>
+                          <Text style={styles.shopDetail}>At {items.servicesList}</Text>
+                          <Text style={styles.shopDetail}>At {items.date_time}</Text>
+                          <Text style={styles.shopDetail}>{items.location}</Text>
                         </View>
                         <View style={[styles.shopIconContainer]}>
                           {/* <TouchableOpacity style={styles.iconContainer} >
                                <Icon name="pencil" size={totalSize(2)} color="white" type='font-awesome' />
                                </TouchableOpacity> */}
                           <View style={[styles.statusContainer]} >
-                             
+
                             <Text style={[styles.shopName, { fontSize: totalSize(1.5), color: colors.SPA_redColor, fontWeight: 'normal' }]}>{items.status}</Text>
                           </View>
                           {
-                            items.status==='Accepted'?
-                            <Icon name="primitive-dot" size={totalSize(2.5)} color={colors.SPA_Green} type='octicon' />
-                            :
-                            <Icon name="primitive-dot" size={totalSize(2.5)} color={items.status==='Pending'?colors.SPA_graycolor:colors.error} type='octicon' />
+                            items.status === 'Accepted' ?
+                              <Icon name="primitive-dot" size={totalSize(2.5)} color={colors.SPA_Green} type='octicon' />
+                              :
+                              <Icon name="primitive-dot" size={totalSize(2.5)} color={items.status === 'Pending' ? colors.SPA_graycolor : colors.error} type='octicon' />
                           }
                         </View>
                       </View>

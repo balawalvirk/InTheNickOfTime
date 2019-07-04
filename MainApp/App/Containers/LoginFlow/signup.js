@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, ActivityIndicator, Image, Alert } from 'react-native';
 import { height, width, totalSize } from 'react-native-dimension'
 import { Icon } from 'react-native-elements'
 import ImagePicker from 'react-native-image-picker';
 import Toast from 'react-native-simple-toast';
 import images from '../../Themes/Images';
 import colors from '../../Themes/Colors';
+import { signUp } from './../../backend/firebase/auth';
+import Loader from "../../Components/Loader";
+
 
 class SignUp extends Component {
     constructor(props) {
@@ -20,6 +23,7 @@ class SignUp extends Component {
             last_name: '',
             email: '',
             password: '',
+            confirm_password: '',
             loading: false,
             camera: false,
             avatarSource: null,
@@ -33,6 +37,35 @@ class SignUp extends Component {
         header: null
     }
 
+
+    async register() {
+        const email = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        try {
+            if (this.state.email === "" || this.state.password === "" || this.state.name === "" || this.state.confirm_password === "" || this.state.email === null || this.state.password === null || this.state.name === null || this.state.confirm_password === "") {
+                Toast.show("Some fields are missing", Toast.LONG);
+                return;
+            }
+            if (this.state.password != this.state.confirm_password) {
+                Toast.show('Passwords do not match.', Toast.SHORT);
+                return;
+            }
+            if (email.test(this.state.email) == false) {
+                Toast.show("Invalid Email Entered")
+                return;
+            }
+            this.loader.show()
+            await signUp(this.state.email, this.state.password, this.state.name, '', '', 'client','');
+            this.loader.hide()
+            Alert.alert('Success', 'User signed up successfully.', [{ text: 'OK', onPress: () => { this.props.navigation.navigate('login') } }]);
+
+        } catch (e) {
+            console.log(e);
+            this.loader.hide()
+            Alert.alert('Failure', 'Failed to sign up. Please try again.', [{ text: 'OK', onPress: () => { } }]);
+        } finally {
+
+        }
+    }
 
     image_picker = () => {
         const options = {
@@ -74,6 +107,7 @@ class SignUp extends Component {
     render() {
         return (
             <View style={styles.container}>
+                <Loader ref={r => this.loader = r} />
 
 
                 <ScrollView
@@ -93,7 +127,7 @@ class SignUp extends Component {
                             <View style={styles.InputContainer}>
                                 <Icon name='person' color='rgb(66,67,69)' size={totalSize(3)} />
                                 <TextInput
-                                    //onChangeText={(value) => this.getSchool_predictions(value)}
+                                    onChangeText={(value) => this.setState({ name: value })}
                                     placeholder='Full Name'
                                     placeholderTextColor='rgb(217,217,217)'
                                     underlineColorAndroid='transparent'
@@ -103,7 +137,7 @@ class SignUp extends Component {
                             <View style={styles.InputContainer}>
                                 <Icon name='email' color='rgb(66,67,69)' size={totalSize(3)} />
                                 <TextInput
-                                    //onChangeText={(value) => this.getSchool_predictions(value)}
+                                    onChangeText={(value) => this.setState({ email: value })}
                                     placeholder='Email'
                                     placeholderTextColor='rgb(217,217,217)'
                                     underlineColorAndroid='transparent'
@@ -113,7 +147,7 @@ class SignUp extends Component {
                             <View style={styles.InputContainer}>
                                 <Icon name='lock' color='rgb(66,67,69)' size={totalSize(3)} />
                                 <TextInput
-                                    //onChangeText={(value) => this.getSchool_predictions(value)}
+                                    onChangeText={(value) => this.setState({ password: value })}
                                     placeholder='Password'
                                     placeholderTextColor='rgb(217,217,217)'
                                     underlineColorAndroid='transparent'
@@ -127,7 +161,7 @@ class SignUp extends Component {
                             <View style={styles.InputContainer}>
                                 <Icon name='lock' color='rgb(66,67,69)' size={totalSize(3)} />
                                 <TextInput
-                                    //onChangeText={(value) => this.getSchool_predictions(value)}
+                                    onChangeText={(value) => this.setState({ confirm_password: value })}
                                     placeholder='Confirm Password'
                                     placeholderTextColor='rgb(217,217,217)'
                                     underlineColorAndroid='transparent'
@@ -140,7 +174,7 @@ class SignUp extends Component {
                             </View>
                             <View style={[styles.txtContainer, { flexDirection: 'row', width: width(80), height: height(8), justifyContent: 'flex-start', backgroundColor: 'transparent', marginVertical: 0 }]}>
                                 <TouchableOpacity style={[styles.buttonSmall, { backgroundColor: colors.SPA_redColor }]} onPress={() => this.image_picker()} >
-                                    <Text style={[styles.welcome, { fontSize: totalSize(1), color: 'white',marginHorizontal:5,marginVertical:4 }]}>Upload Image</Text>
+                                    <Text style={[styles.welcome, { fontSize: totalSize(1), color: 'white', marginHorizontal: 5, marginVertical: 4 }]}>Upload Image</Text>
                                 </TouchableOpacity>
                                 <View style={{ width: width(2) }}></View>
                                 {
@@ -152,7 +186,7 @@ class SignUp extends Component {
                             </View>
                             <View style={styles.btnContainer}>
 
-                                <TouchableOpacity style={styles.button} onPress={() => this.props.navigation.navigate('login')}>
+                                <TouchableOpacity style={styles.button} onPress={() => this.register()}>
                                     {
                                         this.state.loading === true ?
                                             <ActivityIndicator size={'small'} color='white' />

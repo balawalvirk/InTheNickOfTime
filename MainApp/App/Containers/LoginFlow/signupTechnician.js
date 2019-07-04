@@ -6,8 +6,9 @@ import ImagePicker from 'react-native-image-picker';
 import Toast from 'react-native-simple-toast';
 import images from '../../Themes/Images';
 import uuid from 'uuid';
-import {connectFirebase} from './../../backend/firebase/utility';
-import {signUp} from './../../backend/firebase/auth';
+import { connectFirebase } from './../../backend/firebase/utility';
+import { signUp } from './../../backend/firebase/auth';
+import Loader from "../../Components/Loader"
 
 class SignUpTechnician extends Component {
     constructor(props) {
@@ -73,29 +74,40 @@ class SignUpTechnician extends Component {
     }
 
     async register() {
+        const email = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         try {
-            if (this.state.password != this.state.confirm_password) {
-                Alert.alert('Failure', 'Password and Confirm Password do not match.', [ {text: 'OK', onPress: () => {}} ] );
+            if (this.state.email === "" || this.state.password === "" || this.state.name === "" || this.state.confirm_password === "" || this.state.location === "" || this.state.email === null || this.state.password === null || this.state.name === null || this.state.confirm_password === "" || this.state.location === "") {
+                Toast.show("Some fields are missing", Toast.LONG);
                 return;
             }
-            await signUp(this.state.email, this.state.password, this.state.name, '', '', 'technician');
-            Alert.alert('Success', 'User signed up successfully.', [ {text: 'OK', onPress: () => {this.props.navigation.navigate('login')}} ] );
+            if (this.state.password != this.state.confirm_password) {
+                Toast.show('Passwords do not match.', Toast.SHORT);
+                return;
+            }
+            if (email.test(this.state.email) == false) {
+                Toast.show("Invalid Email Entered")
+                return;
+            }
+            this.loader.show()
+            await signUp(this.state.email, this.state.password, this.state.name, '', '', 'technician',this.state.location);
+            Alert.alert('Success', 'User signed up successfully.', [{ text: 'OK', onPress: () => { this.props.navigation.navigate('login') } }]);
+            this.loader.hide()
+
         } catch (e) {
-            Alert.alert('Failure', 'Failed to sign up. Please try again.', [ {text: 'OK', onPress: () => {}} ] );
+            Alert.alert('Failure', 'Failed to sign up. Please try again.', [{ text: 'OK', onPress: () => { } }]);
         } finally {
 
         }
     }
 
-    async onChange(text, fieldValue){
-        await this.setState({fieldValue: text});
+    async onChange(text, fieldValue) {
+        await this.setState({ fieldValue: text });
     }
 
     render() {
         return (
             <View style={styles.container}>
-
-
+                <Loader ref={r => this.loader = r} />
                 <ScrollView
                     showsVerticalScrollIndicator={false}>
                     <View style={styles.lowerContainer}>
@@ -119,7 +131,7 @@ class SignUpTechnician extends Component {
                                     underlineColorAndroid='transparent'
                                     style={styles.TxtInput}
                                     value={this.state.name}
-                                    onChangeText={(text) => this.setState({name: text})}
+                                    onChangeText={(text) => this.setState({ name: text })}
                                 />
                             </View>
                             <View style={styles.InputContainer}>
@@ -131,7 +143,7 @@ class SignUpTechnician extends Component {
                                     underlineColorAndroid='transparent'
                                     style={styles.TxtInput}
                                     value={this.state.email}
-                                    onChangeText={(text) => this.setState({email: text})}
+                                    onChangeText={(text) => this.setState({ email: text })}
                                 />
                             </View>
                             <View style={styles.InputContainer}>
@@ -144,7 +156,7 @@ class SignUpTechnician extends Component {
                                     secureTextEntry={true}
                                     style={[styles.TxtInput, { width: width(66) }]}
                                     value={this.state.password}
-                                    onChangeText={(text) => this.setState({password: text})}
+                                    onChangeText={(text) => this.setState({ password: text })}
                                 />
                                 <TouchableOpacity>
                                     <Icon name='eye' color='rgb(217,217,217)' size={totalSize(2)} type='font-awesome' />
@@ -160,7 +172,7 @@ class SignUpTechnician extends Component {
                                     secureTextEntry={true}
                                     style={[styles.TxtInput, { width: width(66) }]}
                                     value={this.state.confirm_password}
-                                    onChangeText={(text) => this.setState({confirm_password: text})}
+                                    onChangeText={(text) => this.setState({ confirm_password: text })}
                                 />
                                 <TouchableOpacity>
                                     <Icon name='eye' color='rgb(217,217,217)' size={totalSize(2)} type='font-awesome' />
@@ -175,12 +187,12 @@ class SignUpTechnician extends Component {
                                     underlineColorAndroid='transparent'
                                     style={styles.TxtInput}
                                     value={this.state.location}
-                                    onChangeText={(text) => this.setState({location: text})}
+                                    onChangeText={(text) => this.setState({ location: text })}
                                 />
                             </View>
                             <View style={[styles.txtContainer, { flexDirection: 'row', width: width(80), height: height(8), justifyContent: 'flex-start', backgroundColor: 'transparent', marginVertical: 0 }]}>
                                 <TouchableOpacity style={[styles.buttonSmall, { backgroundColor: 'rgb(219,0,0)' }]} onPress={() => this.image_picker()} >
-                                    <Text style={[styles.welcome, { fontSize: totalSize(1), color: 'white',marginHorizontal:5,marginVertical:4 }]}>Upload Image</Text>
+                                    <Text style={[styles.welcome, { fontSize: totalSize(1), color: 'white', marginHorizontal: 5, marginVertical: 4 }]}>Upload Image</Text>
                                 </TouchableOpacity>
                                 <View style={{ width: width(2) }}></View>
                                 {
@@ -190,7 +202,7 @@ class SignUpTechnician extends Component {
                                         <Image source={this.state.image} style={{ height: totalSize(5), width: totalSize(5) }} />
                                 }
                             </View>
-                            
+
                             <View style={styles.btnContainer}>
 
                                 <TouchableOpacity style={styles.button} onPress={() => this.register()}>

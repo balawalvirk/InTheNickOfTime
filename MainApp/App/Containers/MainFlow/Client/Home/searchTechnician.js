@@ -5,6 +5,10 @@ import { Icon } from 'react-native-elements'
 //import store from '../../../Stores/orderStore';
 import Toast from 'react-native-simple-toast';
 import colors from '../../../../Themes/Colors';
+import firebase from 'firebase';
+import Loader from '../../../../Components/Loader';
+
+
 //import api from '../../../lib/api'
 class SearchTechnician extends Component {
     constructor(props) {
@@ -13,8 +17,8 @@ class SearchTechnician extends Component {
             service: 'Desired Service',
             showServicesList: false,
             showCategoryList: false,
-            showStates:false,
-            showLocations:false,
+            showStates: false,
+            showLocations: false,
             Services_list: [
                 { id: 1, service_name: 'Hand massage', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service...we will provide you the full tension free service..we will provide you the full tension free service' },
                 { id: 2, service_name: 'Face Cleaning', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service' },
@@ -52,6 +56,59 @@ class SearchTechnician extends Component {
 
     }
 
+    compare = (arr1, arr2) => {
+
+
+        let final = []
+        arr1.forEach(e1 => arr2.forEach((e2) => {
+            console.log(e1.UserId, "  ", e2.UserId)
+            if (JSON.stringify(e1) == JSON.stringify(e2)) {
+                final.push(e1);
+            }
+        }
+        ))
+        console.log(final, "Fimnal");
+        return final
+
+
+        // this.setState({
+        //     final
+        // })
+
+    }
+
+    searchTechnicians = async () => {
+        this.loader.show()
+        let matchedLocations = []
+        let matchedServices = []
+        await firebase.firestore().collection("Technician").where("services", "array-contains", this.state.service).get().then(resp => {
+            console.log("resp", resp);
+
+            if (resp.empty == false) {
+                resp.forEach(function (data) {
+                    user = data.data()
+                    matchedServices.push(data.data())
+                })
+            }
+
+        })
+
+        await firebase.firestore().collection("Technician").where("travel_locations", "array-contains", this.state.location).get().then(resp => {
+            console.log("loc_resp", resp);
+            if (resp.empty == false) {
+                resp.forEach(function (data) {
+                    user = data.data()
+                    matchedLocations.push(data.data())
+                })
+            }
+
+        })
+
+        let array = this.compare(matchedLocations, matchedServices)
+        console.log("Sent Array", array);
+        this.loader.hide()
+        this.props.navigation.navigate('techniciansList', { data: array })
+    }
 
 
 
@@ -59,7 +116,7 @@ class SearchTechnician extends Component {
         return (
             <View style={styles.container}>
 
-
+                <Loader ref={r => this.loader = r} />
                 <ScrollView>
                     <View style={styles.lowerContainer}>
                         <View style={{ flex: 1, width: width(95), alignItems: 'center', }}>
@@ -219,7 +276,7 @@ class SearchTechnician extends Component {
                             </View>
                             <View style={styles.btnContainer}>
 
-                                <TouchableOpacity style={styles.button} onPress={() => this.props.navigation.navigate('techniciansList')}>
+                                <TouchableOpacity style={styles.button} onPress={() => { this.searchTechnicians() }}>
                                     <View style={styles.btnTxtContainer}>
                                         {
                                             this.state.loading_getProfessors_by_departmet === true ?
@@ -233,8 +290,6 @@ class SearchTechnician extends Component {
                         </View>
                     </View>
                 </ScrollView>
-
-
             </View>
         );
     }

@@ -1,5 +1,14 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView, Image, Alert } from 'react-native';
+import { View, 
+    Text, 
+    StyleSheet, 
+    TouchableOpacity, 
+    TextInput, 
+    ActivityIndicator, 
+    ScrollView, 
+    Image, 
+    Alert,
+    AsyncStorage } from 'react-native';
 import { height, width, totalSize } from 'react-native-dimension'
 import { Icon, Overlay, CheckBox } from 'react-native-elements'
 //import store from '../../Stores/orderStore'
@@ -8,10 +17,11 @@ import Toast from 'react-native-simple-toast'
 import Modal from 'react-native-modal'
 import images from '../../Themes/Images';
 import colors from '../../Themes/Colors'
-import {connectFirebase} from './../../backend/firebase/utility';
-import {signIn} from './../../backend/firebase/auth';
+import firebase from 'firebase';
+import Loader from "../../Components/Loader";
 
 class Login extends Component {
+
     constructor(props) {
         super(props);
         this.state = {
@@ -26,12 +36,10 @@ class Login extends Component {
         };
     }
 
+
+
     static navigationOptions = {
         header: null
-    }
-
-    componentDidMount() {
-        connectFirebase();
     }
 
     _toggleModalForgetPassword = () =>
@@ -51,17 +59,92 @@ class Login extends Component {
         this._toggleModalSelectSignUp()
     }
 
-    Login = () => {
+    saveLogin = (obj) => {
+        //user = JSON.parse(obj)
+        //console.log(user);
+        
+        AsyncStorage.setItem('user',JSON.stringify(obj))
+    }
+
+    Login = async () => {
+        let user = ""
         try {
-            signIn(this.state.email, this.state.password);
-            Alert.alert('Success', 'Logged In Successfully.', [ {text: 'OK', onPress: () => {this.props.navigation.navigate('login')}} ] );
-            if (this.state.userType === 'user') {
-                this.props.navigation.replace('clientTab')
-            } else {
-                this.props.navigation.replace('technicianTab')
+            this.loader.show()
+            let err = false
+            let errMsg = ""
+            
+            await firebase.auth().signInWithEmailAndPassword(this.state.email, this.state.password).catch(function (error) {
+                console.log(error);
+                if (error.code === 'auth/user-not-found') {
+                    console.log("No user");
+                    err = true;
+                    errMsg = error.message
+                    return;
+                }
+                if (error.code === 'auth/wrong-password') {
+                    console.log("Wrong pass");
+                    err = true;
+                    errMsg = error.message
+                    return;
+                }
+                if (error.code === 'auth/too-many-requests') {
+                    console.log("Wrong pass");
+                    errMsg = error.message
+                    err = true;
+                    return;
+                }
+                this.loader.hide()
+            })
+
+            if (err == false) {
+                this.loader.show()
+                if (this.state.checked == true) {
+                    
+                    firebase.firestore().collection("Users").where("email", "==", this.state.email).where("userType", "==", "client").get().then(resp => {
+                        this.loader.hide()
+                        console.log("res", resp.docs[0]._document.proto.fields);
+                        resp.forEach(function(data){
+                            user = data.data()   
+                        })
+                        
+                        if (resp.size == 1) {
+                            this.saveLogin(user)
+                            Toast.show("Logged In", Toast.SHORT)
+                            this.props.navigation.replace('clientTab')
+                        }
+                        else if (resp.size == 0) {
+
+                            Toast.show("No Such Client")
+                            return
+                        }
+                    })
+                } else if (this.state.checked == false) {
+                    firebase.firestore().collection("Users").where("email", "==", this.state.email).where("userType", "==", "technician").get().then(resp => {
+                        this.loader.hide()
+                        console.log("res", resp.docs[0]);
+                        if (resp.size == 1) {
+                            this.saveLogin(user)
+                            Toast.show("Logged In", Toast.SHORT)
+                            this.props.navigation.replace('technicianTab')
+                        }
+                        else if (resp.size == 0) {
+                            Toast.show("No Such Technician")
+                            return
+                        }
+                    })
+                }
+                else {
+                    this.loader.hide()
+                    Toast.show("Invalid Credentials Provided")
+                }
+            }else{
+                this.loader.hide()
+                Toast.show(errMsg)
             }
         } catch (e) {
-            Alert.alert('Failure', 'Failed to sign in. Please try again.', [ {text: 'OK', onPress: () => {}} ] );
+            console.log(e);
+            this.loader.hide()
+            Alert.alert('Failure', 'Failed to sign in. Please try again.', [{ text: 'OK', onPress: () => { } }]);
         } finally {
 
         }
@@ -70,11 +153,12 @@ class Login extends Component {
     render() {
         return (
             <View style={styles.container}>
+                <Loader ref={r => this.loader = r} />
                 <View style={styles.lowerContainer}>
                     <ScrollView showsVerticalScrollIndicator={false}>
                         <View style={{ flex: 1, width: width(95), alignItems: 'center', backgroundColor: 'transparent', marginTop: height(5) }}>
                             <Image source={images.logo} style={styles.logo} />
-                            <View style={{  alignItems: 'center', justifyContent: 'center' }}>
+                            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
                                 <Text style={styles.txt}>The Elite Mobile Salon & Spa</Text>
                                 {/* <Text style={[styles.txt, { color: colors.SPA_redColor }]}>Elite</Text>
                                 <Text style={styles.txt}> Mobile Salon & Spa</Text> */}
@@ -121,7 +205,7 @@ class Login extends Component {
                                     underlineColorAndroid='transparent'
                                     style={styles.TxtInput}
                                     value={this.state.email}
-                                    onChangeText={(text) => this.setState({email: text})}
+                                    onChangeText={(text) => this.setState({ email: text })}
                                 />
                             </View>
                             <View style={styles.InputContainer}>
@@ -134,7 +218,7 @@ class Login extends Component {
                                     secureTextEntry={true}
                                     style={styles.TxtInput}
                                     value={this.state.password}
-                                    onChangeText={(text) => this.setState({password: text})}
+                                    onChangeText={(text) => this.setState({ password: text })}
                                 />
                             </View>
                             <View style={[styles.InputContainer, { backgroundColor: 'transparent', elevation: 0, justifyContent: 'flex-start', marginVertical: height(1) }]}>
@@ -269,13 +353,13 @@ class Login extends Component {
                                             style={{ marginHorizontal: width(2.5), height: height(7), marginVertical: height(1), elevation: 5, borderRadius: 5, paddingLeft: width(4), backgroundColor:'white', fontSize: totalSize(2) }}
                                         /> */}
                                         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'flex-end', backgroundColor: 'transparent' }}>
-                                            <Text style={[styles.welcome, { fontSize: totalSize(2.5),color:colors.SPA_redColor }]} onPress={()=>this.goto_signup_Client()}>Client</Text>
+                                            <Text style={[styles.welcome, { fontSize: totalSize(2.5), color: colors.SPA_redColor }]} onPress={() => this.goto_signup_Client()}>Client</Text>
                                         </View>
                                         <View style={{ flex: 0.5, justifyContent: 'center', alignItems: 'center', backgroundColor: 'transparent' }}>
                                             <Text style={[styles.welcome, { fontSize: totalSize(6) }]}>|</Text>
                                         </View>
                                         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'flex-start', backgroundColor: 'transparent' }}>
-                                            <Text style={[styles.welcome, { fontSize: totalSize(2.5),color:colors.SPA_redColor  }]} onPress={()=>this.goto_signup_Technician()}>Technician</Text>
+                                            <Text style={[styles.welcome, { fontSize: totalSize(2.5), color: colors.SPA_redColor }]} onPress={() => this.goto_signup_Technician()}>Technician</Text>
                                         </View>
                                     </View>
                                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'transparent' }}>

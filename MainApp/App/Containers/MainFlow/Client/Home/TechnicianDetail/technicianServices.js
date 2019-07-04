@@ -13,22 +13,26 @@ import styles from '../../../../Styles/technicianDetailStyles'
 export default class TechnicianServices extends Component {
     constructor(props) {
         super(props);
+
         this.state = {
-            Services_list: [
-                { id: 1, service_name: 'Hand massage', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service...we will provide you the full tension free service..we will provide you the full tension free service' },
-                { id: 2, service_name: 'Face Cleaning', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service' },
-                { id: 3, service_name: 'Hair Diy', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service..we will provide you the full tension free service' },
-                { id: 4, service_name: 'Hand massage', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service.we will provide you the full tension free service.we will provide you the full tension free service' },
-                { id: 5, service_name: 'Face Cleaning', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service' },
-                { id: 6, service_name: 'Hair Diy', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service' },
-            ],
+            Services_list: JSON.parse(this.props.navigation.getParam('services_details', '')),
+            // [
+            //     { id: 1, service_name: 'Hand massage', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service...we will provide you the full tension free service..we will provide you the full tension free service' },
+            //     { id: 2, service_name: 'Face Cleaning', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service' },
+            //     { id: 3, service_name: 'Hair Diy', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service..we will provide you the full tension free service' },
+            //     { id: 4, service_name: 'Hand massage', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service.we will provide you the full tension free service.we will provide you the full tension free service' },
+            //     { id: 5, service_name: 'Face Cleaning', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service' },
+            //     { id: 6, service_name: 'Hair Diy', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service' },
+            // ],
             location: '',
-            travel_locations: [
-                { id: 1, location: 'Sea site, New york, USA', travel_cost: 20 },
-                { id: 2, location: 'Top Valley, New york, USA', travel_cost: 25 },
-                { id: 3, location: 'Down Town, New york, USA', travel_cost: 45 },
-                { id: 4, location: 'Sea site, New york, USA', travel_cost: 30 }
-            ],
+            travel_locations: JSON.parse(this.props.navigation.getParam('location_details', '')),
+            // [
+            //     { id: 1, location: 'Sea site, New york, USA', travel_cost: 20 },
+            //     { id: 2, location: 'Top Valley, New york, USA', travel_cost: 25 },
+            //     { id: 3, location: 'Down Town, New york, USA', travel_cost: 45 },
+            //     { id: 4, location: 'Sea site, New york, USA', travel_cost: 30 }
+            // ],
+            technician:this.props.navigation.getParam('technician',''),
             travel_cost: 0,
             showServicesList: false,
             loadingSelectedService: false,
@@ -43,7 +47,14 @@ export default class TechnicianServices extends Component {
     }
     goToPayment = () => {
         this._toggelModalMessage()
-        this.props.navigation.navigate('payment')
+        this.props.navigation.navigate('payment',{
+            services:this.state.selected_Services,
+            location: this.state.travel_locations,
+            travel_cost: this.state.travel_cost,
+            date_time: this.state.date_time,
+            services_cost: this.state.servicesTotalCost,
+            technician: this.state.technician
+        })
     }
     _toggleShowServicesList = () => {
         this.setState({ showServicesList: !this.state.showServicesList })
@@ -75,7 +86,14 @@ export default class TechnicianServices extends Component {
         await this.setState({ loadingUnSelectedServices: false })
 
     }
+
+    componentDidMount() {
+        console.log(this.props.navigation.getParam('services_details', ''))
+        console.log(JSON.parse(this.props.navigation.getParam('services_details', '')))
+    }
     render() {
+        console.log("Detail", this.state.technician);
+
         return (
             <View style={styles.container}>
 
@@ -259,14 +277,14 @@ export default class TechnicianServices extends Component {
                             </View>
                             <View style={styles.inputTxtContainer}>
                                 <Text style={[styles.txtSmall, { marginVertical: 3, color: colors.SPA_redColor }]}>Message</Text>
-                                <View style={[styles.commentInputView, {  }]}>
+                                <View style={[styles.commentInputView, {}]}>
                                     <TextInput
                                         onChangeText={(value) => this.setState({ comment: value })}
                                         placeholder='Type Your Request'
                                         multiline={true}
                                         scrollEnabled={true}
                                         placeholderTextColor='rgb(245,245,238)'
-                                        style={[styles.commentInput, {  }]}
+                                        style={[styles.commentInput, {}]}
                                     />
                                 </View>
                             </View>

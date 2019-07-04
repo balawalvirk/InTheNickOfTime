@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, TouchableOpacity,StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity,StyleSheet, AsyncStorage } from 'react-native';
 //import styles from './Styles/settingCompanyStyles'
 import Icon from 'react-native-vector-icons/Ionicons'
 import Icon2 from 'react-native-vector-icons/MaterialCommunityIcons'
@@ -21,6 +21,7 @@ class SettingTechnician extends Component {
     this.setState({ isModalVisibleLogout: !this.state.isModalVisibleLogout });
 
   logOut=()=> {
+    AsyncStorage.clear()
     this._toggleModalLogout()
     this.props.navigation.push('login')
   }

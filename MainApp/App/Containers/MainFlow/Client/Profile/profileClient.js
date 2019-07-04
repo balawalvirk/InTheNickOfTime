@@ -1,26 +1,48 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  AsyncStorage } from 'react-native';
 import { height, width, totalSize } from 'react-native-dimension'
 import { Icon } from 'react-native-elements'
 import colors from '../../../../Themes/Colors';
 import images from '../../../../Themes/Images';
+import firebase from 'firebase';
 
 class ProfileClient extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      name: "",
+      email: ""
     };
   }
 
   static navigationOptions = {
     title: 'Profile',
-    
+
   }
 
-  goToDocuments() {
-    store.professorData = false
-    this.props.navigation.navigate('myDocuments')
+  loadUser = () => {
+    AsyncStorage.getItem('user', (error, data) => {
+      if (data) {
+        user = JSON.parse(data)
+        console.log(user);
+        this.setState({
+          name: user.firstName,
+          email: user.email
+        })
+      }
+    })
   }
+  componentDidMount() {
+    this.loadUser()
+
+  }
+
   render() {
     return (
       <View style={styles.container}>
@@ -31,7 +53,7 @@ class ProfileClient extends Component {
           </TouchableOpacity>
         </View>
         <View style={styles.lowerContainer}>
-           {/* <TouchableOpacity style={styles.button2} >
+          {/* <TouchableOpacity style={styles.button2} >
             <View style={styles.iconContainer}>
               <Icon name='calendar-clock' color='white' size={totalSize(3)} type='material-community' />
             </View>
@@ -71,10 +93,10 @@ class ProfileClient extends Component {
         </View>
         <View style={styles.imageContainer}>
           <Image source={images.profilePic} style={styles.imageProfile} />
-          <Text style={[styles.welcome, { fontSize: totalSize(3) }]}>Alina Shaw</Text>
+          <Text style={[styles.welcome, { fontSize: totalSize(3) }]}>{this.state.name}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
             <Icon name='email' size={totalSize(1.5)} color='gray' />
-            <Text style={[styles.welcome, { fontSize: totalSize(1.5), fontWeight: 'normal', color: 'gray', left: 2 }]}>Alina@gmail.com</Text>
+            <Text style={[styles.welcome, { fontSize: totalSize(1.5), fontWeight: 'normal', color: 'gray', left: 2 }]}>{this.state.email}</Text>
           </View>
         </View>
       </View>
@@ -143,7 +165,7 @@ const styles = StyleSheet.create({
     //backgroundColor:'rgb(180,210,53)'
     //backgroundColor:'rgb(217,217,217)'
     //backgroundColor: colors.SPA_LightRed,
-    backgroundColor:'white'
+    backgroundColor: 'white'
     // marginTop: height(20),
 
   },

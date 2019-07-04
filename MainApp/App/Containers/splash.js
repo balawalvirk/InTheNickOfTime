@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { View, Text, ImageBackground, StyleSheet, Image } from 'react-native';
 import { totalSize, width, height } from 'react-native-dimension'
 import images from '../Themes/Images'
-import colors from '../Themes/Colors';
+import { connectFirebase } from '../backend/firebase/utility';
+import AsyncStorage from '@react-native-community/async-storage';
 class Splash extends Component {
     constructor(props) {
         super(props);
@@ -13,10 +14,40 @@ class Splash extends Component {
     static navigationOptions = {
         header: null
     }
-
+    
     componentDidMount() {
-        setTimeout(() => { this.props.navigation.replace('login') }, 5000);
+
+        console.log(JSON.stringify({ id: 1, location: 'Sea site, New york, USA', travel_cost: 20 }));
+        connectFirebase();
+        AsyncStorage.getItem('user', (error, data) => {
+            console.log
+                (error)
+            console.log(data);
+
+            if (data) {
+                user = JSON.parse(data);
+                console.log(user);
+                
+                if (user.userType == "client") {
+                    setTimeout(() => { this.props.navigation.replace('clientTab') }, 5000);
+
+                } else if (user.userType == "technician") {
+                    setTimeout(() => { this.props.navigation.replace('technicianTab') }, 5000);
+
+                } else {
+                    AsyncStorage.clear();
+                    setTimeout(() => { this.props.navigation.replace('login') }, 5000);
+                }
+            }
+            else {
+                AsyncStorage.clear();
+                setTimeout(() => { this.props.navigation.replace('login') }, 5000);
+            }
+        })
     }
+
+
+
 
     render() {
         return (
