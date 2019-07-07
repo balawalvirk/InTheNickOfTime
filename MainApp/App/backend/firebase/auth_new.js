@@ -1,7 +1,7 @@
 import firebase from 'firebase';
 import firestore from 'firebase/firestore';
 import { Alert, Platform } from 'react-native';
-import { saveData } from './utility';
+import { insertDocument, saveData, updateDocument, getDocument, getDocuments } from './utility';
 import RNFetchBlob from 'react-native-fetch-blob';
 
 
@@ -15,15 +15,58 @@ export async function signUp(user_profile) {
 			  photoURL: user_profile.photo,
 			};
 			user_profile['UserId'] = user.uid;
+      let image = user_profile.avatarSource;
+
+      delete user_profile.avatarSource;
 			delete user_profile.password;
 			delete user_profile.confirmPassword;
 
-			Promise.all([
-				user.sendEmailVerification(),
-				user.updateProfile(profile),
-				saveData('Users', user.uid, user_profile)
-			]).then(async function() {
-				console.log(firebase.auth().currentUser);
+      let actions = [
+        user.sendEmailVerification(),
+        user.updateProfile(profile),
+      ];
+      let collection = 'Users';
+
+      if (user_profile.userType == "client") {
+        collection = 'Users'
+        // actions = [
+        //   user.sendEmailVerification(),
+        //   user.updateProfile(profile),
+        //   saveData('Users', user.uid, user_profile)
+        // ]
+        actions.push(insertDocument('Users', user_profile));
+        // actions[actions.length] = saveData('Users', user.uid, user_profile);
+      } else if (user_profile.userType == "technician") {
+        collection = 'Technician';
+        let technician = {
+          UserId: user.uid, 
+          name: user_profile.name, 
+          phoneNum: user_profile.phoneNumber, 
+          email: user_profile.email,
+          daily_availibility: "",
+          weekly_availibilty: "",
+          services: [""],
+          travel_locations: [""], 
+          imageUrl: user_profile.photo,
+          location: user_profile.location
+        };
+        // actions = [
+        //   user.sendEmailVerification(),
+        //   user.updateProfile(profile),
+        //   saveData('Technician', user.uid, technician)
+        // ]
+        actions.push(insertDocument('Technician', technician));
+        // actions[actions.length] = saveData('Technician', user.uid, technician);
+      }
+
+			Promise.all(actions).then(async function(rs) {
+        // console.log(firebase.auth().currentUser);
+				console.log(rs);
+        let docID = rs[2];
+
+        if (image != null)
+          uploadAsFile(image, {collection: collection, uid: docID});
+
 				Alert.alert('Success', 'Email Verification Sent.', [{ text: 'OK', onPress: () => {} }]);
 				let profile = await getCurrentUserProfile();
 				resolve(profile);
@@ -47,20 +90,36 @@ export async function signUp(user_profile) {
 	});
 }
 
-export async function signIn(email, password) {
+export async function signIn(email, password, userType) {
 	return new Promise(async (resolve, reject) => {
 		try {
 			
 			await firebase.auth().signInWithEmailAndPassword(email, password);
 			let profile = await getCurrentUserProfile();
-			if (profile.emailVerified) {
+			if (!profile.emailVerified) {
 				await firebase.auth().signOut();
 				Alert.alert('Failure', 'Please verify your email.', [{ text: 'OK', onPress: () => {} }]);
 				resolve(false);
 			}
-			console.log('profile');
-			console.log(profile);
-
+      
+      if (userType == 'client') {
+        let data = await getDocuments('Users', {key: 'UserId', value: profile.user_id});
+        if (data.length > 0) {
+          profile['data'] = data[0];
+        } else {
+          Alert.alert('Failure', 'Invalid user.', [{ text: 'OK', onPress: () => {} }]);
+          resolve(false);
+        }
+      } else {
+        let data = await getDocuments('Technician', { key: 'UserId', value: profile.user_id});
+        if (data.length > 0) {
+          profile['data'] = data[0];
+        } else {
+          Alert.alert('Failure', 'Invalid user.', [{ text: 'OK', onPress: () => {} }]);
+          resolve(false);
+        }
+      }
+      console.log('profile: ', profile);
 			resolve(profile);
 
 		} catch (error) {
@@ -271,10 +330,10 @@ export const uploadImage = (uri, mime = 'application/octet-stream') => {
   	const storage = firebase.storage();
 
   	// Prepare Blob support
-	const Blob = RNFetchBlob.polyfill.Blob
-	const fs = RNFetchBlob.fs
-	window.XMLHttpRequest = RNFetchBlob.polyfill.XMLHttpRequest
-	window.Blob = Blob
+  	const Blob = RNFetchBlob.polyfill.Blob
+  	const fs = RNFetchBlob.fs
+  	window.XMLHttpRequest = RNFetchBlob.polyfill.XMLHttpRequest
+  	window.Blob = Blob
 
     const uploadUri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri
     const sessionId = new Date().getTime()
@@ -298,6 +357,119 @@ export const uploadImage = (uri, mime = 'application/octet-stream') => {
       })
       .catch((error) => {
         reject(error)
-    })
-  })
+      })
+  });
 }
+
+async function uploadAsFile(image, collectionInfo, progressCallback) {
+
+    console.log("uploadAsFile", image)
+    const response = await fetch(image.uri);
+    const blob = await response.blob();
+
+    var metadata = {
+      contentType: image.type,
+    };
+
+    // let name = new Date().getTime() + "-" + image.fileName;
+    let name = collectionInfo.uid + "-" + image.name;
+    const ref = firebase
+      .storage()
+      .ref()
+      .child('assets/' + name)
+
+    const task = ref.put(blob, metadata);
+
+    return new Promise((resolve, reject) => {
+      task.on(
+        'state_changed',
+        (snapshot) => {
+          // progressCallback && progressCallback(snapshot.bytesTransferred / snapshot.totalBytes)
+
+          var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log('Upload is ' + progress + '% done');
+        },
+        (error) => reject(error), /* this is where you would put an error callback! */
+        async () => {
+          // let downloadURL = task.snapshot.downloadURL;
+          let downloadURL = await ref.getDownloadURL();
+          console.log("_uploadAsByteArray ", downloadURL);
+
+          let success = await updateDocument(collectionInfo.collection, collectionInfo.uid, {photo: downloadURL})
+          resolve(success);
+
+          // save a reference to the image for listing purposes
+          // let refAssets = firebase.database().ref('assets');
+          // refAssets.push({
+          //   'URL': downloadURL,
+          //   //'thumb': _imageData['thumb'],
+          //   'name': name,
+          //   //'coords': _imageData['coords'],
+          //   'owner': firebase.auth().currentUser && firebase.auth().currentUser.uid,
+          //   'when': new Date().getTime()
+          // }).then(r => resolve(r), e => reject(e))
+        }
+      );
+    });
+  }
+
+  export async function updateProfile(user_profile) {
+    return new Promise(async (resolve, reject) => {
+      try {
+
+        let image = user_profile.avatarSource;
+        delete user_profile.avatarSource;
+        let docID = user_profile.id;
+        delete user_profile.id;
+
+        if (user_profile.userType == "client") {
+          collection = 'Users'
+          await updateDocument('Users', docID, user_profile)
+        } else if (user_profile.userType == "technician") {
+          collection = 'Technician';
+          let technician = {
+            UserId: user.uid, 
+            name: user_profile.name, 
+            phoneNum: user_profile.phoneNumber, 
+            email: user_profile.email,
+            daily_availibility: "",
+            weekly_availibilty: "",
+            services: [""],
+            travel_locations: [""], 
+            imageUrl: user_profile.photo,
+            location: user_profile.location
+          };
+          await updateDocument('Technician', docID, technician)
+        }
+
+        if (image != null)
+            await uploadAsFile(image, {collection: collection, uid: docID});
+
+        let profile = await getCurrentUserProfile();
+
+        if (user_profile.userType == 'client') {
+          let data = await getDocuments('Users', {key: 'UserId', value: profile.user_id});
+          if (data.length > 0) {
+            profile['data'] = data[0];
+          } else {
+            Alert.alert('Failure', 'Something went wrong.', [{ text: 'OK', onPress: () => {} }]);
+            resolve(false);
+          }
+        } else {
+          let data = await getDocuments('Technician', { key: 'UserId', value: profile.user_id});
+          if (data.length > 0) {
+            profile['data'] = data[0];
+          } else {
+            Alert.alert('Failure', 'Something went wrong.', [{ text: 'OK', onPress: () => {} }]);
+            resolve(false);
+          }
+        }
+        Alert.alert('Success', 'Profile has been updated successfully.', [{ text: 'OK', onPress: () => {} }]);
+        resolve(profile);
+      } catch (err) {
+        console.log(err);
+        Alert.alert('Failure', 'Profile could not be updated.', [{ text: 'OK', onPress: () => {} }]);
+        resolve(false);
+      }
+    });
+  }

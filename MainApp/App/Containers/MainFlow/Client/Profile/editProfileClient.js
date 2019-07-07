@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, ActivityIndicator, Image, TouchableOpacity, TextInput, ImageBackground, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, ActivityIndicator, Image, TouchableOpacity, TextInput, ImageBackground, StyleSheet, Dimensions, AsyncStorage, Alert } from 'react-native';
 const { width: WIDTH } = Dimensions.get('window')
 //import styles from '../../Styles/editeProfileStyles'
 import ImagePicker from 'react-native-image-picker';
@@ -10,22 +10,57 @@ import { Icon } from 'react-native-elements'
 import colors from '../../../../Themes/Colors';
 import { totalSize, width, height } from 'react-native-dimension';
 import images from '../../../../Themes/Images';
+import { updateProfile } from './../../../../backend/firebase/auth_new';
+import EditProfileConstraints from './../../../../Validations/EditProfileConstraints';
+import validate from 'validate.js';
+import Loader from "./../../../../Components/Loader";
+
 class EditProfileClient extends Component {
+    
     static navigationOptions = {
         title: 'Edit Profile',
-
     };
+
     constructor(props) {
         super(props);
         this.state = {
             loading: false,
-            name: 'Alina Shaw',
-            Password: '',
+            name: '',
+            email: '',
+            photo: null,
+            password: '',
             image: null,
             avatarSource: null,
             camera: false,
+            id: null
         };
     }
+
+    loadUser = () => {
+        AsyncStorage.getItem('user', (error, data) => {
+          if (data) {
+            user = JSON.parse(data)
+            console.log(user);
+            let img = null;
+            if (user.photo != null) {
+              img = {uri: user.photo}
+            } else {
+              img = images.profilePic
+            }
+            this.setState({
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              photo: img
+            })
+          }
+        })
+      }
+
+    componentDidMount() {
+        this.loadUser();
+    }
+
     image_picker = () => {
         const options = {
             title: 'Select Avatar',
@@ -60,18 +95,61 @@ class EditProfileClient extends Component {
             }
         });
     }
-    componentWillMount() {
 
+    saveLogin = (obj) => {
+        //user = JSON.parse(obj)
+        //console.log(user);
+        
+        AsyncStorage.setItem('user',JSON.stringify(obj.data));
+        AsyncStorage.setItem('user_detail',JSON.stringify(obj));
     }
+
     editeProfile = async () => {
+        try {
+            
+            jsonObect = {
+              id: this.state.id,
+              name: this.state.name,
+              userType: 'client',
+              avatarSource: this.state.avatarSource,
+            }
+
+            let err = validate(jsonObect, EditProfileConstraints, {format: 'flat'});
+            if (err) {
+                // this.loader.hide();
+                Alert.alert('Error!', err.join('\n'), [ {text: 'OK', onPress: () => {}} ] );
+            } else {
+                this.loader.show();
+                // let url = await uploadImage(this.state.avatarSource.uri)
+                    // .then(url => this.setState({ image: url }))
+                    // .catch(error => console.log(error))
+                // jsonObect['photo'] = url;
+                let success = await updateProfile(jsonObect);
+                if (success != false) {
+                    this.saveLogin(success);
+                    this.props.navigation.goBack();
+                }
+            }
+
+        } catch (e) {
+            console.log(e);
+            Alert.alert('Failure', 'Profile could not be updated. Please try again.', [{ text: 'OK', onPress: () => { } }]);
+        } finally {
+            this.loader.hide();
+        }
+        
     }
+
     render() {
         //console.warn('image===>',store.USER_LOGIN.profile_pic);
         return (
 
             <View style={styles.Container}>
+
+                <Loader ref={r => this.loader = r} />
+
                 <View style={[styles.pfContainer,{marginVertical:height(5)}]}>
-                    <Image source={images.profilePic} style={styles.profileImage} />
+                    <Image source={this.state.photo} style={styles.profileImage} />
                     <TouchableOpacity onPress={this.image_picker}>
                         <Icon name='camera' type='entypo' color='gray' size={totalSize(4)} />
                     </TouchableOpacity>
@@ -98,15 +176,17 @@ class EditProfileClient extends Component {
                         value={this.state.name}
                         placeholderTextColor='rgb(183,179,179)'
                         style={styles.input}
+                        onChangeText={(text) => this.setState({ name: text })}
                     />
                 </View>
                 <View style={styles.txtContainer}>
                     <Text style={styles.formTxt}>Email Address</Text>
                     <TextInput
-                        editable={false}
-                        placeholder='Alina@gmail.com'
+                        value={this.state.email}
+                        placeholder='example@example.com'
                         placeholderTextColor='rgb(183,179,179)'
                         style={styles.input}
+                        editable = {false}
                     />
                 </View>
                 {/* <View style={styles.txtContainer}>

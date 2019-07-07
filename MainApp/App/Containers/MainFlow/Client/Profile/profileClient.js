@@ -11,13 +11,15 @@ import { Icon } from 'react-native-elements'
 import colors from '../../../../Themes/Colors';
 import images from '../../../../Themes/Images';
 import firebase from 'firebase';
+import { withNavigationFocus } from 'react-navigation';
 
 class ProfileClient extends Component {
   constructor(props) {
     super(props);
     this.state = {
       name: "",
-      email: ""
+      email: "",
+      photo: null
     };
   }
 
@@ -31,19 +33,31 @@ class ProfileClient extends Component {
       if (data) {
         user = JSON.parse(data)
         console.log(user);
+        let img = null;
+        if (user.photo != null) {
+          img = {uri: user.photo}
+        } else {
+          img = images.profilePic
+        }
         this.setState({
-          name: user.firstName,
-          email: user.email
+          name: user.name,
+          email: user.email,
+          photo: img
         })
       }
     })
   }
+
   componentDidMount() {
     this.loadUser()
-
   }
 
   render() {
+
+    if (this.props.isFocused) {
+      this.loadUser()
+    }
+
     return (
       <View style={styles.container}>
         <View style={styles.uperContainer}>
@@ -92,7 +106,7 @@ class ProfileClient extends Component {
           <View style={{ marginBottom: 20 }}></View>
         </View>
         <View style={styles.imageContainer}>
-          <Image source={images.profilePic} style={styles.imageProfile} />
+          <Image source={this.state.photo} style={styles.imageProfile} />
           <Text style={[styles.welcome, { fontSize: totalSize(3) }]}>{this.state.name}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
             <Icon name='email' size={totalSize(1.5)} color='gray' />
@@ -104,7 +118,7 @@ class ProfileClient extends Component {
   }
 }
 
-export default ProfileClient;
+export default withNavigationFocus(ProfileClient);
 
 const styles = StyleSheet.create({
   container: {

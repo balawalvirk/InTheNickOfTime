@@ -14,7 +14,7 @@ export function connectFirebase() {
     authDomain: "inthenameoftimespa-f27fa.firebaseapp.com",
     databaseURL: "https://inthenameoftimespa-f27fa.firebaseio.com",
     projectId: "inthenameoftimespa-f27fa",
-    storageBucket: "",
+    storageBucket: "inthenameoftimespa-f27fa.appspot.com",
     messagingSenderId: "154243893765",
     appId: "1:154243893765:web:cc82e42099f50c8a"
   };
@@ -128,6 +128,82 @@ export async function saveData(collection, doc, jsonObject) {
   // });
 }
 
+export async function insertDocument(collection, jsonObject) {
+  return new Promise((resolve, reject) => {
+    firebase.firestore().collection(collection).add(jsonObject)
+    .then(function(docRef) {
+        console.log("Document written with ID: ", docRef.id);
+        resolve(docRef.id);
+    })
+    .catch(function(error) {
+        console.error("Error adding document: ", error);
+        reject(error);
+    });
+  });
+}
+
+export async function updateDocument(collection, uid, jsonObject) {
+  return new Promise((resolve, reject) => {
+    let docRef = firebase.firestore().collection(collection).doc(uid);
+    docRef.get().then(function (Doc) {
+
+      if (Doc.exists) {
+        jsonObject.updated_at = Date.now();
+        docRef.update(jsonObject);
+      } else {
+        // new record
+        jsonObject.created_at = Date.now();
+        docRef.set(jsonObject);
+      }
+
+      console.log('docRef.id: ', docRef.id);
+      resolve(docRef.id);
+    }).catch(function (error) {
+      console.log(error.message);
+      reject(error);
+    });
+  });
+}
+
+export async function getDocument(collection, uid) {
+  return new Promise((resolve, reject) => {
+    let docRef = firebase.firestore().collection(collection).doc(uid);
+    docRef.get().then(function (Doc) {
+
+      if (Doc.exists) {
+        console.log('Doc.data(): ', Doc.data());
+        resolve(Doc.data());
+      } else {
+        resolve(null);
+      }
+    }).catch(function (error) {
+      console.log(error.message);
+      reject(error);
+    });
+  });
+}
+
+export async function getDocuments(collection, where) {
+  return new Promise((resolve, reject) => {
+    let docRef = firebase.firestore().collection(collection).where(where.key, '==', where.value);
+    docRef.get().then(function (querySnapshot) {
+      let data = [];
+      querySnapshot.forEach(function(doc) {
+        // doc.data() is never undefined for query doc snapshots
+        console.log(doc.id, " => ", doc.data());
+        data.push({id: doc.id, ...doc.data()});
+      });
+
+      resolve(data);
+    }).catch(function (error) {
+      console.log(error.message);
+      reject(error);
+    });
+  });
+}
+
+
+
 export async function createData(collection, data) {
 
   await firebase.firestore().collection(collection).add(data)
@@ -171,7 +247,6 @@ export async function addToArray(collection, doc, array, value) {
     [array]: firebase.firestore.FieldValue.arrayUnion(value)
   });
 }
-
 
 export async function uploadImage(imgUri, mime = 'image/jpeg', imagePath, name, databaseCollection, docRef) {
   //blob

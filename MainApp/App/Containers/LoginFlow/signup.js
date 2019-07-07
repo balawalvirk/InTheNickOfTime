@@ -6,30 +6,28 @@ import ImagePicker from 'react-native-image-picker';
 import Toast from 'react-native-simple-toast';
 import images from '../../Themes/Images';
 import colors from '../../Themes/Colors';
-import { signUp } from './../../backend/firebase/auth';
+// import { signUp } from './../../backend/firebase/auth';
+import { signUp, uploadImage } from './../../backend/firebase/auth_new';
 import Loader from "../../Components/Loader";
+import SignUpConstraints from './../../Validations/SignUpConstraints';
+import validate from 'validate.js';
+import firebase from 'firebase';
 
 
-class SignUp extends Component {
+class SignUp extends Component { 
+
     constructor(props) {
         super(props);
         this.state = {
-            school_pridictions: [],
-            loading_getSchools: false,
             isModalVisible: false,
-            school_id: '',
-            school: 'SCHOOL',
-            first_name: '',
-            last_name: '',
+            name: '',
             email: '',
             password: '',
             confirm_password: '',
             loading: false,
             camera: false,
             avatarSource: null,
-            image: null,
-
-
+            image: null
         };
     }
 
@@ -37,34 +35,44 @@ class SignUp extends Component {
         header: null
     }
 
-
     async register() {
-        const email = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
         try {
-            if (this.state.email === "" || this.state.password === "" || this.state.name === "" || this.state.confirm_password === "" || this.state.email === null || this.state.password === null || this.state.name === null || this.state.confirm_password === "") {
-                Toast.show("Some fields are missing", Toast.LONG);
-                return;
+            
+            jsonObect = {
+              name: this.state.name,
+              email: this.state.email,
+              password: this.state.password,
+              confirmPassword: this.state.confirm_password,
+              location: null,
+              photo: null,
+              phoneNumber: null,
+              userType: 'client',
+              avatarSource: this.state.avatarSource,
             }
-            if (this.state.password != this.state.confirm_password) {
-                Toast.show('Passwords do not match.', Toast.SHORT);
-                return;
+
+            let err = validate(jsonObect, SignUpConstraints, {format: 'flat'});
+            if (err) {
+                // this.loader.hide();
+                Alert.alert('Error!', err.join('\n'), [ {text: 'OK', onPress: () => {}} ] );
+            } else {
+                this.loader.show();
+                // let url = await uploadImage(this.state.avatarSource.uri)
+                    // .then(url => this.setState({ image: url }))
+                    // .catch(error => console.log(error))
+                // jsonObect['photo'] = url;
+                let success = await signUp(jsonObect);
+                if (success != false)
+                    this.props.navigation.navigate('login')
             }
-            if (email.test(this.state.email) == false) {
-                Toast.show("Invalid Email Entered")
-                return;
-            }
-            this.loader.show()
-            await signUp(this.state.email, this.state.password, this.state.name, '', '', 'client','');
-            this.loader.hide()
-            Alert.alert('Success', 'User signed up successfully.', [{ text: 'OK', onPress: () => { this.props.navigation.navigate('login') } }]);
 
         } catch (e) {
             console.log(e);
-            this.loader.hide()
             Alert.alert('Failure', 'Failed to sign up. Please try again.', [{ text: 'OK', onPress: () => { } }]);
         } finally {
-
+            this.loader.hide();
         }
+        
     }
 
     image_picker = () => {
@@ -76,7 +84,7 @@ class SignUp extends Component {
                 path: 'images',
             },
         };
-        ImagePicker.showImagePicker(options, func = async (response) => {
+        ImagePicker.showImagePicker(options, async (response) => {
             console.log('Response = ', response);
             if (response.didCancel) {
                 //   console.log('User cancelled image picker');
@@ -86,18 +94,19 @@ class SignUp extends Component {
                 //   console.log('User tapped custom button: ', response.customButton);
             } else {
                 const source = { uri: response.uri };
+
                 // await this.setState({ image: source })
                 // You can also display the image using data:
                 //const image = { uri: response.uri, width: response.width, height: response.height }
                 //const avatar = { uri: response.uri, type: response.type, name: response.fileName }
                 //this.state.Images.push(image);
                 //this.state.simpleImages.push(avatar);
+                
                 await this.setState({
                     camera: true,
                     avatarSource: { uri: response.uri, type: response.type, name: response.fileName },
                     image: { uri: response.uri, width: response.width, height: response.height }
                 });
-
             }
         });
     }

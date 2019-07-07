@@ -13,12 +13,15 @@ import { height, width, totalSize } from 'react-native-dimension'
 import { Icon, Overlay, CheckBox } from 'react-native-elements'
 //import store from '../../Stores/orderStore'
 //import api from '../../lib/api'
+import LoginConstraints from './../../Validations/LoginConstraints';
 import Toast from 'react-native-simple-toast'
 import Modal from 'react-native-modal'
 import images from '../../Themes/Images';
 import colors from '../../Themes/Colors'
 import firebase from 'firebase';
 import Loader from "../../Components/Loader";
+import { signIn, uploadImage, sendPasswordReset } from './../../backend/firebase/auth_new';
+import validate from 'validate.js';
 
 class Login extends Component {
 
@@ -32,11 +35,10 @@ class Login extends Component {
             checked: true,
             userType: 'user',
             isModalVisibleForgetPassword: false,
-            IsModalVisibleSelectSignUp: false
+            IsModalVisibleSelectSignUp: false,
+            reset_email: '',
         };
     }
-
-
 
     static navigationOptions = {
         header: null
@@ -63,91 +65,52 @@ class Login extends Component {
         //user = JSON.parse(obj)
         //console.log(user);
         
-        AsyncStorage.setItem('user',JSON.stringify(obj))
+        AsyncStorage.setItem('user',JSON.stringify(obj.data));
+        AsyncStorage.setItem('user_detail',JSON.stringify(obj));
     }
 
     Login = async () => {
-        let user = ""
+
         try {
-            this.loader.show()
-            let err = false
-            let errMsg = ""
             
-            await firebase.auth().signInWithEmailAndPassword(this.state.email, this.state.password).catch(function (error) {
-                console.log(error);
-                if (error.code === 'auth/user-not-found') {
-                    console.log("No user");
-                    err = true;
-                    errMsg = error.message
-                    return;
-                }
-                if (error.code === 'auth/wrong-password') {
-                    console.log("Wrong pass");
-                    err = true;
-                    errMsg = error.message
-                    return;
-                }
-                if (error.code === 'auth/too-many-requests') {
-                    console.log("Wrong pass");
-                    errMsg = error.message
-                    err = true;
-                    return;
-                }
-                this.loader.hide()
-            })
+            jsonObect = {
+              email: this.state.email,
+              password: this.state.password
+            }
 
-            if (err == false) {
-                this.loader.show()
-                if (this.state.checked == true) {
-                    
-                    firebase.firestore().collection("Users").where("email", "==", this.state.email).where("userType", "==", "client").get().then(resp => {
-                        this.loader.hide()
-                        console.log("res", resp.docs[0]._document.proto.fields);
-                        resp.forEach(function(data){
-                            user = data.data()   
-                        })
-                        
-                        if (resp.size == 1) {
-                            this.saveLogin(user)
-                            Toast.show("Logged In", Toast.SHORT)
-                            this.props.navigation.replace('clientTab')
-                        }
-                        else if (resp.size == 0) {
-
-                            Toast.show("No Such Client")
-                            return
-                        }
-                    })
-                } else if (this.state.checked == false) {
-                    firebase.firestore().collection("Users").where("email", "==", this.state.email).where("userType", "==", "technician").get().then(resp => {
-                        this.loader.hide()
-                        console.log("res", resp.docs[0]);
-                        if (resp.size == 1) {
-                            this.saveLogin(user)
-                            Toast.show("Logged In", Toast.SHORT)
-                            this.props.navigation.replace('technicianTab')
-                        }
-                        else if (resp.size == 0) {
-                            Toast.show("No Such Technician")
-                            return
-                        }
-                    })
+            let err = validate(jsonObect, LoginConstraints, {format: 'flat'});
+            if (err) {
+                // this.loader.hide();
+                Alert.alert('Error!', err.join('\n'), [ {text: 'OK', onPress: () => {}} ] );
+            } else {
+                this.loader.show();
+                // let url = await uploadImage(this.state.avatarSource.uri)
+                    // .then(url => this.setState({ image: url }))
+                    // .catch(error => console.log(error))
+                // jsonObect['photo'] = url;
+                let success = await signIn(jsonObect.email, jsonObect.password, 'client');
+                if (success != false && this.state.checked) {
+                    this.saveLogin(success);
+                    Toast.show("Logged In", Toast.SHORT);
+                    this.props.navigation.replace('clientTab');
+                } else if (success != false && !this.state.checked) {
+                    this.saveLogin(success);
+                    Toast.show("Logged In", Toast.SHORT);
+                    this.props.navigation.replace('technicianTab');
                 }
-                else {
-                    this.loader.hide()
-                    Toast.show("Invalid Credentials Provided")
-                }
-            }else{
-                this.loader.hide()
-                Toast.show(errMsg)
             }
         } catch (e) {
             console.log(e);
-            this.loader.hide()
             Alert.alert('Failure', 'Failed to sign in. Please try again.', [{ text: 'OK', onPress: () => { } }]);
         } finally {
-
+            this.loader.hide();
         }
+    }
+
+    resetPassword(email) {
+        sendPasswordReset(email).then(() => {
+            this._toggleModalForgetPassword();
+        });
     }
 
     render() {
@@ -299,7 +262,7 @@ class Login extends Component {
                                     </View>
                                     <View style={{ flex: 1, backgroundColor: 'transparent', justifyContent: 'center', alignItems: 'center' }}>
                                         <TextInput
-                                            onChangeText={(value) => this.setState({ email: value })}
+                                            onChangeText={(value) => this.setState({ reset_email: value })}
                                             placeholder='Email Address'
                                             placeholderTextColor='gray'
                                             keyboardType={'email-address'}
@@ -308,7 +271,7 @@ class Login extends Component {
                                         />
                                     </View>
                                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'transparent' }}>
-                                        <TouchableOpacity style={[styles.button, { height: height(6), width: width(40) }]}>
+                                        <TouchableOpacity style={[styles.button, { height: height(6), width: width(40) }]} onPress={() => { this.resetPassword(this.state.reset_email); }}>
                                             <Text style={{ fontSize: totalSize(2), color: 'white' }}>Send</Text>
                                         </TouchableOpacity>
                                     </View>
@@ -318,7 +281,7 @@ class Login extends Component {
                 </Modal>
 
                 <Modal
-                    isVisible={this.state.IsModalVisibleSelectSignUp} // Forget Password
+                    isVisible={this.state.IsModalVisibleSelectSignUp} // Sign Up
                     animationIn='slideInUp'
                     animationOut='slideOutDown'
                     backdropColor='black'

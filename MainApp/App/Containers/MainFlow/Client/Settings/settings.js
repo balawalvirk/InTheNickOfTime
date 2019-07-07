@@ -9,21 +9,22 @@ import { height, width, totalSize } from 'react-native-dimension';
 //import store from '../Stores/orderStore'
 import Modal from 'react-native-modal'
 import colors from '../../../../Themes/Colors';
+import { signOut } from './../../../../backend/firebase/auth_new';
+
 class Settings extends Component {
   constructor(props) {
     super(props);
     this.state = {
       isModalVisibleLogout: false
-
     };
   }
   _toggleModalLogout = () =>
     this.setState({ isModalVisibleLogout: !this.state.isModalVisibleLogout });
 
-  logOut=()=> {
+  logOut=async()=> {
+    await signOut();
     AsyncStorage.clear()
     this._toggleModalLogout()
-
     this.props.navigation.push('login')
   }
 
