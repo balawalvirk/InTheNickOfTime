@@ -266,7 +266,7 @@ class Login extends Component {
                                             placeholder='Email Address'
                                             placeholderTextColor='gray'
                                             keyboardType={'email-address'}
-                                            value={this.state.email}
+                                            value={this.state.reset_email}
                                             style={{ width: width(85), height: height(7), marginVertical: height(1), elevation: 5, borderRadius: 5, paddingLeft: width(4), backgroundColor: 'white', fontSize: totalSize(2) }}
                                         />
                                     </View>

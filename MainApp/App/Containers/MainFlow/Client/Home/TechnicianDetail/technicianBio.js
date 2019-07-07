@@ -15,9 +15,11 @@ export default class TechnicianBio extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            aboutMe: 'As an Aveda graduate, Samaria’s background is as eclectic as is her personal style! She prides herself in being able to work with all different textures and ethnicities, all the while keeping her main goal for all clients in the forefront… #teamHEALTHYHAIR! While the hair coloring process is her passion, Samaria loves working and educating our curly girls on healthy maintenance, as well as men in clipper cutting. Working her way down from the crown, Samaria has an eye for brows and sixth sense for your makeup needs'
+            aboutMe: this.props.navigation.getParam('technician', '').description
         };
     }
+
+
 
     render() {
         return (

@@ -409,3 +409,33 @@ export async function downloadImage(folder, imageName) {
   let url = await pathRef.getDownloadURL()
   return url;
 }
+
+
+export async function getUserBookings(collection) {
+  let data = [];
+  user = await AsyncStorage.getItem('user')
+  user = JSON.parse(user)
+  console.log('====================================');
+  console.log("UTIL", user);
+  console.log('====================================');
+
+  let querySnapshot = await firebase.firestore().collection(collection).where("userId", "==", user.UserId).get()
+  //console.log(res);
+
+  // res.forEach((arr) => {
+  //   data.push({ id: arr.id, ...arr.data() });
+  // })
+  // return data
+
+  console.log("QSS" + querySnapshot);
+
+  querySnapshot.forEach(function (doc) {
+    if (doc.exists) {
+      //console.log(doc.data());
+      data.push({ id: doc.id, ...doc.data() });
+    } else {
+      console.log('No document found!');
+    }
+  });
+  return data;
+}

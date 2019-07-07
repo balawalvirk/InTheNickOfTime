@@ -15,13 +15,14 @@ export class TechnicianRatings extends Component {
             isModalVisible: false,
             starCount: 0,
             comment: '',
-            TechnicianRatings: [
-                { id: 1, name: 'Max Tim', comment: 'He is very good in convieing this moral of lecture. He is very good in convieing this moral of lecture', date: '25-08-2018', rating: 4 },
-                { id: 2, name: 'Leo Lenardo', comment: 'He is very good in convieing this moral of lecture', date: '25-08-2018', rating: 2 },
-                { id: 3, name: 'Arnold Tim', comment: 'He is very good in convieing this moral of lecture. He is very good in convieing this moral of lecture. He is very good in convieing this moral of lecture', date: '25-08-2018', rating: 3 },
-                { id: 4, name: 'Jacob Black', comment: 'He is very good in convieing this moral of lecture', date: '25-08-2018', rating: 5 },
-                { id: 5, name: 'Sam Andrson', comment: 'He is very good in convieing this moral of lecture', date: '25-08-2018', rating: 3 }
-            ],
+            TechnicianRatings: JSON.parse(this.props.navigation.getParam("technician").ratings)
+            // [
+            //     { id: 1, name: 'Max Tim', comment: 'He is very good in convieing this moral of lecture. He is very good in convieing this moral of lecture', date: '25-08-2018', rating: 4 },
+            // { id: 2, name: 'Leo Lenardo', comment: 'He is very good in convieing this moral of lecture', date: '25-08-2018', rating: 2 },
+            // { id: 3, name: 'Arnold Tim', comment: 'He is very good in convieing this moral of lecture. He is very good in convieing this moral of lecture. He is very good in convieing this moral of lecture', date: '25-08-2018', rating: 3 },
+            // { id: 4, name: 'Jacob Black', comment: 'He is very good in convieing this moral of lecture', date: '25-08-2018', rating: 5 },
+            // { id: 5, name: 'Sam Andrson', comment: 'He is very good in convieing this moral of lecture', date: '25-08-2018', rating: 3 }
+            // ]
         };
     }
     _toggleModal = () =>
@@ -34,6 +35,7 @@ export class TechnicianRatings extends Component {
         //console.warn('Rating===>', rating)
     }
     render() {
+
         return (
             <View style={styles.container}>
                 <View style={{ flex: 1, backgroundColor: 'transparent', flexDirection: 'row' }}>

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Picker, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Picker, ActivityIndicator, Alert } from 'react-native';
 import { height, width, totalSize } from 'react-native-dimension'
 import { Icon } from 'react-native-elements'
 //import store from '../../../Stores/orderStore';
@@ -7,6 +7,8 @@ import Toast from 'react-native-simple-toast';
 import colors from '../../../../Themes/Colors';
 import firebase from 'firebase';
 import Loader from '../../../../Components/Loader';
+import SearchTechConstraints from './../../../../Validations/SearchTechConstraints';
+import validate from 'validate.js';
 
 
 //import api from '../../../lib/api'
@@ -14,7 +16,7 @@ class SearchTechnician extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            service: 'Desired Service',
+            service: 'Hair',
             showServicesList: false,
             showCategoryList: false,
             showStates: false,
@@ -27,7 +29,7 @@ class SearchTechnician extends Component {
                 { id: 5, service_name: 'Face Cleaning', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service' },
                 { id: 6, service_name: 'Hair Diy', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service' },
             ],
-            location: 'Enter a Location',
+            location: 'MaryLand',
             locations: [
                 { id: 1, location: 'Sea site, New york, USA', travel_cost: 20 },
                 { id: 2, location: 'Top Valley, New york, USA', travel_cost: 25 },
@@ -44,16 +46,15 @@ class SearchTechnician extends Component {
                 { id: 1, state_name: 'MaryLand' },
                 { id: 2, state_name: 'Verginia' },
                 { id: 3, state_name: 'Washingtn, DC' },
-                { id: 4, state_name: 'MaryLand' },
-                { id: 5, state_name: 'Verginia' },
-                { id: 6, state_name: 'Washingtn, DC' },
+                { id: 4, state_name: 'MaryLand1' },
+                { id: 5, state_name: 'Verginia1' },
+                { id: 6, state_name: 'Washingtn, DC1' },
             ]
         };
     }
 
     static navigationOptions = {
         title: 'Search',
-
     }
 
     compare = (arr1, arr2) => {
@@ -78,36 +79,53 @@ class SearchTechnician extends Component {
     }
 
     searchTechnicians = async () => {
-        this.loader.show()
-        let matchedLocations = []
-        let matchedServices = []
-        await firebase.firestore().collection("Technician").where("services", "array-contains", this.state.service).get().then(resp => {
-            console.log("resp", resp);
-
-            if (resp.empty == false) {
-                resp.forEach(function (data) {
-                    user = data.data()
-                    matchedServices.push(data.data())
-                })
+        try {
+            
+            jsonObject = {
+              service: this.state.service,
+              location: this.state.location,
             }
 
-        })
-
-        await firebase.firestore().collection("Technician").where("travel_locations", "array-contains", this.state.location).get().then(resp => {
-            console.log("loc_resp", resp);
-            if (resp.empty == false) {
-                resp.forEach(function (data) {
-                    user = data.data()
-                    matchedLocations.push(data.data())
+            let err = validate(jsonObject, SearchTechConstraints, {format: 'flat'});
+            if (err) {
+                // this.loader.hide();
+                Alert.alert('Error!', err.join('\n'), [ {text: 'OK', onPress: () => {}} ] );
+            } else {
+                this.loader.show();
+                let matchedLocations = []
+                let matchedServices = []
+                await firebase.firestore().collection("Technician").where("services", "array-contains", this.state.service).get().then(resp => {
+                    console.log("resp", resp);
+                    if (resp.empty == false) {
+                        resp.forEach(function (data) {
+                            user = data.data()
+                            matchedServices.push(data.data())
+                        })
+                    }
                 })
+
+                await firebase.firestore().collection("Technician").where("travel_locations", "array-contains", this.state.location).get().then(resp => {
+                    console.log("loc_resp", resp);
+                    if (resp.empty == false) {
+                        resp.forEach(function (data) {
+                            user = data.data()
+                            matchedLocations.push(data.data())
+                        })
+                    }
+                })
+
+                let array = this.compare(matchedLocations, matchedServices)
+                console.log("Sent Array", array);
+                // this.loader.hide()
+                this.props.navigation.navigate('techniciansList', { data: array })
             }
 
-        })
-
-        let array = this.compare(matchedLocations, matchedServices)
-        console.log("Sent Array", array);
-        this.loader.hide()
-        this.props.navigation.navigate('techniciansList', { data: array })
+        } catch (e) {
+            console.log(e);
+            Alert.alert('Failure', 'Something went wrong. Please try again.', [{ text: 'OK', onPress: () => { } }]);
+        } finally {
+            this.loader.hide();
+        }
     }
 
 
@@ -128,8 +146,10 @@ class SearchTechnician extends Component {
                                 <Icon name='search' color={colors.SPA_graycolor} size={totalSize(4)} />
                                 <TextInput
                                     //onChangeText={(value) => this.getSchool_predictions(value)}
-                                    placeholder={this.state.service}
+                                    onChangeText={async(text) => await this.setState({service: text})}
+                                    placeholder={'Enter Service'}
                                     placeholderTextColor='rgb(217,217,217)'
+                                    value={this.state.service}
                                     //placeholderTextColor='gray'
                                     underlineColorAndroid='transparent'
                                     style={styles.TxtInput}
@@ -206,7 +226,9 @@ class SearchTechnician extends Component {
                                     <TextInput
                                         //onFocus={() => this.getProfessors_predictions()}
                                         //onChangeText={(value) => this.getProfessors_predictions()}
-                                        placeholder={this.state.location}
+                                        onChangeText={async(text) => await this.setState({location: text})}
+                                        placeholder={'Enter Location'}
+                                        value={this.state.location}
                                         placeholderTextColor='rgb(217,217,217)'
                                         underlineColorAndroid='transparent'
                                         style={styles.TxtInput}
