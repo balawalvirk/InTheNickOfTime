@@ -30,7 +30,7 @@ class Login extends Component {
         this.state = {
             email: '',//'virk@gmail.com',
             password: '',//'12345',
-            loading: false,
+            loader: false,
             overlayVisible: false,
             checked: true,
             userType: 'user',
@@ -83,12 +83,13 @@ class Login extends Component {
                 // this.loader.hide();
                 Alert.alert('Error!', err.join('\n'), [ {text: 'OK', onPress: () => {}} ] );
             } else {
-                this.loader.show();
+                // this.loader.show();
+                this.setState({loader: true});
                 // let url = await uploadImage(this.state.avatarSource.uri)
                     // .then(url => this.setState({ image: url }))
                     // .catch(error => console.log(error))
                 // jsonObect['photo'] = url;
-                let success = await signIn(jsonObect.email, jsonObect.password, 'client');
+                let success = await signIn(jsonObect.email, jsonObect.password, 'client', this.loader);
                 if (success != false && this.state.checked) {
                     this.saveLogin(success);
                     Toast.show("Logged In", Toast.SHORT);
@@ -97,13 +98,16 @@ class Login extends Component {
                     this.saveLogin(success);
                     Toast.show("Logged In", Toast.SHORT);
                     this.props.navigation.replace('technicianTab');
+                } else {
+                    this.setState({loader: false});
                 }
             }
         } catch (e) {
             console.log(e);
             Alert.alert('Failure', 'Failed to sign in. Please try again.', [{ text: 'OK', onPress: () => { } }]);
         } finally {
-            this.loader.hide();
+            // this.loader.hide();
+            this.setState({loader: false});
         }
     }
 
@@ -112,11 +116,13 @@ class Login extends Component {
             this._toggleModalForgetPassword();
         });
     }
-
+    
+    // <Loader ref={r => this.loader = r} />
     render() {
         return (
             <View style={styles.container}>
-                <Loader ref={r => this.loader = r} />
+                
+                {this.state.loader ? <ActivityIndicator size="large" color="#0000ff" /> : null}
                 <View style={styles.lowerContainer}>
                     <ScrollView showsVerticalScrollIndicator={false}>
                         <View style={{ flex: 1, width: width(95), alignItems: 'center', backgroundColor: 'transparent', marginTop: height(5) }}>

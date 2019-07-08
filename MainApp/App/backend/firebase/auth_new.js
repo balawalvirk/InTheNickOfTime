@@ -8,13 +8,16 @@ import RNFetchBlob from 'react-native-fetch-blob';
 export async function signUp(user_profile) {
 	return new Promise((resolve, reject) => {
 		firebase.auth().createUserWithEmailAndPassword(user_profile.email, user_profile.password).then(async () => {
-			let user = await firebase.auth().currentUser;
+			
+      let user = await firebase.auth().currentUser;
+
 			let profile = {
 			  displayName: user_profile.name,
 			  phoneNumber: user_profile.phoneNumber,
 			  photoURL: user_profile.photo,
 			};
 			user_profile['UserId'] = user.uid;
+
       let image = user_profile.avatarSource;
 
       delete user_profile.avatarSource;
@@ -73,6 +76,7 @@ export async function signUp(user_profile) {
 			}).catch(function(error) {
 			  console.log('user.updateProfile');
 			  console.log(error);
+        Alert.alert('Failure', 'Something went wrong.', [{ text: 'OK', onPress: () => {} }]);
 			  resolve(false);
 			});
 
@@ -80,9 +84,9 @@ export async function signUp(user_profile) {
 			let errorCode = error.code;
 			let errorMessage = error.message;
 			if (errorCode == 'auth/weak-password') {
-			  alert('The password is too weak.');
+        Alert.alert('Failure', 'The password is too weak.', [{ text: 'OK', onPress: () => {} }]);
 			} else {
-			  alert(errorMessage);
+        Alert.alert('Failure', errorMessage, [{ text: 'OK', onPress: () => {} }]);
 			}
 			console.log(error);
 			resolve(false);

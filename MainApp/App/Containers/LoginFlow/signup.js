@@ -56,7 +56,8 @@ class SignUp extends Component {
                 // this.loader.hide();
                 Alert.alert('Error!', err.join('\n'), [ {text: 'OK', onPress: () => {}} ] );
             } else {
-                this.loader.show();
+                // this.loader.show();
+                this.setState({loader: true});
                 // let url = await uploadImage(this.state.avatarSource.uri)
                     // .then(url => this.setState({ image: url }))
                     // .catch(error => console.log(error))
@@ -64,13 +65,16 @@ class SignUp extends Component {
                 let success = await signUp(jsonObect);
                 if (success != false)
                     this.props.navigation.navigate('login')
+                else
+                    this.setState({loader: false});
             }
 
         } catch (e) {
             console.log(e);
             Alert.alert('Failure', 'Failed to sign up. Please try again.', [{ text: 'OK', onPress: () => { } }]);
         } finally {
-            this.loader.hide();
+            // this.loader.hide();
+            this.setState({loader: false});
         }
         
     }
@@ -112,13 +116,11 @@ class SignUp extends Component {
     }
 
 
-
+    // <Loader ref={r => this.loader = r} />
     render() {
         return (
             <View style={styles.container}>
-                <Loader ref={r => this.loader = r} />
-
-
+                {this.state.loader ? <ActivityIndicator size="large" color="#0000ff" /> : null}
                 <ScrollView
                     showsVerticalScrollIndicator={false}>
                     <View style={styles.lowerContainer}>
