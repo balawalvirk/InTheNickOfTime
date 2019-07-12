@@ -14,7 +14,7 @@ import validate from 'validate.js';
 import firebase from 'firebase';
 
 
-class SignUp extends Component { 
+class SignUp extends Component {
 
     constructor(props) {
         super(props);
@@ -38,35 +38,35 @@ class SignUp extends Component {
     async register() {
 
         try {
-            
+
             jsonObect = {
-              name: this.state.name,
-              email: this.state.email,
-              password: this.state.password,
-              confirmPassword: this.state.confirm_password,
-              location: null,
-              photo: null,
-              phoneNumber: null,
-              userType: 'client',
-              avatarSource: this.state.avatarSource,
+                name: this.state.name,
+                email: this.state.email,
+                password: this.state.password,
+                confirmPassword: this.state.confirm_password,
+                location: null,
+                photo: null,
+                phoneNumber: null,
+                userType: 'client',
+                avatarSource: this.state.avatarSource,
             }
 
-            let err = validate(jsonObect, SignUpConstraints, {format: 'flat'});
+            let err = validate(jsonObect, SignUpConstraints, { format: 'flat' });
             if (err) {
                 // this.loader.hide();
-                Alert.alert('Error!', err.join('\n'), [ {text: 'OK', onPress: () => {}} ] );
+                Alert.alert('Error!', err.join('\n'), [{ text: 'OK', onPress: () => { } }]);
             } else {
                 // this.loader.show();
-                this.setState({loader: true});
+                this.setState({ loader: true });
                 // let url = await uploadImage(this.state.avatarSource.uri)
-                    // .then(url => this.setState({ image: url }))
-                    // .catch(error => console.log(error))
+                // .then(url => this.setState({ image: url }))
+                // .catch(error => console.log(error))
                 // jsonObect['photo'] = url;
                 let success = await signUp(jsonObect);
                 if (success != false)
                     this.props.navigation.navigate('login')
                 else
-                    this.setState({loader: false});
+                    this.setState({ loader: false });
             }
 
         } catch (e) {
@@ -74,9 +74,9 @@ class SignUp extends Component {
             Alert.alert('Failure', 'Failed to sign up. Please try again.', [{ text: 'OK', onPress: () => { } }]);
         } finally {
             // this.loader.hide();
-            this.setState({loader: false});
+            this.setState({ loader: false });
         }
-        
+
     }
 
     image_picker = () => {
@@ -105,7 +105,7 @@ class SignUp extends Component {
                 //const avatar = { uri: response.uri, type: response.type, name: response.fileName }
                 //this.state.Images.push(image);
                 //this.state.simpleImages.push(avatar);
-                
+
                 await this.setState({
                     camera: true,
                     avatarSource: { uri: response.uri, type: response.type, name: response.fileName },

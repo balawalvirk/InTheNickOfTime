@@ -170,6 +170,7 @@ export default StyleSheet.create({
     commentInput: {
         height: height(30),
         width: width(75),
+        textAlignVertical: "top"
         //borderWidth: 0.5,
         //backgroundColor:'blue',
         //paddingBottom: height(25)

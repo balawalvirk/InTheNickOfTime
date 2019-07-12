@@ -3,7 +3,7 @@ import firestore from 'firebase/firestore';
 import { _storeData } from '../../backend/AsyncFuncs';
 import GlobalConst from '../../config/GlobalConst';
 import RNFetchBlob from 'react-native-fetch-blob';
-import { Platform } from 'react-native';
+import { Platform, AsyncStorage } from 'react-native';
 import uuid from 'uuid';
 
 
@@ -38,7 +38,7 @@ export async function getAllOfCollection(collection) {
   let data = [];
   let querySnapshot = await firebase.firestore().collection(collection).get();
   //console.log(res);
- 
+
   // res.forEach((arr) => {
   //   data.push({ id: arr.id, ...arr.data() });
   // })
@@ -131,14 +131,14 @@ export async function saveData(collection, doc, jsonObject) {
 export async function insertDocument(collection, jsonObject) {
   return new Promise((resolve, reject) => {
     firebase.firestore().collection(collection).add(jsonObject)
-    .then(function(docRef) {
+      .then(function (docRef) {
         console.log("Document written with ID: ", docRef.id);
         resolve(docRef.id);
-    })
-    .catch(function(error) {
+      })
+      .catch(function (error) {
         console.error("Error adding document: ", error);
         reject(error);
-    });
+      });
   });
 }
 
@@ -188,10 +188,10 @@ export async function getDocuments(collection, where) {
     let docRef = firebase.firestore().collection(collection).where(where.key, '==', where.value);
     docRef.get().then(function (querySnapshot) {
       let data = [];
-      querySnapshot.forEach(function(doc) {
+      querySnapshot.forEach(function (doc) {
         // doc.data() is never undefined for query doc snapshots
         console.log(doc.id, " => ", doc.data());
-        data.push({id: doc.id, ...doc.data()});
+        data.push({ id: doc.id, ...doc.data() });
       });
 
       resolve(data);

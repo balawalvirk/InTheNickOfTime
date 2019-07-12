@@ -52,7 +52,11 @@ class TechniciansList extends Component {
                                             technician: items
                                         })}>
                                             <View style={styles.shopImageContainer}>
-                                                <Image source={images.profilePic} style={styles.shopImage} />
+
+                                                <Image source={items.photo
+                                                    ? { uri: items.photo }
+                                                    : images.profilePic} style={styles.shopImage} />
+
                                             </View>
                                             <View style={styles.shopTxtContainer}>
                                                 <Text style={styles.shopName}>{items.firstName}</Text>

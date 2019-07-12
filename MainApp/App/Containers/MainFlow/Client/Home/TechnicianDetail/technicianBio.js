@@ -14,8 +14,13 @@ import styles from '../../../../Styles/technicianDetailStyles'
 export default class TechnicianBio extends Component {
     constructor(props) {
         super(props);
+        console.log("TECHNICIAN CHECK", this.props.navigation.getParam('technician', ''));
+
         this.state = {
-            aboutMe: this.props.navigation.getParam('technician', '').description
+            name: this.props.navigation.getParam('technician', '').firstName,
+            aboutMe: this.props.navigation.getParam('technician', '').description,
+            timings: this.props.navigation.getParam('technician', '').weekly_availability + " " + this.props.navigation.getParam('technician', '').daily_availability,
+            photo: this.props.navigation.getParam('technician', '').photo
         };
     }
 
@@ -26,13 +31,15 @@ export default class TechnicianBio extends Component {
             <View style={styles.container}>
                 <View style={{ flex: 2, backgroundColor: 'transparent', flexDirection: 'row' }}>
                     <View style={{ flex: 2, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center' }}>
-                        <Image source={images.profilePic} style={styles.profilePic} />
+                        <Image source={this.state.photo
+                            ? { uri: this.state.photo }
+                            : images.profilePic} style={styles.shopImage} style={styles.profilePic} />
                     </View>
                     <View style={{ flex: 3, backgroundColor: 'transparent', justifyContent: 'center', alignItems: 'flex-start' }}>
-                        <Text style={styles.txtLarg}> Alina Shaw </Text>
+                        <Text style={styles.txtLarg}> {this.state.name} </Text>
                         <View style={{ flexDirection: 'row' }}>
                             <Icon name='calendar-clock' color='gray' size={totalSize(2)} type='material-community' />
-                            <Text style={styles.txtSmall}>  Availability : Mon-Sun 8AM-4PM</Text>
+                            <Text style={styles.txtSmall}>  Availability : {this.state.timings}</Text>
                         </View>
                     </View>
                 </View>

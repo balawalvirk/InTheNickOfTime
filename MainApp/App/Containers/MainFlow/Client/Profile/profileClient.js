@@ -5,7 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  AsyncStorage } from 'react-native';
+  AsyncStorage
+} from 'react-native';
 import { height, width, totalSize } from 'react-native-dimension'
 import { Icon } from 'react-native-elements'
 import colors from '../../../../Themes/Colors';
@@ -35,7 +36,7 @@ class ProfileClient extends Component {
         console.log(user);
         let img = null;
         if (user.photo != null) {
-          img = {uri: user.photo}
+          img = { uri: user.photo }
         } else {
           img = images.profilePic
         }

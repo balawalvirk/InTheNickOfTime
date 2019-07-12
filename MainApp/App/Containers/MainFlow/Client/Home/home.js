@@ -64,7 +64,7 @@ class Home extends Component {
                         </TouchableOpacity>
                     </View>
                 </ImageBackground>
-                
+
             </ImageBackground>
         );
     }

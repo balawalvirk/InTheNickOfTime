@@ -22,20 +22,21 @@ const formatData = (data, numColumns) => {
 
     return data;
 };
-class  TechnicianPortfolio extends Component {
+class TechnicianPortfolio extends Component {
     constructor(props) {
         super(props);
+        let url = "https://firebasestorage.googleapis.com/v0/b/inthenameoftimespa-f27fa.appspot.com/o/assets%2Fgh6mjc6vdJ5AQOnjMw3P-97351638.png?alt=media&token=26b70620-4833-4044-b105-5e8de3128861"
         this.state = {
             images_list: [
-                { id: 1, image: images.HomeBG },
-                { id: 2, image: images.HomeBG },
-                { id: 3, image: images.HomeBG },
-                { id: 4, image: images.HomeBG },
-                { id: 5, image: images.HomeBG },
-                { id: 6, image: images.HomeBG },
-                { id: 7, image: images.HomeBG },
-                { id: 8, image: images.HomeBG },
-                { id: 9, image: images.HomeBG },
+                { id: 1, image: url },
+                { id: 2, image: url },
+                { id: 3, image: url },
+                { id: 4, image: url },
+                { id: 5, image: url },
+                { id: 6, image: url },
+                { id: 7, image: url },
+                { id: 8, image: url },
+                { id: 9, image: url },
             ]
         };
 
@@ -47,7 +48,7 @@ class  TechnicianPortfolio extends Component {
         }
         return (
             <TouchableOpacity style={styles.itemContainer}>
-                <Image source={item.image} style={styles.itemImage} />
+                <Image source={{ uri: item.image }} style={styles.itemImage} />
             </TouchableOpacity>
         )
     }

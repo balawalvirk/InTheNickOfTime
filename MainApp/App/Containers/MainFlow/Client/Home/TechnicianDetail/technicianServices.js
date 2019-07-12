@@ -10,6 +10,7 @@ import Modal from 'react-native-modal'
 //import DateTimePicker from "react-native-modal-datetime-picker"
 import DateTimePicker from 'react-native-datepicker'
 import styles from '../../../../Styles/technicianDetailStyles'
+import SimpleToast from 'react-native-simple-toast';
 export default class TechnicianServices extends Component {
     constructor(props) {
         super(props);
@@ -24,7 +25,7 @@ export default class TechnicianServices extends Component {
             //     { id: 5, service_name: 'Face Cleaning', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service' },
             //     { id: 6, service_name: 'Hair Diy', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service' },
             // ],
-            location: '',
+            location: null,
             travel_locations: JSON.parse(this.props.navigation.getParam('location_details', '')),
             // [
             //     { id: 1, location: 'Sea site, New york, USA', travel_cost: 20 },
@@ -32,7 +33,7 @@ export default class TechnicianServices extends Component {
             //     { id: 3, location: 'Down Town, New york, USA', travel_cost: 45 },
             //     { id: 4, location: 'Sea site, New york, USA', travel_cost: 30 }
             // ],
-            technician:this.props.navigation.getParam('technician',''),
+            technician: this.props.navigation.getParam('technician', ''),
             travel_cost: 0,
             showServicesList: false,
             loadingSelectedService: false,
@@ -40,21 +41,28 @@ export default class TechnicianServices extends Component {
             loadingUnSelectedServices: false,
             servicesTotalCost: 0,
             totalCost: 0,
-            date_time: '',
+            date_time: null,
             isDateTimePickerVisible: false,
-            isModalVisibleMessage: false
+            isModalVisibleMessage: false,
+            comment: null
         };
     }
     goToPayment = () => {
+        console.log(this.state.servicesTotalCost, " -- ", this.state.locations, " -- ", this.state.date_time);
+
+
         this._toggelModalMessage()
-        this.props.navigation.navigate('payment',{
-            services:this.state.selected_Services,
+        this.props.navigation.navigate('payment', {
+            services: this.state.selected_Services,
             location: this.state.travel_locations,
             travel_cost: this.state.travel_cost,
             date_time: this.state.date_time,
             services_cost: this.state.servicesTotalCost,
-            technician: this.state.technician
+            technician: this.state.technician,
+            comments: this.state.comment
         })
+
+
     }
     _toggleShowServicesList = () => {
         this.setState({ showServicesList: !this.state.showServicesList })
@@ -236,7 +244,18 @@ export default class TechnicianServices extends Component {
 
                             <View style={styles.btnContainer}>
 
-                                <TouchableOpacity onPress={() => this._toggelModalMessage()} style={[styles.schoolInputContainer, { backgroundColor: colors.SPA_redColor, marginVertical: height(5) }]} >
+                                <TouchableOpacity onPress={() => {
+                                    console.log(this.state.locations);
+
+                                    if (this.state.servicesTotalCost == 0 || this.state.travel_cost == null || this.state.date_time == null) {
+                                        SimpleToast.show("Some fields are empty", SimpleToast.SHORT)
+                                        console.log("in if");
+
+                                        return
+                                    }
+                                    console.log("all ok");
+                                    this._toggelModalMessage()
+                                }} style={[styles.schoolInputContainer, { backgroundColor: colors.SPA_redColor, marginVertical: height(5) }]} >
                                     <View style={styles.btnTxtContainer}>
                                         {
                                             this.state.loading_getProfessors_by_departmet === true ?

@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import images from '../../../../Themes/Images';
 import { width, height, totalSize } from 'react-native-dimension'
 import { Icon } from 'react-native-elements'
 import colors from '../../../../Themes/Colors';
-import { getAllOfCollection } from '../../../../backend/firebase/utility'
+import { getUserBookings } from '../../../../backend/firebase/utility'
 import Loader from '../../../../Components/Loader';
 class MyBookings extends Component {
   constructor(props) {
@@ -25,7 +25,7 @@ class MyBookings extends Component {
 
   async componentDidMount() {
     this.loader.show()
-    bookings = await getAllOfCollection('Bookings')
+    bookings = await getUserBookings('Bookings')
     this.setState({ Booking_list: bookings })
     this.loader.hide()
 
