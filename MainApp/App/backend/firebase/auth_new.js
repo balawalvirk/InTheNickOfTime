@@ -51,6 +51,7 @@ export async function signUp(user_profile) {
           services: [""],
           travel_locations: [""], 
           imageUrl: user_profile.photo,
+          photo: user_profile.photo,
           location: user_profile.location
         };
         // actions = [

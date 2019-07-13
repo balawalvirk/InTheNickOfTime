@@ -4,37 +4,43 @@ import { saveData } from './utility';
 import { Alert } from 'react-native'
 
 
-export async function signUp(email, password, firstName, lastName, phoneNum, userType = 'client',location) {
+export async function signUp(email, password, firstName, lastName, phoneNum, userType = 'client', location) {
   await firebase.auth().createUserWithEmailAndPassword(email, password).
     then(function (user) {
-      console.log("Here",userType);
-      
-      if(userType == "client"){
+      console.log("Here", userType);
+
+      if (userType == "client") {
         saveData('Users', user.user.uid, {
-          UserId: user.user.uid, 
+          UserId: user.user.uid,
           firstName: firstName,
-          lastName: lastName, 
-          phoneNum: phoneNum, 
-          email: email, 
+          lastName: lastName,
+          phoneNum: phoneNum,
+          email: email,
           imageUrl: ''
         });
       }
-      else if (userType == "technician"){
+      else if (userType == "technician") {
         saveData('Technician', user.user.uid, {
-          UserId: user.user.uid, 
+          UserId: user.user.uid,
           firstName: firstName,
-          lastName: lastName, 
-          phoneNum: phoneNum, 
+          lastName: lastName,
+          phoneNum: phoneNum,
           email: email,
-          daily_availibility: "",
-          weekly_availibilty: "",
-          services: [""],
-          travel_locations: [""], 
-          imageUrl: '',
-          location: location
+          daily_availibility: "4 PM - 8 PM",
+          weekly_availibilty: "Mon - Fri",
+          services: ["Hair"],
+          travel_locations:["MaryLand"],
+          imageUrl: null,
+          location: location,
+          description: "This is Demo Description from firebase",
+          location_details: '[{"id":1,"location":"Sea site, New york, USA","travel_cost":20}]',
+          ratings: '[{"name":"user 1","rating":5,"date":"7/8/2019","comment":"this is some demo comment"},{"name":"user 2","rating":4,"date":"7/8/2019","comment":"this is some demo comment 2"}]',
+          service_details: '[{"id":1,"service_name":"Test 1","service_code":"025012","service_duration":"30","service_price":50,"description":"Test Description"}]',
+          photo: null
+
         });
       }
-      
+
 
 
     }).catch(function (error) {

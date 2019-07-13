@@ -17,6 +17,7 @@ import SearchTechnician from '../Containers/MainFlow/Client/Home/searchTechnicia
 import TechniciansList from '../Containers/MainFlow/Client/Home/technicianList';
 import TechnicianDetailTab from '../Containers/ApplicationTabs/TechnicianDetailTopTab';
 import Payment from '../Containers/MainFlow/Client/Home/TechnicianDetail/payment';
+import WebViewOpensLink from './../Containers/MainFlow/Client/Settings/WebViewOpensLink';
 
 const AppNavigator = createStackNavigator({
     splash: {
@@ -75,6 +76,9 @@ const AppNavigator = createStackNavigator({
     },
     payment: {
         screen: Payment
+    },
+    WebViewOpensLink: {
+        screen: WebViewOpensLink
     }
 
 },

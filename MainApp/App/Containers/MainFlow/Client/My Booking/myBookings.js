@@ -51,10 +51,16 @@ class MyBookings extends Component {
                   </View>
                   :
                   this.state.Booking_list.map((items, key) => {
+                    let img = null;
+                    if (items.photo != null) {
+                      img = { uri: items.photo }
+                    } else {
+                      img = images.profilePic
+                    }
                     return (
                       <View key={key} style={styles.shopContainer}>
                         <View style={styles.shopImageContainer}>
-                          <Image source={images.profilePic} style={styles.shopImage} />
+                          <Image source={img} style={styles.shopImage} />
                         </View>
                         <View style={styles.shopTxtContainer}>
                           <Text style={styles.shopName}>{items.technicianName}</Text>

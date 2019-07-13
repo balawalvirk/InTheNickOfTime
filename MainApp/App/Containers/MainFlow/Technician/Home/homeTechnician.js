@@ -19,6 +19,29 @@ export default class HomeTechnician extends Component {
         };
     }
 
+    loadUser = () => {
+        AsyncStorage.getItem('user', (error, data) => {
+          if (data) {
+            user = JSON.parse(data)
+            console.log(user);
+            let img = null;
+            if (user.photo != null) {
+              img = { uri: user.photo }
+            } else {
+              img = images.profilePic
+            }
+            this.setState({
+              name: user.name,
+              email: user.email,
+              photo: img
+            })
+          }
+        })
+      }
+    
+      componentDidMount() {
+        this.loadUser()
+      }
 
     render() {
         return (

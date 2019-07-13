@@ -19,7 +19,6 @@ class Payment extends Component {
             loader: false,
             instruction: 'After submitting your request, wait for an app and email notification of the technicians confirmation of your appointment. Your card will be charged only if/when the technician accepts your request. If the technician declines your request, your credit will not be charged. In this case you may want to try another date, time, or technician. View the status of your request on the booking tab at the bottom of the app. By booking, via website, phone or mobile application and submitting payment you acknowledge that you have reviewed and agreed to all In The Nick of Time Inc. terms, condintions and polices. Do not book service if you are unwilling or unable to be bound by the terms',
             amount: this.props.navigation.getParam('services_cost', 0) + this.props.navigation.getParam('travel_cost', 0),
-            
         };
     }
 
@@ -73,7 +72,7 @@ class Payment extends Component {
                 await createData("Bookings", Booking);
                 this.setState({loader: false});
                 console.log("Normal Booking", Booking);
-                Alert.alert('Success', 'You have checked out successfully.', [{ text: 'OK', onPress: () => { } }]);
+                Alert.alert('Success', 'You have checked out successfully.', [{ text: 'OK', onPress: () => { this.props.navigation.navigate('clientTab'); } }], { cancelable: false});
             });
 
         } catch (e) {
