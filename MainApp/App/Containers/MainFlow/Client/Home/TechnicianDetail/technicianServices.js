@@ -286,8 +286,10 @@ export default class TechnicianServices extends Component {
 
                         <View style={[styles.modalBody, { borderRadius: 5 }]}>
                             <View style={[styles.txtContainer, { backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', marginTop: height(5) }]}>
-                                <Text style={[styles.txtLarg, { fontSize: totalSize(1.8) }]}>If there anything else your technician / therapist</Text>
+                                <Text style={[styles.txtLarg, { fontSize: totalSize(1.8) }]}>If there is anything else your technician</Text>
                                 <Text style={[styles.txtLarg, { fontSize: totalSize(1.8) }]}>should know?</Text>
+                                <Text style={[styles.txtLarg, { fontSize: totalSize(1.8) }]}>There are no refunds for services that are unable to</Text>
+                                <Text style={[styles.txtLarg, { fontSize: totalSize(1.8) }]}>be provided due to lack of disclosure from client.</Text>
                             </View>
                             <View style={[styles.txtContainer, { backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', }]}>
                                 <Text style={[styles.txtSmall, { fontSize: totalSize(1.5), color: 'gray' }]}>Please list ALL information that we not be able</Text>

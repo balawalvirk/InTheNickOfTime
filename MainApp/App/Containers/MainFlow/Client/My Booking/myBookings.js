@@ -6,6 +6,7 @@ import { Icon } from 'react-native-elements'
 import colors from '../../../../Themes/Colors';
 import { getUserBookings } from '../../../../backend/firebase/utility'
 import Loader from '../../../../Components/Loader';
+import firebase from 'firebase'
 class MyBookings extends Component {
   constructor(props) {
     super(props);
@@ -23,9 +24,26 @@ class MyBookings extends Component {
     };
   }
 
+  getNames = async () => {
+    arr = await getUserBookings('Bookings')
+    for (i = 0; i < arr.length; i++) {
+      console.log("arr", arr[i].technicianId);
+      let qSnapshot = await firebase.firestore().collection('Technician').where('UserId', '==', arr[i].technicianId).get()
+      qSnapshot.forEach((doc) => {
+        if (doc.exists) {
+          console.log("Doc", doc.data());
+          arr[i].technicianName = doc.data().firstName
+          arr[i].photo = doc.data().photo
+        }
+      })
+    }
+    return arr
+  }
+
   async componentDidMount() {
     this.loader.show()
-    bookings = await getUserBookings('Bookings')
+    bookings = await this.getNames()
+    //bookings = await getUserBookings('Bookings')
     this.setState({ Booking_list: bookings })
     this.loader.hide()
 

@@ -1,10 +1,9 @@
 let SignUpConstraints = {
-  name: {
+  first_name: {
     presence: true,
-    length: {
-      minimum: 6,
-      message: "must be at least 6 characters"
-    }
+  },
+  last_name: {
+    presence: true,
   },
   email: {
     presence: {allowEmpty: false},

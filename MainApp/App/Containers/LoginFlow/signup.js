@@ -20,6 +20,8 @@ class SignUp extends Component {
         super(props);
         this.state = {
             isModalVisible: false,
+            first_name: '',
+            last_name: '',
             name: '',
             email: '',
             password: '',
@@ -40,13 +42,13 @@ class SignUp extends Component {
         try {
 
             jsonObect = {
-                name: this.state.name,
+                name: this.state.first_name + ' ' + this.state.last_name,
                 email: this.state.email,
                 password: this.state.password,
                 confirmPassword: this.state.confirm_password,
                 location: null,
                 photo: null,
-                phoneNumber: null,
+                phoneNumber: this.state.phoneNumber || null,
                 userType: 'client',
                 avatarSource: this.state.avatarSource,
             }
@@ -138,8 +140,18 @@ class SignUp extends Component {
                             <View style={styles.InputContainer}>
                                 <Icon name='person' color='rgb(66,67,69)' size={totalSize(3)} />
                                 <TextInput
-                                    onChangeText={(value) => this.setState({ name: value })}
-                                    placeholder='Full Name'
+                                    onChangeText={(value) => this.setState({ first_name: value })}
+                                    placeholder='First Name'
+                                    placeholderTextColor='rgb(217,217,217)'
+                                    underlineColorAndroid='transparent'
+                                    style={styles.TxtInput}
+                                />
+                            </View>
+                            <View style={styles.InputContainer}>
+                                <Icon name='person' color='rgb(66,67,69)' size={totalSize(3)} />
+                                <TextInput
+                                    onChangeText={(value) => this.setState({ last_name: value })}
+                                    placeholder='Last Name'
                                     placeholderTextColor='rgb(217,217,217)'
                                     underlineColorAndroid='transparent'
                                     style={styles.TxtInput}
@@ -182,6 +194,16 @@ class SignUp extends Component {
                                 <TouchableOpacity>
                                     <Icon name='eye' color='rgb(217,217,217)' size={totalSize(2)} type='font-awesome' />
                                 </TouchableOpacity>
+                            </View>
+                            <View style={styles.InputContainer}>
+                                <Icon name='phone' color='rgb(66,67,69)' size={totalSize(3)} />
+                                <TextInput
+                                    onChangeText={(value) => this.setState({ phoneNumber: value })}
+                                    placeholder='Phone Number'
+                                    placeholderTextColor='rgb(217,217,217)'
+                                    underlineColorAndroid='transparent'
+                                    style={styles.TxtInput}
+                                />
                             </View>
                             <View style={[styles.txtContainer, { flexDirection: 'row', width: width(80), height: height(8), justifyContent: 'flex-start', backgroundColor: 'transparent', marginVertical: 0 }]}>
                                 <TouchableOpacity style={[styles.buttonSmall, { backgroundColor: colors.SPA_redColor }]} onPress={() => this.image_picker()} >

@@ -72,7 +72,8 @@ class Payment extends Component {
                 await createData("Bookings", Booking);
                 this.setState({loader: false});
                 console.log("Normal Booking", Booking);
-                Alert.alert('Success', 'You have checked out successfully.', [{ text: 'OK', onPress: () => { this.props.navigation.navigate('clientTab'); } }], { cancelable: false});
+                let msg = 'Your request has been sent! Please wait while the technician confirms your appointment. You will be notified via app and e-mail. Your card is not charged until the technician confirms your appointment.';
+                Alert.alert('Success', msg, [{ text: 'OK', onPress: () => { this.props.navigation.navigate('clientTab'); } }], { cancelable: false});
             });
 
         } catch (e) {
@@ -185,7 +186,7 @@ class Payment extends Component {
                             this.state.loading === true ?
                                 <ActivityIndicator size='small' color='white' />
                                 :
-                                <Text style={styles.btnTxt}>Pay {this.state.amount}$</Text>
+                                <Text style={styles.btnTxt}>Pay ${this.state.amount}</Text>
                         }
                     </TouchableOpacity>
                 </View>

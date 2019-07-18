@@ -8,6 +8,7 @@ import colors from '../../../../../Themes/Colors';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import Modal from 'react-native-modal'
 import styles from '../../../../Styles/technicianDetailStyles'
+import firebase from 'firebase'
 export class TechnicianRatings extends Component {
     constructor(props) {
         super(props);
@@ -15,7 +16,8 @@ export class TechnicianRatings extends Component {
             isModalVisible: false,
             starCount: 0,
             comment: '',
-            TechnicianRatings: JSON.parse(this.props.navigation.getParam("technician").ratings)
+            TechnicianRatings: [],
+            overallRatings: 0
             // [
             //     { id: 1, name: 'Max Tim', comment: 'He is very good in convieing this moral of lecture. He is very good in convieing this moral of lecture', date: '25-08-2018', rating: 4 },
             // { id: 2, name: 'Leo Lenardo', comment: 'He is very good in convieing this moral of lecture', date: '25-08-2018', rating: 2 },
@@ -24,6 +26,30 @@ export class TechnicianRatings extends Component {
             // { id: 5, name: 'Sam Andrson', comment: 'He is very good in convieing this moral of lecture', date: '25-08-2018', rating: 3 }
             // ]
         };
+    }
+
+    getNameAndPic = async () => {
+        techRatings = JSON.parse(this.props.navigation.getParam("technician").ratings)
+        totalRatings = 0
+        for (i = 0; i < techRatings.length; i++) {
+            totalRatings += techRatings[i].rating
+
+            let qSnapshot = await firebase.firestore().collection('Users').where('UserId', '==', techRatings[i].id).get()
+            qSnapshot.forEach((doc) => {
+                if (doc.exists) {
+                    console.log("Doc", doc.data());
+                    techRatings[i].name = doc.data().name
+                    techRatings[i].photo = doc.data().photo
+                }
+            })
+        }
+        totalRatings = totalRatings / techRatings.length
+        this.setState({ overallRatings: totalRatings })
+        return techRatings
+    }
+    async componentDidMount() {
+        ratings = await this.getNameAndPic()
+        this.setState({ TechnicianRatings: ratings })
     }
     _toggleModal = () =>
         this.setState({ isModalVisible: !this.state.isModalVisible });
@@ -35,13 +61,14 @@ export class TechnicianRatings extends Component {
         //console.warn('Rating===>', rating)
     }
     render() {
+        console.log("tech ratings", this.state.TechnicianRatings);
 
         return (
             <View style={styles.container}>
                 <View style={{ flex: 1, backgroundColor: 'transparent', flexDirection: 'row' }}>
                     <View style={{ flex: 1, backgroundColor: 'transparent', alignItems: 'center', flexDirection: 'row' }}>
                         <Text style={[styles.txtLarg, { fontSize: totalSize(2) }]}>  Overall Rating   </Text>
-                        <Text style={[styles.txtLarg, { fontSize: totalSize(3), color: colors.SPA_redColor }]}>4.5/5</Text>
+                        <Text style={[styles.txtLarg, { fontSize: totalSize(3), color: colors.SPA_redColor }]}>{this.state.overallRatings}</Text>
                     </View>
                     <View style={{ flex: 1, backgroundColor: 'transparent', justifyContent: 'center', alignItems: 'flex-end' }}>
                         {/* <TouchableOpacity onPress={() => this._toggleModal()} style={[styles.button, { borderRadius: 5, backgroundColor: colors.SPA_redColor, marginRight: 10 }]}>
@@ -62,12 +89,21 @@ export class TechnicianRatings extends Component {
                     >
                         {
                             this.state.TechnicianRatings.map((item, key) => {
+                                let img = null;
+                                console.log("phot",item.photo);
+                                
+                                if (item.photo != null) {
+                                    img = { uri: item.photo }
+                                } else {
+                                    img = images.profilePic
+                                }
+                                console.log("photooio",img);
                                 return (
                                     <View key={key} style={styles.detailContainer} >
                                         {/* <View style={styles.iconContainerSmall}>
                                         <Icon name='person' color='rgb(180,210,53)' size={totalSize(4)} />
                                     </View> */}
-                                        <Image source={images.profilePic} style={[styles.profilePicReivew]} />
+                                        <Image source={img} style={[styles.profilePicReivew]} />
                                         <View style={{ alignItems: 'flex-start', justifyContent: 'center', width: width(60), backgroundColor: 'transparent', marginVertical: height(3) }}>
                                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                                 <Text style={[styles.txtLarg, { fontSize: totalSize(2) }]}>{item.name}</Text>

@@ -116,7 +116,7 @@ export async function getDocWithinRange(collection, doc, strSearch) {
 export async function saveData(collection, doc, jsonObject) {
   console.log(jsonObject);
 
-  await firebase.firestore().collection(collection).doc(doc).set(jsonObject, { merge: false }).then(() => {
+  await firebase.firestore().collection(collection).doc(doc).set(jsonObject, { merge: true }).then(() => {
     console.log("Document successfully written!");
   }).catch((error) => {
     console.log("Error", error);
@@ -411,6 +411,8 @@ export async function downloadImage(folder, imageName) {
 }
 
 
+
+
 export async function getUserBookings(collection) {
   let data = [];
   user = await AsyncStorage.getItem('user')
@@ -419,6 +421,19 @@ export async function getUserBookings(collection) {
   console.log("UTIL", user);
   console.log('====================================');
 
+  setNameAndPic = async (dd) => {
+    i = 0
+    for (d of dd) {
+      console.log("DAA", d);
+      let qSnapshot = await firebase.firestore().collection('Technician').where('UserId', '==', d.technicianId).get()
+      qSnapshot.forEach((doc) => {
+        if (doc.exists) {
+          d.technicianName = doc.data().UserId
+        }
+      })
+    }
+  }
+
   let querySnapshot = await firebase.firestore().collection(collection).where("userId", "==", user.UserId).get()
   //console.log(res);
 
@@ -426,16 +441,15 @@ export async function getUserBookings(collection) {
   //   data.push({ id: arr.id, ...arr.data() });
   // })
   // return data
+  console.log("QSS", querySnapshot.docs);
 
-  console.log("QSS" + querySnapshot);
-
-  querySnapshot.forEach(function (doc) {
+  querySnapshot.forEach((doc) => {
     if (doc.exists) {
-      //console.log(doc.data());
       data.push({ id: doc.id, ...doc.data() });
     } else {
       console.log('No document found!');
     }
   });
+  //data = await setNameAndPic(data)
   return data;
 }
