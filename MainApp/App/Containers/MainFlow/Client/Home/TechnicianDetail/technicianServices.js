@@ -44,7 +44,8 @@ export default class TechnicianServices extends Component {
             date_time: null,
             isDateTimePickerVisible: false,
             isModalVisibleMessage: false,
-            comment: null
+            comment: null,
+            address: null
         };
     }
     goToPayment = () => {
@@ -59,7 +60,8 @@ export default class TechnicianServices extends Component {
             date_time: this.state.date_time,
             services_cost: this.state.servicesTotalCost,
             technician: this.state.technician,
-            comments: this.state.comment
+            comments: this.state.comment,
+            address: this.state.address
         })
 
 
@@ -188,6 +190,7 @@ export default class TechnicianServices extends Component {
                                                 underlineColorAndroid='transparent'
                                                 style={styles.TxtInput}
                                             /> */}
+
                                     <Picker
                                         mode='dropdown'
                                         selectedValue={this.state.travel_cost}
@@ -205,6 +208,18 @@ export default class TechnicianServices extends Component {
 
                                         }
                                     </Picker>
+                                </View>
+                                <View style={[styles.txtContainer, {}]}>
+                                    <Text style={[styles.txtLarg, { fontSize: totalSize(2) }]}>Enter Address</Text>
+                                </View>
+                                <View style={styles.schoolInputContainer}>
+                                    <TextInput
+                                        onChangeText={(text) => this.setState({address: text})}
+                                        placeholder={'Enter Full Address'}
+                                        placeholderTextColor='rgb(217,217,217)'
+                                        underlineColorAndroid='transparent'
+                                        // style={styles.TxtInput}
+                                    />
                                 </View>
                                 <View style={[styles.txtContainer, {}]}>
                                     <Text style={[styles.txtLarg, { fontSize: totalSize(2) }]}>Select Date&Time</Text>

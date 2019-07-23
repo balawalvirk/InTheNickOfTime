@@ -42,6 +42,8 @@ class SignUp extends Component {
         try {
 
             jsonObect = {
+                first_name: this.state.first_name,
+                last_name: this.state.last_name,
                 name: this.state.first_name + ' ' + this.state.last_name,
                 email: this.state.email,
                 password: this.state.password,
@@ -58,6 +60,7 @@ class SignUp extends Component {
                 // this.loader.hide();
                 Alert.alert('Error!', err.join('\n'), [{ text: 'OK', onPress: () => { } }]);
             } else {
+                jsonObect['name'] = this.state.first_name + ' ' + this.state.last_name;
                 // this.loader.show();
                 this.setState({ loader: true });
                 // let url = await uploadImage(this.state.avatarSource.uri)

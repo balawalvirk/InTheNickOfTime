@@ -44,7 +44,8 @@ class Payment extends Component {
                 travel_cost: 0,
                 technicianId: '',
                 technicianName: '',
-                servicesList: ''
+                servicesList: '',
+                address:''
 
             }
 
@@ -66,7 +67,8 @@ class Payment extends Component {
                 Booking.services = this.props.navigation.getParam('services', '')
                 Booking.technicianId = this.props.navigation.getParam('technician', '').UserId
                 Booking.technicianName = this.props.navigation.getParam('technician', '').firstName
-                Booking.amount = Booking.services_cost + Booking.travel_cost
+                Booking.amount = Booking.services_cost + Booking.travel_cost,
+                Booking.address = this.props.navigation.getParam('address')
                 this.setState({ amount: Booking.amount })
                 Booking.comments = this.props.navigation.getParam("comments", '')
                 await createData("Bookings", Booking);

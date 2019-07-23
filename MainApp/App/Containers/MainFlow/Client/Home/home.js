@@ -52,11 +52,11 @@ class Home extends Component {
                         </View>
                         <Text style={styles.welcome}> SALON & SPA</Text>
                     </View>
-                    <View style={styles.txtContainer}>
-                        <Text style={[styles.welcome, { color: 'rgb(219,0,0)', fontSize: totalSize(2), fontWeight: 'normal' }]}>BOOK BEAUTY & WELLNESS PROFESSIONALS</Text>
-                        <Text style={[styles.welcome, { color: 'rgb(219,0,0)', fontSize: totalSize(2), fontWeight: 'normal' }]}> TO COME TO YOU!</Text>
+                    <View style={{marginBottom: 100, ...styles.txtContainer}}>
+                        <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal' }]}>BOOK BEAUTY & WELLNESS PROFESSIONALS</Text>
+                        <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal' }]}> TO COME TO YOU!</Text>
                     </View>
-                    <View style={styles.btnContainer}>
+                    <View style={{marginTop: 100, ...styles.btnContainer}}>
                         <TouchableOpacity style={styles.button} onPress={() => this.props.navigation.navigate('searchTechnician')}>
                             <View style={styles.btnTxtContainer}>
                                 <Text style={[styles.btnTxt, { fontWeight: 'bold', fontSize: totalSize(3) }]}>Book Now!</Text>
@@ -120,14 +120,15 @@ const styles = StyleSheet.create({
     txtContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        marginVertical: height(2)
+        marginVertical: height(-5),
+        
     },
     welcome: {
         fontSize: totalSize(4),
         //textAlign: 'center',
         //margin: 10,
         //color: 'white',
-        color: colors.SPA_graycolor,
+        color: '#fff',
         fontWeight: 'bold',
         //opacity: 0.6
     },
