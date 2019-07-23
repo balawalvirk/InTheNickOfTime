@@ -134,7 +134,7 @@ export default class TechnicianServices extends Component {
                                                         >
                                                             <View style={{ marginVertical: 10, alignItems: 'flex-start', justifyContent: 'center' }}>
                                                                 <Text style={{ fontSize: totalSize(2), color: 'black', marginVertical: 3, fontWeight: 'bold' }}>{item.service_name}</Text>
-                                                                <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Price: {item.service_price} $</Text>
+                                                                <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Price: ${item.service_price}</Text>
                                                                 <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Duration: {item.service_duration} min</Text>
                                                                 <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Description: {item.description}</Text>
                                                             </View>
@@ -163,7 +163,7 @@ export default class TechnicianServices extends Component {
                                                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
                                                             <View style={{ marginHorizontal: width(4), marginVertical: height(1), alignItems: 'flex-start', justifyContent: 'center', backgroundColor: 'transparent' }}>
                                                                 <Text style={{ fontSize: totalSize(1.5), color: 'white' }}>{item.service_name}</Text>
-                                                                <Text style={{ fontSize: totalSize(1.5), color: 'white' }}>Price: {item.service_price}$</Text>
+                                                                <Text style={{ fontSize: totalSize(1.5), color: 'white' }}>Price: ${item.service_price}</Text>
                                                             </View>
                                                             <Icon name='ios-close-circle' size={totalSize(4)} type='ionicon' color='white' onPress={() => this.UnselectService(key)} />
                                                             <View style={{ width: 5 }}></View>
