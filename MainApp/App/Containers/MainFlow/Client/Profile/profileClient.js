@@ -55,10 +55,6 @@ class ProfileClient extends Component {
 
   render() {
 
-    if (this.props.isFocused) {
-      this.loadUser()
-    }
-
     return (
       <View style={styles.container}>
         <View style={styles.uperContainer}>

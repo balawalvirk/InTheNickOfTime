@@ -7,14 +7,17 @@ import Toast from 'react-native-simple-toast';
 import images from '../../Themes/Images';
 import uuid from 'uuid';
 import { connectFirebase } from './../../backend/firebase/utility';
-import { signUp } from './../../backend/firebase/auth';
+import { signUp } from './../../backend/firebase/auth_new';
 import Loader from "../../Components/Loader"
+import SignUpConstraints from './../../Validations/SignUpConstraints';
+import validate from 'validate.js'
 
 class SignUpTechnician extends Component {
     constructor(props) {
         super(props);
         this.state = ({
-            name: '',
+            first_name: '',
+            last_name: '',
             email: '',
             password: '',
             confirm_password: '',
@@ -74,29 +77,82 @@ class SignUpTechnician extends Component {
     }
 
     async register() {
-        const email = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        // const email = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        // try {
+        //     if (this.state.email === "" || this.state.password === "" || this.state.name === "" || this.state.confirm_password === "" || this.state.location === "" || this.state.email === null || this.state.password === null || this.state.name === null || this.state.confirm_password === "" || this.state.location === "") {
+        //         Toast.show("Some fields are missing", Toast.LONG);
+        //         return;
+        //     }
+        //     if (this.state.password != this.state.confirm_password) {
+        //         Toast.show('Passwords do not match.', Toast.SHORT);
+        //         return;
+        //     }
+        //     if (email.test(this.state.email) == false) {
+        //         Toast.show("Invalid Email Entered")
+        //         return;
+        //     }
+        //     this.loader.show()
+        //     await signUp(this.state.email, this.state.password, this.state.name, '', '', 'technician',this.state.location);
+        //     Alert.alert('Success', 'User signed up successfully.', [{ text: 'OK', onPress: () => { this.props.navigation.navigate('login') } }]);
+        //     this.loader.hide()
+
+        // } catch (e) {
+        //     Alert.alert('Failure', 'Failed to sign up. Please try again.', [{ text: 'OK', onPress: () => { } }]);
+        // } finally {
+
+        // }
+
         try {
-            if (this.state.email === "" || this.state.password === "" || this.state.name === "" || this.state.confirm_password === "" || this.state.location === "" || this.state.email === null || this.state.password === null || this.state.name === null || this.state.confirm_password === "" || this.state.location === "") {
-                Toast.show("Some fields are missing", Toast.LONG);
-                return;
+
+            jsonObect = {
+                first_name: this.state.first_name,
+                last_name: this.state.last_name,
+                name: this.state.first_name + ' ' + this.state.last_name,
+                email: this.state.email,
+                password: this.state.password,
+                confirmPassword: this.state.confirm_password,
+                location: this.state.location,
+                photo: null,
+                phoneNumber: this.state.phoneNumber || null,
+                userType: 'technician',
+                avatarSource: this.state.avatarSource,
+                weekly_availability: '',
+                travel_locations: [],
+                services: [],
+                service_details: '',
+                ratings: '',
+                locations_details: '',
+                description: '',
+                daily_availability: ''
             }
-            if (this.state.password != this.state.confirm_password) {
-                Toast.show('Passwords do not match.', Toast.SHORT);
-                return;
+            console.log(jsonObect);
+
+
+            let err = validate(jsonObect, SignUpConstraints, { format: 'flat' });
+            if (err) {
+                // this.loader.hide();
+                Alert.alert('Error!', err.join('\n'), [{ text: 'OK', onPress: () => { } }]);
+            } else {
+                jsonObect['name'] = this.state.first_name + ' ' + this.state.last_name;
+                // this.loader.show();
+                this.setState({ loader: true });
+                // let url = await uploadImage(this.state.avatarSource.uri)
+                // .then(url => this.setState({ image: url }))
+                // .catch(error => console.log(error))
+                // jsonObect['photo'] = url;
+                let success = await signUp(jsonObect);
+                if (success != false)
+                    this.props.navigation.navigate('login')
+                else
+                    this.setState({ loader: false });
             }
-            if (email.test(this.state.email) == false) {
-                Toast.show("Invalid Email Entered")
-                return;
-            }
-            this.loader.show()
-            await signUp(this.state.email, this.state.password, this.state.name, '', '', 'technician',this.state.location);
-            Alert.alert('Success', 'User signed up successfully.', [{ text: 'OK', onPress: () => { this.props.navigation.navigate('login') } }]);
-            this.loader.hide()
 
         } catch (e) {
+            console.log(e);
             Alert.alert('Failure', 'Failed to sign up. Please try again.', [{ text: 'OK', onPress: () => { } }]);
         } finally {
-
+            // this.loader.hide();
+            this.setState({ loader: false });
         }
     }
 
@@ -126,12 +182,24 @@ class SignUpTechnician extends Component {
                                 <Icon name='person' color='rgb(66,67,69)' size={totalSize(3)} />
                                 <TextInput
                                     //onChangeText={(value) => this.getSchool_predictions(value)}
-                                    placeholder='Full Name'
+                                    placeholder='First Name'
                                     placeholderTextColor='rgb(217,217,217)'
                                     underlineColorAndroid='transparent'
                                     style={styles.TxtInput}
                                     value={this.state.name}
-                                    onChangeText={(text) => this.setState({ name: text })}
+                                    onChangeText={(text) => this.setState({ first_name: text })}
+                                />
+                            </View>
+                            <View style={styles.InputContainer}>
+                                <Icon name='person' color='rgb(66,67,69)' size={totalSize(3)} />
+                                <TextInput
+                                    //onChangeText={(value) => this.getSchool_predictions(value)}
+                                    placeholder='Last Name'
+                                    placeholderTextColor='rgb(217,217,217)'
+                                    underlineColorAndroid='transparent'
+                                    style={styles.TxtInput}
+                                    value={this.state.name}
+                                    onChangeText={(text) => this.setState({ last_name: text })}
                                 />
                             </View>
                             <View style={styles.InputContainer}>

@@ -410,29 +410,28 @@ export async function downloadImage(folder, imageName) {
   return url;
 }
 
+async function getUser(){
+  k = await AsyncStorage.getItem('user')
+  user = JSON.parse(k)
+  return user;
+}
 
-
+setNameAndPic = async (dd) => {
+  i = 0
+  for (d of dd) {
+    console.log("DAA", d);
+    let qSnapshot = await firebase.firestore().collection('Technician').where('UserId', '==', d.technicianId).get()
+    qSnapshot.forEach((doc) => {
+      if (doc.exists) {
+        d.technicianName = doc.data().UserId
+      }
+    })
+  }
+}
 
 export async function getUserBookings(collection) {
   let data = [];
-  user = await AsyncStorage.getItem('user')
-  user = JSON.parse(user)
-  console.log('====================================');
-  console.log("UTIL", user);
-  console.log('====================================');
-
-  setNameAndPic = async (dd) => {
-    i = 0
-    for (d of dd) {
-      console.log("DAA", d);
-      let qSnapshot = await firebase.firestore().collection('Technician').where('UserId', '==', d.technicianId).get()
-      qSnapshot.forEach((doc) => {
-        if (doc.exists) {
-          d.technicianName = doc.data().UserId
-        }
-      })
-    }
-  }
+  user = getUser()
 
   let querySnapshot = await firebase.firestore().collection(collection).where("userId", "==", user.UserId).get()
   //console.log(res);
@@ -451,5 +450,24 @@ export async function getUserBookings(collection) {
     }
   });
   //data = await setNameAndPic(data)
+  return data;
+}
+
+export async function getTechnicianBookings(collection){
+  let data = []
+  user = await getUser()
+
+  let querySnapshot = await firebase.firestore().collection(collection).where("technicianId", "==", user.UserId).get()
+
+  querySnapshot.forEach((doc) => {
+    if (doc.exists) {
+      data.push({ id: doc.id, ...doc.data() });
+    } else {
+      console.log('No document found!');
+    }
+  });
+  //data = await setNameAndPic(data)
+  console.log("Tech Bookings",data);
+  
   return data;
 }

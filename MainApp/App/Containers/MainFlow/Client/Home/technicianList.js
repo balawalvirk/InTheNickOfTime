@@ -59,7 +59,7 @@ class TechniciansList extends Component {
 
                                             </View>
                                             <View style={styles.shopTxtContainer}>
-                                                <Text style={styles.shopName}>{items.firstName}</Text>
+                                                <Text style={styles.shopName}>{items.name}</Text>
                                                 {/* <Text style={styles.shopDetail}>At {items.dateTime}</Text> */}
                                                 {/* <Text style={styles.shopDetail}>{items.Address}</Text> */}
                                                 <View style={{ flexDirection: 'row' }}>

@@ -20,9 +20,8 @@ class Splash extends Component {
         console.log(JSON.stringify({ id: 1, location: 'Sea site, New york, USA', travel_cost: 20 }));
         connectFirebase();
         AsyncStorage.getItem('user', (error, data) => {
-            console.log
-                (error)
-            console.log(data);
+            console.log("Splash",error)
+            console.log("Splash",data);
 
             if (data) {
                 user = JSON.parse(data);

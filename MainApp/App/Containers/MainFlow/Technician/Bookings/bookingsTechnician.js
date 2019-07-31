@@ -1,27 +1,103 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, TextInput, RefreshControl } from 'react-native';
 import images from '../../../../Themes/Images';
 import { width, height, totalSize } from 'react-native-dimension'
 import { Icon } from 'react-native-elements'
 import colors from '../../../../Themes/Colors';
+import Loader from '../../../../Components/Loader';
+import firebase from 'firebase'
+import { getTechnicianBookings, updateDocument } from '../../../../backend/firebase/utility'
+
 class bookingTechnician extends Component {
   constructor(props) {
     super(props);
     this.state = {
-
-      Booking_list: [
-        { id: 1, client_name: 'Lina', client_profile_pic: images.profilePic, service_name: 'Hand massage', service_code: '025012', Address: '18002 Sea Island olace, New York, USA', service_price: '50', dateTime: '8:00AM 06-15-19' },
-        { id: 2, client_name: 'Salish', client_profile_pic: images.profilePic, service_name: 'Face Cleaning & Facial', Address: '18002 Sea Island olace, New York, USA', service_duration: '30', service_price: '50', dateTime: '8:00AM 06-15-19' },
-        { id: 3, client_name: 'Hanana', client_profile_pic: images.profilePic, service_name: 'Hair Diy', Address: '18002 Sea Island olace, New York, USA', service_duration: '30', service_price: '50', dateTime: '8:00AM 06-15-19' },
-        { id: 4, client_name: 'Hanana', client_profile_pic: images.profilePic, service_name: 'Hair Diy', Address: '18002 Sea Island olace, New York, USA', service_duration: '30', service_price: '50', dateTime: '8:00AM 06-15-19' },
-        { id: 5, client_name: 'Hanana', client_profile_pic: images.profilePic, service_name: 'Hair Diy', Address: '18002 Sea Island olace, New York, USA', service_duration: '30', service_price: '50', dateTime: '8:00AM 06-15-19' },
-      ]
+      pending: [],
+      accepted: [],
+      refreshing: false
     };
   }
 
+  async componentDidMount() {
+    this.loader.show()
+    this.getNames()
+    this.loader.hide()
+  }
+
+  _onRefresh = async () => {
+    console.log("here");
+
+    this.setState({ refreshing: true });
+    await this.getNames()
+    this.setState({ refreshing: false });
+  }
+
+
+  async getNames() {
+    bookings = await getTechnicianBookings("Bookings")
+    pending = []
+    accepted = []
+    for (i = 0; i < bookings.length; i++) {
+
+      let qSnapshot = await firebase.firestore().collection('Users').where('UserId', '==', bookings[i].userId).get()
+      qSnapshot.forEach((doc) => {
+        if (doc.exists) {
+          console.log("Doc", doc.data());
+          bookings[i].UserName = doc.data().firstName
+          bookings[i].photo = doc.data().photo
+        }
+      })
+      if (bookings[i].status === 'pending') {
+        pending.push(bookings[i])
+      }
+      else if ((bookings[i].status === 'accepted')) {
+        accepted.push(bookings[i])
+      }
+      this.setState({ pending: pending, accepted: accepted })
+
+    }
+    console.log("State", this.state);
+
+    this.loader.hide()
+
+  }
+
+  updateBooking = async (booking, index) => {
+    booking.UserName = booking.userName
+    if (booking.status === 'pending') {
+      booking.status = 'accepted'
+      await updateDocument('Bookings', booking.id, booking).then((result) => {
+        console.log(result);
+        this.state.pending.splice(index, 1)
+        this.setState({ accepted: [...this.state.accepted, booking] })
+      })
+    }
+    else if (booking.status === 'accepted') {
+      booking.status = 'completed'
+      await updateDocument('Bookings', booking.id, booking).then((result) => {
+        console.log(result);
+        this.state.accepted.splice(index, 1)
+        this.setState(this.state);
+      }, (err) => {
+        console.log("Error", err);
+
+      })
+    }
+  }
+
+  deleteBooking = async (booking, index) => {
+    booking.UserName = booking.userName
+    booking.status = 'canceled'
+    await updateDocument('Bookings', booking.id, booking).then((result) => {
+      console.log(result);
+      this.state.pending.splice(index, 1)
+      this.setState(this.state);
+    })
+  }
   render() {
     return (
       <View style={styles.Container}>
+        <Loader ref={r => this.loader = r} />
         <View style={{ flex: 1 }}>
           <View style={{ flex: 1, alignItems: 'flex-start', justifyContent: 'flex-end', }}>
             <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2.5), left: width(5) }]}>Pending Bookings </Text>
@@ -29,41 +105,53 @@ class bookingTechnician extends Component {
 
           <View style={{ flex: 4, alignItems: 'center' }}>
             <ScrollView
-              showsVerticalScrollIndicator={false}>
+              refreshControl={
+                <RefreshControl
+                  refreshing={this.state.refreshing}
+                  onRefresh={() => { this._onRefresh() }}
+                />
+              }
+            >
+
               {
                 this.state.loadingServices === true ?
                   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <ActivityIndicator size='large' color="rgb(0,41,132)" />
                   </View>
                   :
-                  this.state.Booking_list.map((items, key) => {
+                  this.state.pending.map((items, key) => {
+                    console.log("Key", key);
+
                     return (
                       <View key={key} style={styles.shopContainer}>
                         <View style={styles.shopImageContainer}>
-                          <Image source={items.client_profile_pic} style={styles.shopImage} />
+                          <Image source={{ uri: items.photo }} style={styles.shopImage} />
                         </View>
                         <View style={styles.shopTxtContainer}>
-                          <Text style={styles.shopName}>Alina</Text>
+                          <Text style={styles.shopName}>{items.userName}</Text>
                           <View style={{ flexDirection: 'row' }}>
                             <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Services: </Text>
-                            <Text style={styles.shopDetail}>{items.service_name}</Text>
+                            <Text style={styles.shopDetail}>{items.servicesList}</Text>
                           </View>
                           <View style={{ flexDirection: 'row' }}>
-                            <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Note: </Text>
-                            <Text style={styles.shopDetail}>This is the client's request message</Text>
+                            <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Location: </Text>
+                            <Text style={styles.shopDetail}>{items.location}</Text>
                           </View>
-                          <Text style={styles.shopDetail}>At {items.dateTime}</Text>
-                          <Text style={styles.shopDetail}>{items.Address}</Text>
+                          <View style={{ flexDirection: 'row' }}>
+                            <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>At: </Text>
+                            <Text style={styles.shopDetail}>{items.date_time}</Text>
+                          </View>
+                          <Text style={styles.shopDetail}>Demo Description</Text>
                         </View>
                         <View style={[styles.shopIconContainer, { backgroundColor: 'transparent', flexDirection: 'row' }]}>
-                          <TouchableOpacity style={[styles.iconContainer, { backgroundColor: colors.SPA_redColor }]} >
-                            <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 5, marginHorizontal: 5, }}>
+                          <TouchableOpacity onPress={() => { this.updateBooking(items, key) }} style={[styles.iconContainer, { backgroundColor: colors.SPA_redColor }]} >
+                            <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 5, marginHorizontal: 5, }} >
                               {/* <Icon name="check" size={totalSize(2)} color="white" type='antdesign' /> */}
                               <Text style={[styles.shopDetail, { color: 'white', fontSize: totalSize(1) }]}>Accept</Text>
                             </View>
                           </TouchableOpacity>
                           <View style={{ width: width(2) }}></View>
-                          <TouchableOpacity style={[styles.iconContainer, { backgroundColor: colors.SPA_graycolor }]} >
+                          <TouchableOpacity onPress={() => { this.deleteBooking(items, key) }} style={[styles.iconContainer, { backgroundColor: colors.SPA_graycolor }]} >
                             <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 5, marginHorizontal: 5, }}>
                               {/* <Icon name="check" size={totalSize(2)} color="white" type='antdesign' /> */}
                               <Text style={[styles.shopDetail, { color: 'white', fontSize: totalSize(1) }]}>Decline</Text>
@@ -80,7 +168,7 @@ class bookingTechnician extends Component {
         </View>
         <View style={{ flex: 1 }}>
           <View style={{ flex: 1, alignItems: 'flex-start', justifyContent: 'flex-end', }}>
-            <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2.5), left: width(5) }]}>Proccess Bookings </Text>
+            <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2.5), left: width(5) }]}>Accepted Bookings </Text>
           </View>
 
           <View style={{ flex: 4, alignItems: 'center' }}>
@@ -92,31 +180,35 @@ class bookingTechnician extends Component {
                     <ActivityIndicator size='large' color="rgb(0,41,132)" />
                   </View>
                   :
-                  this.state.Booking_list.map((items, key) => {
+                  this.state.accepted.map((items, key) => {
+                    console.log("Key", key)
                     return (
                       <View key={key} style={styles.shopContainer}>
                         <View style={styles.shopImageContainer}>
-                          <Image source={items.client_profile_pic} style={styles.shopImage} />
+                          <Image source={{ uri: items.photo }} style={styles.shopImage} />
                         </View>
                         <View style={styles.shopTxtContainer}>
-                          <Text style={styles.shopName}>Alina</Text>
+                          <Text style={styles.shopName}>{items.userName}</Text>
                           <View style={{ flexDirection: 'row' }}>
                             <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Services: </Text>
-                            <Text style={styles.shopDetail}>{items.service_name}</Text>
+                            <Text style={styles.shopDetail}>{items.servicesList}</Text>
                           </View>
                           <View style={{ flexDirection: 'row' }}>
-                            <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Note: </Text>
-                            <Text style={styles.shopDetail}>This is the client's request message</Text>
+                            <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Location: </Text>
+                            <Text style={styles.shopDetail}>{items.location}</Text>
                           </View>
-                          <Text style={styles.shopDetail}>At {items.dateTime}</Text>
-                          <Text style={styles.shopDetail}>{items.Address}</Text>
+                          <View style={{ flexDirection: 'row' }}>
+                            <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>At: </Text>
+                            <Text style={styles.shopDetail}>{items.date_time}</Text>
+                          </View>
+                          <Text style={styles.shopDetail}>Demo Description</Text>
                         </View>
                         <View style={[styles.shopIconContainer]}>
                           {/* <TouchableOpacity style={styles.iconContainer} >
                         <Icon name="pencil" size={totalSize(2)} color="white" type='font-awesome' />
                       </TouchableOpacity> */}
                           <View style={{ width: width(2) }}></View>
-                          <TouchableOpacity style={[styles.iconContainer, { backgroundColor: colors.SPA_redColor }]} >
+                          <TouchableOpacity onPress={() => { this.updateBooking(items, key) }} style={[styles.iconContainer, { backgroundColor: colors.SPA_redColor }]} >
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: 4, marginHorizontal: 7, }}>
                               {/* <Icon name="check" size={totalSize(2)} color="white" type='antdesign' /> */}
                               <Text style={[styles.shopName, { color: 'white' }]}>Done</Text>

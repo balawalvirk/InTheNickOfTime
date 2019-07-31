@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Platform, View, Text, ActivityIndicator, TouchableOpacity, Image, StyleSheet, Dimensions, Picker } from 'react-native';
+import { Platform, View, Text, ActivityIndicator, TouchableOpacity, Image, StyleSheet, Dimensions, Picker, AsyncStorage } from 'react-native';
 import images from '../../../../Themes/Images';
 import colors from '../../../../Themes/Colors'
 import { Icon } from 'react-native-elements';
 import Toast from 'react-native-simple-toast'
+import Loader from '../../../../Components/Loader';
 import { height, width, totalSize } from 'react-native-dimension';
 
 
@@ -16,54 +17,68 @@ export default class HomeTechnician extends Component {
             pendingTokens: 0,
             onProcessTokens: 0,
             loading_refresh: false,
+            photo: null,
+            name: '',
+            user
         };
     }
 
-    loadUser = () => {
-        AsyncStorage.getItem('user', (error, data) => {
-          if (data) {
-            user = JSON.parse(data)
-            console.log(user);
-            let img = null;
-            if (user.photo != null) {
-              img = { uri: user.photo }
-            } else {
-              img = images.profilePic
-            }
-            this.setState({
-              name: user.name,
-              email: user.email,
-              photo: img
-            })
-          }
+    checkImage(image) {
+        let img = null
+        if (image != null) {
+            img = { uri: image }
+        } else {
+            img = images.profilePic
+        }
+        this.setState({
+            photo: img
         })
-      }
-    
-      componentDidMount() {
-        this.loadUser()
-      }
+    }
+
+
+    loadUser = async () => {
+        await AsyncStorage.getItem('user', (error, data) => {
+            if (data) {
+                user = JSON.parse(data)
+                console.log("Async Data", user);
+                this.checkImage(user.photo)
+                this.setState({
+                    name: user.name,
+                    email: user.email,
+                    user: user
+                })
+            }
+        })
+    }
+
+    async componentDidMount() {
+        this.loader.show()
+        await this.loadUser()
+        this.loader.hide()
+    }
 
     render() {
         return (
             <View style={styles.Container}>
+                <Loader ref={r => this.loader = r} />
                 <View style={{ width: width(90), flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', backgroundColor: 'transparent', marginVertical: height(2) }}>
                     <Icon name='bell' color={colors.SPA_redColor} type='octicon' size={totalSize(4)} onPress={() => this.props.navigation.navigate('notificationTechnician')} />
                 </View>
                 <View style={styles.lowerContainer}>
                     <View style={styles.branchNameContainer}>
-                        <Text style={styles.branchName}>Alina Shaw</Text>
+                        <Text style={styles.branchName}>{this.state.name}</Text>
                     </View>
                     <View style={styles.activityContainer}>
                         <Text style={styles.activity}>DASHBOARD</Text>
                     </View>
                     <View style={styles.tokensContainer}>
                         <View style={styles.sqareView}>
-                            <Text style={styles.count}>10AM-2PM</Text>
+                            <Text style={styles.count}>{this.state.user.daily_availability}</Text>
                             <Text style={styles.txt}>DAILY</Text>
                             <Text style={styles.txt}>AVAILABILTIY</Text>
                         </View>
                         <View style={styles.sqareView}>
-                            <Text style={styles.count}>Mon-Friday</Text>
+                            <Text style={styles.count}>{this.state.user.weekly_availability}</Text>
                             <Text style={styles.txt}>WEEKLY</Text>
                             <Text style={styles.txt}>AVAILABILTIY</Text>
 
@@ -88,7 +103,7 @@ export default class HomeTechnician extends Component {
 
 
                 <View style={styles.shopImageContainer}>
-                    <Image source={images.profilePic} style={styles.shopImage} />
+                    <Image source={this.state.photo} style={styles.shopImage} />
                 </View>
 
             </View>

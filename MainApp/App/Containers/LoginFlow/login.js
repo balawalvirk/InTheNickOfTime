@@ -33,7 +33,7 @@ class Login extends Component {
             loader: false,
             overlayVisible: false,
             checked: true,
-            userType: 'user',
+            userType: 'client',
             isModalVisibleForgetPassword: false,
             IsModalVisibleSelectSignUp: false,
             reset_email: '',
@@ -89,7 +89,7 @@ class Login extends Component {
                     // .then(url => this.setState({ image: url }))
                     // .catch(error => console.log(error))
                 // jsonObect['photo'] = url;
-                let success = await signIn(jsonObect.email, jsonObect.password, 'client', this.loader);
+                let success = await signIn(jsonObect.email, jsonObect.password, this.state.userType, this.loader);
                 if (success != false && this.state.checked) {
                     this.saveLogin(success);
                     Toast.show("Logged In", Toast.SHORT);
@@ -203,7 +203,7 @@ class Login extends Component {
                                     checkedColor={colors.SPA_redColor}
                                     onPress={() => this.setState({
                                         checked: true,
-                                        userType: 'user'
+                                        userType: 'client'
                                     })}
                                 />
                                 <CheckBox
@@ -218,7 +218,7 @@ class Login extends Component {
                                     checkedColor={colors.SPA_redColor}
                                     onPress={() => this.setState({
                                         checked: false,
-                                        userType: 'company'
+                                        userType: 'technician'
                                     })}
                                 />
                             </View>

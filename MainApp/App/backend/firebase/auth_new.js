@@ -3,9 +3,13 @@ import firestore from 'firebase/firestore';
 import { Alert, Platform } from 'react-native';
 import { insertDocument, saveData, updateDocument, getDocument, getDocuments } from './utility';
 import RNFetchBlob from 'react-native-fetch-blob';
+import AsyncStorage from '@react-native-community/async-storage';
 
 
 export async function signUp(user_profile) {
+console.log("up",user_profile);
+
+  
   return new Promise((resolve, reject) => {
     firebase.auth().createUserWithEmailAndPassword(user_profile.email, user_profile.password).then(async () => {
 
@@ -41,25 +45,12 @@ export async function signUp(user_profile) {
         // actions[actions.length] = saveData('Users', user.uid, user_profile);
       } else if (user_profile.userType == "technician") {
         collection = 'Technician';
-        let technician = {
-          UserId: user.uid,
-          name: user_profile.name,
-          phoneNum: user_profile.phoneNumber,
-          email: user_profile.email,
-          daily_availability: "",
-          weekly_availabilty: "",
-          services: [""],
-          travel_locations: [""],
-          imageUrl: user_profile.photo,
-          photo: user_profile.photo,
-          location: user_profile.location
-        };
         // actions = [
         //   user.sendEmailVerification(),
         //   user.updateProfile(profile),
         //   saveData('Technician', user.uid, technician)
         // ]
-        actions.push(insertDocument('Technician', technician));
+        actions.push(insertDocument('Technician', user_profile));
         // actions[actions.length] = saveData('Technician', user.uid, technician);
       }
 
@@ -126,6 +117,7 @@ export async function signIn(email, password, userType) {
       }
       console.log('profile: ', profile);
       resolve(profile);
+      AsyncStorage.setItem('user',JSON.stringify(profile))
 
     } catch (error) {
 
