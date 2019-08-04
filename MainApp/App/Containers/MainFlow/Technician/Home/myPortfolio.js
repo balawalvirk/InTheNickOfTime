@@ -4,6 +4,8 @@ import { Icon } from 'react-native-elements'
 import colors from '../../../../Themes/Colors'
 import { totalSize, height, width } from 'react-native-dimension'
 import images from '../../../../Themes/Images';
+import ImagePicker from 'react-native-image-picker';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const portfolio_images_list = [
   { key: 'A' }, { key: 'B' }, { key: 'C' }, { key: 'D' }, { key: 'E' }, { key: 'F' }, { key: 'G' }, { key: 'H' }
@@ -26,6 +28,7 @@ class MyPortfolio extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      portfolio_array:[],
       images_list: [
         { id: 1, image: require('../../../../Images/DarkBgPortrait.jpg') },
         { id: 2, image: require('../../../../Images/BG01.jpg') },
@@ -40,11 +43,57 @@ class MyPortfolio extends Component {
     };
 
 
+    
+  }
+
+  async componentDidMount(){
+    data = await AsyncStorage.getItem('user')
+    data = JSON.parse(data)
+    imgs = data.portfolio
+    imgs = JSON.parse(imgs)
+    console.log(imgs);
+    this.setState({portfolio_array:imgs})
+    
   }
   static navigationOptions = {
     title: 'My Portfolio',
     headerRight: (
-      <TouchableOpacity style={{ backgroundColor: colors.SPA_redColor, borderRadius: 5, marginHorizontal: 5 }} >
+      <TouchableOpacity onPress={() => {
+        const options = {
+          title: 'Add to Portfolio',
+          // customButtons: [{ name: 'fb', title: 'Choose Photo from Facebook' }],
+          storageOptions: {
+            skipBackup: true,
+            path: 'images',
+          },
+        };
+        ImagePicker.showImagePicker(options, async (response) => {
+          console.log('Response = ', response);
+          if (response.didCancel) {
+            //   console.log('User cancelled image picker');
+          } else if (response.error) {
+            //   console.log('ImagePicker Error: ', response.error);
+          } else if (response.customButton) {
+            //   console.log('User tapped custom button: ', response.customButton);
+          } else {
+            const source = { uri: response.uri };
+            console.log(response);
+            
+            // await this.setState({ image: source })
+            // You can also display the image using data:
+            //const image = { uri: response.uri, width: response.width, height: response.height }
+            //const avatar = { uri: response.uri, type: response.type, name: response.fileName }
+            //this.state.Images.push(image);
+            //this.state.simpleImages.push(avatar);
+
+            await this.setState({
+              camera: true,
+              avatarSource: { uri: response.uri, type: response.type, name: response.fileName },
+              image: { uri: response.uri, width: response.width, height: response.height }
+            });
+          }
+        });
+      }} style={{ backgroundColor: colors.SPA_redColor, borderRadius: 5, marginHorizontal: 5 }} >
         <View style={{ flexDirection: 'row', marginVertical: 5, marginHorizontal: 5, alignItems: 'center', justifyContent: 'center' }}>
           <Icon name='add' color='white' size={totalSize(3)} />
           <View style={{ width: width(1) }}></View>
@@ -54,21 +103,22 @@ class MyPortfolio extends Component {
     )
   };
 
-  
+
   renderItem = ({ item, key }) => {
     if (item.empty === true) {
       return <View style={[styles.itemContainer, styles.itemInvisible]} />;
     }
     return (
-      <TouchableOpacity  style={styles.itemContainer}>
-        <Image  source={item.image} style={styles.itemImage} />
+      <TouchableOpacity style={styles.itemContainer}>
+        <Image source={{uri:item}} style={styles.itemImage} />
       </TouchableOpacity>
     )
   }
+
   render() {
     return (
       <FlatList
-        data={formatData(this.state.images_list,numColums)}
+        data={formatData(this.state.portfolio_array, numColums)}
         style={styles.container}
         renderItem={this.renderItem}
         numColumns={numColums}
@@ -96,10 +146,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   itemImage: {
-       height:height(20),
-       width:width(32),
-       borderWidth:1,
-       borderColor:'white'
+    height: height(20),
+    width: width(32),
+    borderWidth: 1,
+    borderColor: 'white'
     //flex: 1,
     //alignItems:'center',
     //justifyContent:'center',

@@ -19,7 +19,7 @@ export default class HomeTechnician extends Component {
             loading_refresh: false,
             photo: null,
             name: '',
-            user
+            user:''
         };
     }
 
