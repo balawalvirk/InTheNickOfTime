@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, TouchableOpacity,StyleSheet, AsyncStorage } from 'react-native';
+import { View, Text, TouchableOpacity,StyleSheet, AsyncStorage, Share, Linking } from 'react-native';
 //import styles from './Styles/settingCompanyStyles'
 import Icon from 'react-native-vector-icons/Ionicons'
 import Icon2 from 'react-native-vector-icons/MaterialCommunityIcons'
@@ -26,6 +26,30 @@ class SettingTechnician extends Component {
     this.props.navigation.push('login')
   }
 
+  share = async () => {
+    try {
+      const result = await Share.share({
+        title:"In the nick of time",
+        message:
+          'Hi, I am using this awesome app you should also try this app. ',
+          url:'google.com'
+      });
+
+      if (result.action === Share.sharedAction) {
+        console.log(result.activityType);
+        
+        if (result.activityType) {
+          // shared with activity type of result.activityType
+        } else {
+          // shared
+        }
+      } else if (result.action === Share.dismissedAction) {
+        // dismissed
+      }
+    } catch (error) {
+      alert(error.message);
+    }
+  }
   render() {
     
     return (
@@ -47,7 +71,7 @@ class SettingTechnician extends Component {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.mainBtn} >
+        <TouchableOpacity style={styles.mainBtn}  onPress={()=>{Linking.openURL('mailto:testing@mailinator.com?subject=In the Nick of Time &body=Hi Team,')}}>
           <View style={styles.btnIconContainer}>
             <View style={styles.IconContainer}>
               <Icon name="ios-mail" size={totalSize(2)} color='white' />
@@ -61,7 +85,7 @@ class SettingTechnician extends Component {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.mainBtn} >
+        <TouchableOpacity style={styles.mainBtn} onPress={()=>this.share()}>
           <View style={styles.btnIconContainer}>
             <View style={styles.IconContainer}>
               <Icon name="md-share" size={totalSize(2)} color='white' />
@@ -76,7 +100,7 @@ class SettingTechnician extends Component {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.mainBtn} >
+        <TouchableOpacity style={styles.mainBtn} onPress={()=>{this.props.navigation.navigate('WebViewOpensLink', {uri: 'https://play.google.com/store/apps/details?id=com.whatsapp'})}}>
           <View style={styles.btnIconContainer}>
             <View style={styles.IconContainer}>
               <Icon name="ios-star" size={totalSize(2)} color='white' />

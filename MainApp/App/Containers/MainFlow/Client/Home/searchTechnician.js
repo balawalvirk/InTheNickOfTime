@@ -80,16 +80,16 @@ class SearchTechnician extends Component {
 
     searchTechnicians = async () => {
         try {
-            
+
             jsonObject = {
-              service: this.state.service,
-              location: this.state.location,
+                service: this.state.service,
+                location: this.state.location,
             }
 
-            let err = validate(jsonObject, SearchTechConstraints, {format: 'flat'});
+            let err = validate(jsonObject, SearchTechConstraints, { format: 'flat' });
             if (err) {
                 // this.loader.hide();
-                Alert.alert('Error!', err.join('\n'), [ {text: 'OK', onPress: () => {}} ] );
+                Alert.alert('Error!', err.join('\n'), [{ text: 'OK', onPress: () => { } }]);
             } else {
                 this.loader.show();
                 let matchedLocations = []
@@ -146,7 +146,7 @@ class SearchTechnician extends Component {
                                 <Icon name='search' color={colors.SPA_graycolor} size={totalSize(4)} />
                                 <TextInput
                                     //onChangeText={(value) => this.getSchool_predictions(value)}
-                                    onChangeText={async(text) => await this.setState({service: text})}
+                                    onChangeText={async (text) => await this.setState({ service: text })}
                                     placeholder={'Enter Service'}
                                     placeholderTextColor='rgb(217,217,217)'
                                     value={this.state.service}
@@ -226,7 +226,7 @@ class SearchTechnician extends Component {
                                     <TextInput
                                         //onFocus={() => this.getProfessors_predictions()}
                                         //onChangeText={(value) => this.getProfessors_predictions()}
-                                        onChangeText={async(text) => await this.setState({location: text})}
+                                        onChangeText={async (text) => await this.setState({ location: text })}
                                         placeholder={'Enter Location'}
                                         value={this.state.location}
                                         placeholderTextColor='rgb(217,217,217)'
@@ -236,34 +236,32 @@ class SearchTechnician extends Component {
                                     />
                                 </View>
                             </View>
-                            <View style={{ flexDirection: 'row', width: width(90) }}>
-                                {
-                                    this.state.showStates ?
-                                        <View style={{ width: width(30), backgroundColor: 'white', elevation: 5 }}>
-                                            <ScrollView>
-                                                {
-                                                    this.state.states_list.map((item, key) => {
-                                                        return (
-                                                            <TouchableOpacity key={key} style={{ marginHorizontal: 5, borderBottomWidth: 0.4, borderColor: 'gray', elevation: 0 }}
-                                                                onPress={() => {
-                                                                    this.setState({ showLocations: !this.state.showLocations })
-                                                                }}
-                                                            >
-                                                                <View style={{ marginVertical: 10, alignItems: 'flex-start', justifyContent: 'center' }}>
-                                                                    <Text style={{ fontSize: totalSize(2), color: 'black', marginVertical: 3, fontWeight: 'bold' }}>{item.state_name}</Text>
-                                                                    {/* <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Price: {item.service_price} $</Text>
+                            <View style={{ flexDirection: 'row', width: width(90) }}>{
+                                this.state.showStates ?
+                                    <View style={{ width: width(30), backgroundColor: 'white', elevation: 5 }}>
+                                        <ScrollView>{
+                                            this.state.states_list.map((item, key) => {
+                                                return (
+                                                    <TouchableOpacity key={key} style={{ marginHorizontal: 5, borderBottomWidth: 0.4, borderColor: 'gray', elevation: 0 }}
+                                                        onPress={() => {
+                                                            this.setState({ showLocations: !this.state.showLocations })
+                                                        }}
+                                                    >
+                                                        <View style={{ marginVertical: 10, alignItems: 'flex-start', justifyContent: 'center' }}>
+                                                            <Text style={{ fontSize: totalSize(2), color: 'black', marginVertical: 3, fontWeight: 'bold' }}>{item.state_name}</Text>
+                                                            {/* <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Price: {item.service_price} $</Text>
                                                                 <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Duration: {item.service_duration} min</Text>
                                                                 <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Description: {item.description}</Text> */}
-                                                                </View>
-                                                            </TouchableOpacity>
-                                                        )
-                                                    })
-                                                }
-                                            </ScrollView>
-                                        </View>
-                                        :
-                                        null
-                                }
+                                                        </View>
+                                                    </TouchableOpacity>
+                                                )
+                                            })
+                                        }
+                                        </ScrollView>
+                                    </View>
+                                    :
+                                    null
+                            }
                                 {
                                     this.state.showLocations ?
                                         <View style={{ width: width(40), backgroundColor: 'white', elevation: 5 }}>

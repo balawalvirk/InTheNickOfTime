@@ -10,6 +10,10 @@ import { Icon } from 'react-native-elements'
 import colors from '../../../../Themes/Colors';
 import { totalSize, width, height } from 'react-native-dimension';
 import images from '../../../../Themes/Images';
+import AsyncStorage from '@react-native-community/async-storage';
+import { uploadAsFile, editProfilePic } from '../../../../backend/firebase/auth_new';
+import { updateDocument } from '../../../../backend/firebase/utility';
+
 class EditProfileTechnician extends Component {
     static navigationOptions = {
         title: 'Edit Profile',
@@ -24,6 +28,8 @@ class EditProfileTechnician extends Component {
             image: null,
             avatarSource: null,
             camera: false,
+            user: {},
+            
         };
     }
     image_picker = () => {
@@ -51,27 +57,53 @@ class EditProfileTechnician extends Component {
                 //const avatar = { uri: response.uri, type: response.type, name: response.fileName }
                 //this.state.Images.push(image);
                 //this.state.simpleImages.push(avatar);
+                this.state.user.photo = response.uri;
                 await this.setState({
                     camera: true,
                     avatarSource: { uri: response.uri, type: response.type, name: response.fileName },
                     image: { uri: response.uri, width: response.width, height: response.height }
+
                 });
+
+
+
 
             }
         });
     }
-    componentWillMount() {
+
+
+    async componentDidMount() {
+        usr = await AsyncStorage.getItem('user')
+        usr = JSON.parse(usr)
+        this.setState({ user: usr })
+
 
     }
+
+    
     editeProfile = async () => {
+
+        if (this.state.avatarSource != null) {
+            await editProfilePic(this.state.avatarSource, { collection: "Technician", uid: this.state.user.id }).then((res) => {
+                console.log(res);
+                this.state.user.photo = res;
+                this.setState({ avatarSource: null })
+
+            })
+        }
+        updateDocument('Technician', this.state.user.id, this.state.user)
+        tmpState = JSON.stringify(this.state.user)
+        AsyncStorage.setItem('user', tmpState)
     }
     render() {
         //console.warn('image===>',store.USER_LOGIN.profile_pic);
         return (
 
             <View style={styles.Container}>
-                <View style={[styles.pfContainer,{marginVertical:height(5)}]}>
-                    <Image source={images.profilePic} style={styles.profileImage} />
+                <View style={[styles.pfContainer, { marginVertical: height(5) }]}>
+
+                    <Image source={this.state.user.photo ? { uri: this.state.user.photo } : images.profilePic} style={styles.profileImage} />
                     <TouchableOpacity onPress={this.image_picker}>
                         <Icon name='camera' type='entypo' color='gray' size={totalSize(4)} />
                     </TouchableOpacity>
@@ -95,16 +127,22 @@ class EditProfileTechnician extends Component {
                 <View style={styles.txtContainer}>
                     <Text style={styles.formTxt}>Your Name</Text>
                     <TextInput
-                        value={this.state.name}
+                        value={this.state.user.name}
                         placeholderTextColor='rgb(183,179,179)'
                         style={styles.input}
+                        onChangeText={(value) => {
+                            this.state.user.name = value
+                            this.setState(this.state)
+
+
+                        }}
                     />
                 </View>
                 <View style={styles.txtContainer}>
                     <Text style={styles.formTxt}>Email Address</Text>
                     <TextInput
                         editable={false}
-                        placeholder='Alina@gmail.com'
+                        placeholder={this.state.user.email}
                         placeholderTextColor='rgb(183,179,179)'
                         style={styles.input}
                     />
@@ -122,7 +160,7 @@ class EditProfileTechnician extends Component {
 
 
                 <View style={styles.btnContainer}>
-                    <TouchableOpacity style={styles.btn} onPress={this.editeProfile}>
+                    <TouchableOpacity style={styles.btn} onPress={() => { this.editeProfile() }}>
                         {
                             this.state.loading === true ?
                                 <ActivityIndicator size='small' color='white' />
@@ -133,7 +171,9 @@ class EditProfileTechnician extends Component {
                 </View>
 
 
+                
             </View>
+
 
         );
     }

@@ -6,6 +6,9 @@ import { totalSize, height, width } from 'react-native-dimension'
 import images from '../../../../Themes/Images';
 import ImagePicker from 'react-native-image-picker';
 import AsyncStorage from '@react-native-community/async-storage';
+import { uploadPortfolio } from '../../../../backend/firebase/utility';
+import Loader from "../../../../Components/Loader"
+
 
 const portfolio_images_list = [
   { key: 'A' }, { key: 'B' }, { key: 'C' }, { key: 'D' }, { key: 'E' }, { key: 'F' }, { key: 'G' }, { key: 'H' }
@@ -39,7 +42,9 @@ class MyPortfolio extends Component {
         { id: 7, image: require('../../../../Images/DarkBgPortrait.jpg') },
         { id: 8, image: require('../../../../Images/BG01.jpg') },
         { id: 9, image: require('../../../../Images/DarkBgPortrait.jpg') },
-      ]
+      ],
+      avatarSource: '',
+      camera:''
     };
 
 
@@ -47,16 +52,19 @@ class MyPortfolio extends Component {
   }
 
   async componentDidMount(){
+    
     data = await AsyncStorage.getItem('user')
     data = JSON.parse(data)
     imgs = data.portfolio
-    imgs = JSON.parse(imgs)
+    //imgs = JSON.parse(imgs)
     console.log(imgs);
     this.setState({portfolio_array:imgs})
+    
     
   }
   static navigationOptions = {
     title: 'My Portfolio',
+    
     headerRight: (
       <TouchableOpacity onPress={() => {
         const options = {
@@ -85,12 +93,20 @@ class MyPortfolio extends Component {
             //const avatar = { uri: response.uri, type: response.type, name: response.fileName }
             //this.state.Images.push(image);
             //this.state.simpleImages.push(avatar);
+            
+            
+              avatarSource=  { uri: response.uri, type: response.type, name: response.fileName }
+              id = await AsyncStorage.getItem('user')
+              
+              id = JSON.parse(id)
+              console.log(id.id);
+              
+              
+             
+            
+            uploadPortfolio(avatarSource,{collection:'Technician',uid:id.id})
+            
 
-            await this.setState({
-              camera: true,
-              avatarSource: { uri: response.uri, type: response.type, name: response.fileName },
-              image: { uri: response.uri, width: response.width, height: response.height }
-            });
           }
         });
       }} style={{ backgroundColor: colors.SPA_redColor, borderRadius: 5, marginHorizontal: 5 }} >

@@ -7,9 +7,9 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 
 export async function signUp(user_profile) {
-console.log("up",user_profile);
+  console.log("up", user_profile);
 
-  
+
   return new Promise((resolve, reject) => {
     firebase.auth().createUserWithEmailAndPassword(user_profile.email, user_profile.password).then(async () => {
 
@@ -117,7 +117,7 @@ export async function signIn(email, password, userType) {
       }
       console.log('profile: ', profile);
       resolve(profile);
-      AsyncStorage.setItem('user',JSON.stringify(profile))
+      AsyncStorage.setItem('user', JSON.stringify(profile))
 
     } catch (error) {
 
@@ -358,7 +358,7 @@ export const uploadImage = (uri, mime = 'application/octet-stream') => {
   });
 }
 
-async function uploadAsFile(image, collectionInfo, progressCallback) {
+export async function uploadAsFile(image, collectionInfo, progressCallback) {
 
   console.log("uploadAsFile", image)
   const response = await fetch(image.uri);
@@ -408,6 +408,58 @@ async function uploadAsFile(image, collectionInfo, progressCallback) {
       }
     );
   });
+}
+
+export async function editProfilePic(image, collectionInfo, progressCallback) {
+  console.log("uploadAsFile", image)
+  const response = await fetch(image.uri);
+  const blob = await response.blob();
+
+  var metadata = {
+    contentType: image.type,
+  };
+
+  // let name = new Date().getTime() + "-" + image.fileName;
+  let name = collectionInfo.uid + "-" + image.name;
+  const ref = firebase
+    .storage()
+    .ref()
+    .child('assets/' + name)
+
+  const task = ref.put(blob, metadata);
+
+  return new Promise((resolve, reject) => {
+    task.on(
+      'state_changed',
+      (snapshot) => {
+        // progressCallback && progressCallback(snapshot.bytesTransferred / snapshot.totalBytes)
+
+        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload is ' + progress + '% done');
+      },
+      (error) => reject(error), /* this is where you would put an error callback! */
+      async () => {
+        // let downloadURL = task.snapshot.downloadURL;
+        let downloadURL = await ref.getDownloadURL();
+        console.log("_uploadAsByteArray ", downloadURL);
+
+        let success = await updateDocument(collectionInfo.collection, collectionInfo.uid, { photo: downloadURL })
+        resolve(downloadURL);
+
+        // save a reference to the image for listing purposes
+        // let refAssets = firebase.database().ref('assets');
+        // refAssets.push({
+        //   'URL': downloadURL,
+        //   //'thumb': _imageData['thumb'],
+        //   'name': name,
+        //   //'coords': _imageData['coords'],
+        //   'owner': firebase.auth().currentUser && firebase.auth().currentUser.uid,
+        //   'when': new Date().getTime()
+        // }).then(r => resolve(r), e => reject(e))
+      }
+    );
+  });
+
 }
 
 export async function updateProfile(user_profile) {

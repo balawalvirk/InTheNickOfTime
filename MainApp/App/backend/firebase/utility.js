@@ -5,6 +5,7 @@ import GlobalConst from '../../config/GlobalConst';
 import RNFetchBlob from 'react-native-fetch-blob';
 import { Platform, AsyncStorage } from 'react-native';
 import uuid from 'uuid';
+import MyPortfolio from '../../Containers/MainFlow/Technician/Home/myPortfolio';
 
 
 export function connectFirebase() {
@@ -410,9 +411,11 @@ export async function downloadImage(folder, imageName) {
   return url;
 }
 
-async function getUser(){
+async function getUser() {
   k = await AsyncStorage.getItem('user')
   user = JSON.parse(k)
+  console.log(user);
+  
   return user;
 }
 
@@ -431,7 +434,9 @@ setNameAndPic = async (dd) => {
 
 export async function getUserBookings(collection) {
   let data = [];
-  user = getUser()
+  user = await getUser()
+  console.log(user);
+  
 
   let querySnapshot = await firebase.firestore().collection(collection).where("userId", "==", user.UserId).get()
   //console.log(res);
@@ -453,7 +458,7 @@ export async function getUserBookings(collection) {
   return data;
 }
 
-export async function getTechnicianBookings(collection){
+export async function getTechnicianBookings(collection) {
   let data = []
   user = await getUser()
 
@@ -467,7 +472,79 @@ export async function getTechnicianBookings(collection){
     }
   });
   //data = await setNameAndPic(data)
-  console.log("Tech Bookings",data);
-  
+  console.log("Tech Bookings", data);
+
   return data;
+}
+
+export async function uploadPortfolio(image, collectionInfo, progressCallback) {
+
+  console.log("uploadAsFile", image)
+  const response = await fetch(image.uri);
+  const blob = await response.blob();
+
+  var metadata = {
+    contentType: image.type,
+  };
+
+  // let name = new Date().getTime() + "-" + image.fileName;
+  let name = collectionInfo.uid + "-" + image.name;
+  const ref = firebase
+    .storage()
+    .ref()
+    .child('assets/' + name)
+
+  const task = ref.put(blob, metadata);
+
+  return new Promise((resolve, reject) => {
+    task.on(
+      'state_changed',
+      (snapshot) => {
+        // progressCallback && progressCallback(snapshot.bytesTransferred / snapshot.totalBytes)
+
+        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload is ' + progress + '% done');
+      },
+      (error) => reject(error), /* this is where you would put an error callback! */
+      async () => {
+        // let downloadURL = task.snapshot.downloadURL;
+
+        let downloadURL = await ref.getDownloadURL();
+        console.log("_uploadAsByteArray ", downloadURL);
+        user = await AsyncStorage.getItem('user')
+        user = JSON.parse(user)
+        portfolio = user.portfolio
+        try {
+          portfolio.push(downloadURL)
+        } catch (err) {
+          console.log(err);
+          portfolio = []
+          portfolio.push(downloadURL)
+        }
+        user.portfolio = portfolio
+        tmp_usr = JSON.stringify(user)
+        AsyncStorage.setItem('user', tmp_usr)
+        console.log('Technicain',user.id,user)
+        updateDocument('Technician',user.id,user).then((res)=>{
+          console.log("res",res);
+          
+        },(err)=>{
+          console.log(err);
+          
+        })
+        success = 0
+
+        // save a reference to the image for listing purposes
+        // let refAssets = firebase.database().ref('assets');
+        // refAssets.push({
+        //   'URL': downloadURL,
+        //   //'thumb': _imageData['thumb'],
+        //   'name': name,
+        //   //'coords': _imageData['coords'],
+        //   'owner': firebase.auth().currentUser && firebase.auth().currentUser.uid,
+        //   'when': new Date().getTime()
+        // }).then(r => resolve(r), e => reject(e))
+      }
+    );
+  });
 }
