@@ -18,6 +18,8 @@ import TechniciansList from '../Containers/MainFlow/Client/Home/technicianList';
 import TechnicianDetailTab from '../Containers/ApplicationTabs/TechnicianDetailTopTab';
 import Payment from '../Containers/MainFlow/Client/Home/TechnicianDetail/payment';
 import WebViewOpensLink from './../Containers/MainFlow/Client/Settings/WebViewOpensLink';
+import CardData from './../Containers/MainFlow/Client/Home/TechnicianDetail/CardData'
+import { Card } from 'react-native-elements';
 
 const AppNavigator = createStackNavigator({
     splash: {
@@ -79,6 +81,9 @@ const AppNavigator = createStackNavigator({
     },
     WebViewOpensLink: {
         screen: WebViewOpensLink
+    },
+    cardData: {
+        screen: CardData
     }
 
 },

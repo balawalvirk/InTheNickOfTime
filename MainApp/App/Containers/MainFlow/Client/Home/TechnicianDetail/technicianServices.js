@@ -53,7 +53,7 @@ export default class TechnicianServices extends Component {
 
 
         this._toggelModalMessage()
-        this.props.navigation.navigate('payment', {
+        this.props.navigation.navigate('cardData', {
             services: this.state.selected_Services,
             location: this.state.travel_locations,
             travel_cost: this.state.travel_cost,
@@ -99,10 +99,9 @@ export default class TechnicianServices extends Component {
 
     componentDidMount() {
         console.log(this.props.navigation.getParam('services_details', ''))
-        console.log(JSON.parse(this.props.navigation.getParam('services_details', '')))
+        //console.log(JSON.parse(this.props.navigation.getParam('services_details', '')))
     }
     render() {
-        console.log("Detail", this.state.technician);
 
         return (
             <View style={styles.container}>
@@ -214,11 +213,11 @@ export default class TechnicianServices extends Component {
                                 </View>
                                 <View style={styles.schoolInputContainer}>
                                     <TextInput
-                                        onChangeText={(text) => this.setState({address: text})}
+                                        onChangeText={(text) => this.setState({ address: text })}
                                         placeholder={'Enter Full Address'}
                                         placeholderTextColor='rgb(217,217,217)'
                                         underlineColorAndroid='transparent'
-                                        // style={styles.TxtInput}
+                                    // style={styles.TxtInput}
                                     />
                                 </View>
                                 <View style={[styles.txtContainer, {}]}>

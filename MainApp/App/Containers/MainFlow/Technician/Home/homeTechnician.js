@@ -6,9 +6,10 @@ import { Icon } from 'react-native-elements';
 import Toast from 'react-native-simple-toast'
 import Loader from '../../../../Components/Loader';
 import { height, width, totalSize } from 'react-native-dimension';
+import { withNavigationFocus } from 'react-navigation';
 
 
-export default class HomeTechnician extends Component {
+class HomeTechnician extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -58,6 +59,9 @@ export default class HomeTechnician extends Component {
     }
 
     render() {
+        if (this.props.isFocused) {
+          this.loadUser()
+        }
         return (
             <View style={styles.Container}>
                 <Loader ref={r => this.loader = r} />
@@ -110,6 +114,8 @@ export default class HomeTechnician extends Component {
         );
     }
 }
+
+export default withNavigationFocus(HomeTechnician);
 
 
 const styles = StyleSheet.create({

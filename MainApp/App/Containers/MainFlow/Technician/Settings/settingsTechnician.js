@@ -5,6 +5,7 @@ import Icon from 'react-native-vector-icons/Ionicons'
 import Icon2 from 'react-native-vector-icons/MaterialCommunityIcons'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
 import { height, width, totalSize } from 'react-native-dimension';
+import { signOut } from './../../../../backend/firebase/auth_new';
 //import Share from 'react-native-share';
 //import store from '../Stores/orderStore'
 import Modal from 'react-native-modal'
@@ -20,8 +21,9 @@ class SettingTechnician extends Component {
   _toggleModalLogout = () =>
     this.setState({ isModalVisibleLogout: !this.state.isModalVisibleLogout });
 
-  logOut=()=> {
-    AsyncStorage.clear()
+  logOut= async ()=> {
+    await signOut()
+    await AsyncStorage.clear()
     this._toggleModalLogout()
     this.props.navigation.push('login')
   }

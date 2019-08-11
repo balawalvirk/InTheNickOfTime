@@ -87,9 +87,9 @@ class ProfileTechnician extends Component {
 
     console.log("WA", weekly_availability);
 
-    updateDocument('Technician', this.state.user.id, this.state.user)
-    tmpState = JSON.stringify(this.state.user)
-    AsyncStorage.setItem('user', tmpState)
+    await updateDocument('Technician', this.state.user.id, this.state.user)
+    let tmpState = JSON.stringify(this.state.user)
+    await AsyncStorage.setItem('user', tmpState)
   }
 
   _toggleModalForgetPassword = () =>

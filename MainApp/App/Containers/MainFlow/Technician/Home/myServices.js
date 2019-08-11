@@ -64,9 +64,9 @@ class MyServices extends Component {
     console.log(this.state.user);
 
 
-    await updateDocument('Technician', this.state.user.id, this.state.user).then(success => {
-      AsyncStorage.setItem('user', JSON.stringify(this.state.user))
-    })
+    let rs = await updateDocument('Technician', this.state.user.id, this.state.user);
+    await AsyncStorage.setItem('user', JSON.stringify(this.state.user));
+    this.setState({ isModalVisible: !this.state.isModalVisible });
   }
 
   updateService = async () => {

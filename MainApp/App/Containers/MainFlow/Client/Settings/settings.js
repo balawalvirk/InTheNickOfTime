@@ -24,7 +24,7 @@ class Settings extends Component {
 
   logOut = async () => {
     await signOut();
-    AsyncStorage.clear()
+    await AsyncStorage.clear()
     this._toggleModalLogout()
     this.props.navigation.push('login')
   }

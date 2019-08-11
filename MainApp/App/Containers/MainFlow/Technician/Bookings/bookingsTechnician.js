@@ -63,36 +63,44 @@ class bookingTechnician extends Component {
   }
 
   updateBooking = async (booking, index) => {
-    booking.UserName = booking.userName
-    if (booking.status === 'pending') {
-      booking.status = 'accepted'
-      await updateDocument('Bookings', booking.id, booking).then((result) => {
-        console.log(result);
+    try {
+      console.log('booking', booking)
+      if (!booking.photo) {
+        delete booking.photo;
+      }
+      booking.UserName = booking.userName
+      if (booking.status === 'pending') {
+        booking.status = 'accepted'
+        let result = await updateDocument('Bookings', booking.id, booking);
+        console.log('result', result);
         this.state.pending.splice(index, 1)
         this.setState({ accepted: [...this.state.accepted, booking] })
-      })
-    }
-    else if (booking.status === 'accepted') {
-      booking.status = 'completed'
-      await updateDocument('Bookings', booking.id, booking).then((result) => {
-        console.log(result);
+      } else if (booking.status === 'accepted') {
+        booking.status = 'completed'
+        let result = await updateDocument('Bookings', booking.id, booking);
+        console.log('result', result);
         this.state.accepted.splice(index, 1)
         this.setState(this.state);
-      }, (err) => {
-        console.log("Error", err);
-
-      })
+      }
+    } catch (err) {
+      console.log("Error", err);
     }
   }
 
   deleteBooking = async (booking, index) => {
-    booking.UserName = booking.userName
-    booking.status = 'canceled'
-    await updateDocument('Bookings', booking.id, booking).then((result) => {
+    try {
+      booking.UserName = booking.userName
+      if (!booking.photo) {
+        delete booking.photo;
+      }
+      booking.status = 'canceled'
+      let result = await updateDocument('Bookings', booking.id, booking);
       console.log(result);
       this.state.pending.splice(index, 1)
       this.setState(this.state);
-    })
+    } catch (err) {
+      console.log("Error", err);
+    }
   }
   render() {
     return (

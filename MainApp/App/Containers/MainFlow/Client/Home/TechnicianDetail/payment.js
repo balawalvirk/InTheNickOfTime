@@ -10,6 +10,7 @@ import images from '../../../../../Themes/Images';
 import { saveData, createData } from '../../../../../backend/firebase/utility'
 import firebase from 'firebase';
 import AsyncStorage from '@react-native-community/async-storage';
+import { CreditCardInput } from 'react-native-credit-card-input'
 
 class Payment extends Component {
 
@@ -28,9 +29,36 @@ class Payment extends Component {
     };
 
 
+    getCreditCardToken = (creditCardData) => {
+        const card = {
+          'card[number]': creditCardData.values.number.replace(/ /g, ''),
+          'card[exp_month]': creditCardData.values.expiry.split('/')[0],
+          'card[exp_year]': creditCardData.values.expiry.split('/')[1],
+          'card[cvc]': creditCardData.values.cvc
+        };
+      
+        return fetch('https://api.stripe.com/v1/tokens', {
+          headers: {
+            // Use the correct MIME type for your server
+            Accept: 'application/json',
+            // Use the correct Content Type to send data in request body
+            'Content-Type': 'application/x-www-form-urlencoded',
+            // Use the Stripe publishable key as Bearer
+            Authorization: `Bearer ${STRIPE_PUBLISHABLE_KEY}`
+          },
+          // Use a proper HTTP method
+          method: 'post',
+          // Format the credit card data to a string of key-value pairs
+          // divided by &
+          body: Object.keys(card)
+            .map(key => key + '=' + card[key])
+            .join('&')
+        }).then(response => response.json());
+      };
+
     checkOut = async () => {
         try {
-            this.setState({loader: true});
+            this.setState({ loader: true });
             let Booking = {
                 userId: '',
                 userName: '',
@@ -45,7 +73,7 @@ class Payment extends Component {
                 technicianId: '',
                 technicianName: '',
                 servicesList: '',
-                address:''
+                address: ''
 
             }
 
@@ -54,6 +82,7 @@ class Payment extends Component {
                     ("USER", data)
                 if (data) {
                     res = JSON.parse(data)
+                    console.log(res);
                     Booking.userId = res.UserId
                     Booking.userName = res.name
                 }
@@ -66,16 +95,16 @@ class Payment extends Component {
                 Booking.location = this.props.navigation.getParam('location', '')[0].location
                 Booking.services = this.props.navigation.getParam('services', '')
                 Booking.technicianId = this.props.navigation.getParam('technician', '').UserId
-                Booking.technicianName = this.props.navigation.getParam('technician', '').firstName
+                Booking.technicianName = this.props.navigation.getParam('technician', '').name
                 Booking.amount = Booking.services_cost + Booking.travel_cost,
-                Booking.address = this.props.navigation.getParam('address')
+                    Booking.address = this.props.navigation.getParam('address')
                 this.setState({ amount: Booking.amount })
                 Booking.comments = this.props.navigation.getParam("comments", '')
                 await createData("Bookings", Booking);
-                this.setState({loader: false});
+                this.setState({ loader: false });
                 console.log("Normal Booking", Booking);
                 let msg = 'Your request has been sent! Please wait while the technician confirms your appointment. You will be notified via app and e-mail. Your card is not charged until the technician confirms your appointment.';
-                Alert.alert('Success', msg, [{ text: 'OK', onPress: () => { this.props.navigation.navigate('clientTab'); } }], { cancelable: false});
+                Alert.alert('Success', msg, [{ text: 'OK', onPress: () => { this.props.navigation.navigate('clientTab'); } }], { cancelable: false });
             });
 
         } catch (e) {
@@ -83,104 +112,19 @@ class Payment extends Component {
             Alert.alert('Failure', 'Failed to checkout. Please try again.', [{ text: 'OK', onPress: () => { } }]);
         } finally {
             // this.loader.hide();
-            this.setState({loader: false});
+            this.setState({ loader: false });
         }
         //console.log("String Booking", JSON.parse(JSON.stringify(Booking)));
     }
     render() {
         return (
             <View style={styles.Container}>
-
-                {this.state.loader ? <ActivityIndicator size="large" color="#0000ff" /> : null}
-
-                <View style={styles.topContainer}>
-                    <Image source={images.VisaLogo} style={{ height: height(5), width: width(20) }} />
-                    <Image source={images.masterCardLogo} style={{ height: height(10), width: width(20), marginHorizontal: width(5) }} />
-                    <Image source={images.AMEXlogo} style={{ height: height(4), width: width(15) }} />
-                </View>
-                {/* <View style={styles.topContainer}>
-            <View style={styles.pfContainer}>
-                <Image source={images.profilePic} style={styles.profileImage} />
-                <TouchableOpacity onPress={this.image_picker}>
-                    <Icon name='camera' type='entypo' color='gray' size={totalSize(4)} />
-                </TouchableOpacity>
-            </View>
-            <View >
-                <Text style={styles.formTxt}>Your Name</Text>
-                <TextInput
-                    value={this.state.name}
-                    placeholderTextColor='rgb(183,179,179)'
-                    style={styles.inputName}
-                />
-            </View>
-        </View> */}
-                {/* <View style={[styles.txtContainer,{marginVertical:0,elevation:0,backgroundColor:'transparent',alignItems:'flex-end'}]}>
-                    <Text style={styles.formTxt}>Card</Text>
-                </View> */}
-                <View style={styles.txtContainer}>
-                    <View style={{ width: width(10), alignItems: 'center' }}>
-                        <Icon name='credit-card-alt' type='font-awesome' color='gray' size={totalSize(3)} />
-                    </View>
-                    <View style={{ width: width(20), alignItems: 'center' }}>
-                        <Text style={styles.formTxt}>Card</Text>
-                    </View>
-                    <TextInput
-                        //value={this.state.name}
-                        placeholder='**** **** **** ****'
-                        placeholderTextColor='rgb(183,179,179)'
-                        style={styles.input}
-                    />
-                </View>
-                {/* <View style={[styles.txtContainer,{marginVertical:0,elevation:0,backgroundColor:'transparent',alignItems:'flex-end'}]}>
-                    <Text style={styles.formTxt}>Expiry</Text>
-                </View> */}
-                <View style={styles.txtContainer}>
-
-                    <View style={{ width: width(10), alignItems: 'center' }}>
-                        <Icon name='calendar' type='material-community' color='gray' size={totalSize(4)} />
-                    </View>
-                    <View style={{ width: width(20), alignItems: 'center' }}>
-                        <Text style={styles.formTxt}>Expiry</Text>
-                    </View>
-                    <TextInput
-                        //value={this.state.name}
-                        placeholder='MM/YY'
-                        placeholderTextColor='rgb(183,179,179)'
-                        style={styles.input}
-                    />
-                </View>
-                {/* <View style={[styles.txtContainer, { marginVertical: 0, elevation: 0, backgroundColor: 'transparent', alignItems: 'flex-end' }]}>
-                    <Text style={styles.formTxt}>CVC</Text>
-                </View> */}
-                <View style={styles.txtContainer}>
-                    <View style={{ width: width(10), alignItems: 'center' }}>
-                        <Icon name='lock' type='font-awesome' color='gray' size={totalSize(4)} />
-                    </View>
-                    <View style={{ width: width(20), alignItems: 'center' }}>
-                        <Text style={styles.formTxt}>CVC</Text>
-                    </View>
-                    <TextInput
-                        //value={this.state.name}
-                        placeholder='123'
-                        placeholderTextColor='rgb(183,179,179)'
-                        style={styles.input}
-                    />
-                </View>
-                {/* <View style={styles.txtContainer}>
-            <Text style={[styles.formTxt, { color: 'rgb(218,21,30)', fontWeight: 'normal' }]}>*If you want to change the password then enter a new password below</Text>
-            <Text style={styles.formTxt}>New Password</Text>
-            <TextInput
-                editable={true}
-                placeholder='*******'
-                placeholderTextColor='rgb(183,179,179)'
-                style={styles.input}
-            />
-        </View> */}
+                {/* <CreditCardInput requiresName onChange={(cardData) => this.setState({ cardData })} /> */}
                 <View style={{ width: width(90), marginTop: height(2), }}>
                     <Text style={[styles.formTxt2, { textAlign: 'justify' }]}>{this.state.instruction}</Text>
                 </View>
 
-                
+
 
                 <View style={styles.btnContainer}>
                     <TouchableOpacity style={styles.btn} onPress={() => { this.checkOut() }} >

@@ -15,11 +15,11 @@ class Splash extends Component {
         header: null
     }
     
-    componentDidMount() {
+    async componentDidMount() {
 
         console.log(JSON.stringify({ id: 1, location: 'Sea site, New york, USA', travel_cost: 20 }));
         connectFirebase();
-        AsyncStorage.getItem('user', (error, data) => {
+        await AsyncStorage.getItem('user', (error, data) => {
             console.log("Splash",error)
             console.log("Splash",data);
 
