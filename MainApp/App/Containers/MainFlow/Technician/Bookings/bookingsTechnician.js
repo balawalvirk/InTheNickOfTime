@@ -71,6 +71,7 @@ class bookingTechnician extends Component {
       booking.UserName = booking.userName
       if (booking.status === 'pending') {
         booking.status = 'accepted'
+        this.onCollect(booking.payment_id);
         let result = await updateDocument('Bookings', booking.id, booking);
         console.log('result', result);
         this.state.pending.splice(index, 1)
@@ -93,7 +94,8 @@ class bookingTechnician extends Component {
       if (!booking.photo) {
         delete booking.photo;
       }
-      booking.status = 'canceled'
+      booking.status = 'canceled';
+      this.onReject(booking.payment_id)
       let result = await updateDocument('Bookings', booking.id, booking);
       console.log(result);
       this.state.pending.splice(index, 1)
@@ -101,6 +103,58 @@ class bookingTechnician extends Component {
     } catch (err) {
       console.log("Error", err);
     }
+  }
+
+
+  async onReject(id){
+
+    const body = {};
+    body['charge'] = id,
+    fetch('https://api.stripe.com/v1/refunds', {
+
+          headers: {
+  
+            Accept: 'application/json',
+    
+            'Content-Type': 'application/x-www-form-urlencoded',
+          
+            Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
+            // Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
+          },
+          // Use a proper HTTP method
+          method: 'post',
+          // Format the credit card data to a string of key-value pairs
+          // divided by &
+          body: Object.keys(body)
+          .map(key => key + '=' + body[key])
+          .join('&')
+          
+      }).then(response => {alert('amount refunded');console.log(response)}).catch(err => {
+        alert(err.error.message)
+      })
+  }
+
+  
+  async onCollect(id){
+    fetch('https://api.stripe.com/v1/charges/'+id+'/capture', {
+
+          headers: {
+  
+            Accept: 'application/json',
+    
+            'Content-Type': 'application/x-www-form-urlencoded',
+          
+            Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
+            // Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
+          },
+          // Use a proper HTTP method
+          method: 'post',
+          // Format the credit card data to a string of key-value pairs
+          // divided by &
+          
+      }).then(response => {alert('amount collected');console.log(response)}).catch(err => {
+        alert(err.error.message)
+      })
   }
   render() {
     return (

@@ -10,7 +10,8 @@ import images from '../../../../../Themes/Images';
 import { saveData, createData } from '../../../../../backend/firebase/utility'
 import firebase from 'firebase';
 import AsyncStorage from '@react-native-community/async-storage';
-import { CreditCardInput } from 'react-native-credit-card-input'
+import { CreditCardInput } from 'react-native-credit-card-input';
+import Stripe from 'react-native-stripe-api';
 
 class Payment extends Component {
 
@@ -28,94 +29,205 @@ class Payment extends Component {
 
     };
 
-
-    getCreditCardToken = (creditCardData) => {
-        const card = {
-          'card[number]': creditCardData.values.number.replace(/ /g, ''),
-          'card[exp_month]': creditCardData.values.expiry.split('/')[0],
-          'card[exp_year]': creditCardData.values.expiry.split('/')[1],
-          'card[cvc]': creditCardData.values.cvc
-        };
+    async onSubmit(creditCardData) {
+        // const apiKey = 'pk_test_SsuRgFFnyuyzaLc8DoYx3nnU00SVBSqUIk';
+        alert(this.props.navigation.getParam('card_number', ''))
+        this.setState({ loader: true });
+        const apiKey = 'pk_test_SsuRgFFnyuyzaLc8DoYx3nnU00SVBSqUIk';
+        const client = new Stripe(apiKey);
+        const token = await client.createToken({
+            number:  this.props.navigation.getParam('card_number', ''),
+            exp_month: this.props.navigation.getParam('card_exp_month', ''), 
+            exp_year: this.props.navigation.getParam('card_exp_year', ''),  
+            cvc: this.props.navigation.getParam('card_cvc', ''), 
+            address_zip: '12345'
+         }).then(i => {
+           if(i.error){
+             alert(i.error.message)
+           }else{
+               console.log(i)
+                this.charge(i);
+              
+          
+          }
+              
       
-        return fetch('https://api.stripe.com/v1/tokens', {
-          headers: {
-            // Use the correct MIME type for your server
-            Accept: 'application/json',
-            // Use the correct Content Type to send data in request body
-            'Content-Type': 'application/x-www-form-urlencoded',
-            // Use the Stripe publishable key as Bearer
-            Authorization: `Bearer ${STRIPE_PUBLISHABLE_KEY}`
-          },
-          // Use a proper HTTP method
-          method: 'post',
-          // Format the credit card data to a string of key-value pairs
-          // divided by &
-          body: Object.keys(card)
-            .map(key => key + '=' + card[key])
-            .join('&')
-        }).then(response => response.json());
-      };
+         }).catch(err => {
+           alert(err.error.message)
+         })
+      
+        }     
+        
+        
 
-    checkOut = async () => {
-        try {
-            this.setState({ loader: true });
-            let Booking = {
-                userId: '',
-                userName: '',
-                amount: 0,
-                status: 'pending',
-                comments: '',
-                date_time: '',
-                location: '',
-                services: {},
-                services_cost: 0,
-                travel_cost: 0,
-                technicianId: '',
-                technicianName: '',
-                servicesList: '',
-                address: ''
+        async charge(i){
+            const body = {};
+            body['amount'] = '2000',
+            body['currency'] = 'usd',
+            body['source'] = i.id
+            body['capture'] = false;
 
-            }
+            let data = await fetch('https://api.stripe.com/v1/charges', {
+      
+              //   const card = {
+        //       'card[number]': creditCardData.values.number.replace(/ /g, ''),
+        //       'card[exp_month]': creditCardData.values.expiry.split('/')[0],
+        //       'card[exp_year]': creditCardData.values.expiry.split('/')[1],
+        //       'card[cvc]': creditCardData.values.cvc
+        //     };
+                headers: {
+                  // Use the correct MIME type for your server
+                  Accept: 'application/json',
+                  // Use the correct Content Type to send data in request body
+                  'Content-Type': 'application/x-www-form-urlencoded',
+                  // Use the Stripe publishable key as Bearer
+                  Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
+                  // Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
+                },
+                // Use a proper HTTP method
+                method: 'post',
+                // Format the credit card data to a string of key-value pairs
+                // divided by &
+                body: Object.keys(body)
+                .map(key => key + '=' + body[key])
+                .join('&')
+            })
+            
+            let commits = await data.json() 
+            .then(response => {
+               
+                try {
+                 
+                    let Booking = {
+                        userId: '',
+                        userName: '',
+                        amount: 0,
+                        status: 'pending',
+                        comments: '',
+                        date_time: '',
+                        location: '',
+                        services: {},
+                        services_cost: 0,
+                        travel_cost: 0,
+                        technicianId: '',
+                        technicianName: '',
+                        servicesList: '',
+                        address: '',
+                        payment_id : response.id,
+                       
+        
+                    }
+        
+                    user = AsyncStorage.getItem('user', async (error, data) => {
+                        console.log
+                            ("USER", data)
+                        if (data) {
+                            res = JSON.parse(data)
+                            console.log(res);
+                            Booking.userId = res.UserId
+                            Booking.userName = res.name
+                        }
+                        for (i = 0; i < this.props.navigation.getParam('services', 0).length; i++) {
+                            Booking.servicesList = Booking.servicesList + " " + this.props.navigation.getParam('services', '')[i].service_name
+                        }
+                        Booking.services_cost = this.props.navigation.getParam('services_cost', '')
+                        Booking.travel_cost = this.props.navigation.getParam('travel_cost', '')
+                        Booking.date_time = this.props.navigation.getParam('date_time', '')
+                        Booking.location = this.props.navigation.getParam('location', '')[0].location
+                        Booking.services = this.props.navigation.getParam('services', '')
+                        Booking.technicianId = this.props.navigation.getParam('technician', '').UserId
+                        Booking.technicianName = this.props.navigation.getParam('technician', '').name
+                        Booking.amount = Booking.services_cost + Booking.travel_cost,
+                        Booking.address = this.props.navigation.getParam('address')
 
-            user = AsyncStorage.getItem('user', async (error, data) => {
-                console.log
-                    ("USER", data)
-                if (data) {
-                    res = JSON.parse(data)
-                    console.log(res);
-                    Booking.userId = res.UserId
-                    Booking.userName = res.name
+                        this.setState({ amount: Booking.amount })
+                        Booking.comments = this.props.navigation.getParam("comments", '')
+                        await createData("Bookings", Booking);
+                        this.setState({ loader: false });
+                        console.log("Normal Booking", Booking);
+                        let msg = 'Your request has been sent! Please wait while the technician confirms your appointment. You will be notified via app and e-mail. Your card is not charged until the technician confirms your appointment.';
+                        Alert.alert('Success', msg, [{ text: 'OK', onPress: () => { this.props.navigation.navigate('clientTab'); } }], { cancelable: false });
+                    });
+        
+                } catch (e) {
+                    console.log(e);
+                    Alert.alert('Failure', 'Failed to checkout. Please try again.', [{ text: 'OK', onPress: () => { } }]);
+                } finally {
+                    // this.loader.hide();
+                    this.setState({ loader: false });
                 }
-                for (i = 0; i < this.props.navigation.getParam('services', 0).length; i++) {
-                    Booking.servicesList = Booking.servicesList + " " + this.props.navigation.getParam('services', '')[i].service_name
-                }
-                Booking.services_cost = this.props.navigation.getParam('services_cost', '')
-                Booking.travel_cost = this.props.navigation.getParam('travel_cost', '')
-                Booking.date_time = this.props.navigation.getParam('date_time', '')
-                Booking.location = this.props.navigation.getParam('location', '')[0].location
-                Booking.services = this.props.navigation.getParam('services', '')
-                Booking.technicianId = this.props.navigation.getParam('technician', '').UserId
-                Booking.technicianName = this.props.navigation.getParam('technician', '').name
-                Booking.amount = Booking.services_cost + Booking.travel_cost,
-                    Booking.address = this.props.navigation.getParam('address')
-                this.setState({ amount: Booking.amount })
-                Booking.comments = this.props.navigation.getParam("comments", '')
-                await createData("Bookings", Booking);
-                this.setState({ loader: false });
-                console.log("Normal Booking", Booking);
-                let msg = 'Your request has been sent! Please wait while the technician confirms your appointment. You will be notified via app and e-mail. Your card is not charged until the technician confirms your appointment.';
-                Alert.alert('Success', msg, [{ text: 'OK', onPress: () => { this.props.navigation.navigate('clientTab'); } }], { cancelable: false });
-            });
 
-        } catch (e) {
-            console.log(e);
-            Alert.alert('Failure', 'Failed to checkout. Please try again.', [{ text: 'OK', onPress: () => { } }]);
-        } finally {
-            // this.loader.hide();
-            this.setState({ loader: false });
+
+
+
+
+            }).catch(err => {
+              alert(err.error.message)
+            })
+
+
+
         }
-        //console.log("String Booking", JSON.parse(JSON.stringify(Booking)));
-    }
+    // checkOut = async () => {
+    //     try {
+    //         this.setState({ loader: true });
+    //         let Booking = {
+    //             userId: '',
+    //             userName: '',
+    //             amount: 0,
+    //             status: 'pending',
+    //             comments: '',
+    //             date_time: '',
+    //             location: '',
+    //             services: {},
+    //             services_cost: 0,
+    //             travel_cost: 0,
+    //             technicianId: '',
+    //             technicianName: '',
+    //             servicesList: '',
+    //             address: ''
+
+    //         }
+
+    //         user = AsyncStorage.getItem('user', async (error, data) => {
+    //             console.log
+    //                 ("USER", data)
+    //             if (data) {
+    //                 res = JSON.parse(data)
+    //                 console.log(res);
+    //                 Booking.userId = res.UserId
+    //                 Booking.userName = res.name
+    //             }
+    //             for (i = 0; i < this.props.navigation.getParam('services', 0).length; i++) {
+    //                 Booking.servicesList = Booking.servicesList + " " + this.props.navigation.getParam('services', '')[i].service_name
+    //             }
+    //             Booking.services_cost = this.props.navigation.getParam('services_cost', '')
+    //             Booking.travel_cost = this.props.navigation.getParam('travel_cost', '')
+    //             Booking.date_time = this.props.navigation.getParam('date_time', '')
+    //             Booking.location = this.props.navigation.getParam('location', '')[0].location
+    //             Booking.services = this.props.navigation.getParam('services', '')
+    //             Booking.technicianId = this.props.navigation.getParam('technician', '').UserId
+    //             Booking.technicianName = this.props.navigation.getParam('technician', '').name
+    //             Booking.amount = Booking.services_cost + Booking.travel_cost,
+    //                 Booking.address = this.props.navigation.getParam('address')
+    //             this.setState({ amount: Booking.amount })
+    //             Booking.comments = this.props.navigation.getParam("comments", '')
+    //             await createData("Bookings", Booking);
+    //             this.setState({ loader: false });
+    //             console.log("Normal Booking", Booking);
+    //             let msg = 'Your request has been sent! Please wait while the technician confirms your appointment. You will be notified via app and e-mail. Your card is not charged until the technician confirms your appointment.';
+    //             Alert.alert('Success', msg, [{ text: 'OK', onPress: () => { this.props.navigation.navigate('clientTab'); } }], { cancelable: false });
+    //         });
+
+    //     } catch (e) {
+    //         console.log(e);
+    //         Alert.alert('Failure', 'Failed to checkout. Please try again.', [{ text: 'OK', onPress: () => { } }]);
+    //     } finally {
+    //         // this.loader.hide();
+    //         this.setState({ loader: false });
+    //     }
+    //     //console.log("String Booking", JSON.parse(JSON.stringify(Booking)));
+    // }
     render() {
         return (
             <View style={styles.Container}>
@@ -127,7 +239,7 @@ class Payment extends Component {
 
 
                 <View style={styles.btnContainer}>
-                    <TouchableOpacity style={styles.btn} onPress={() => { this.checkOut() }} >
+                    <TouchableOpacity style={styles.btn} onPress={() => { this.onSubmit() }} >
                         {
                             this.state.loading === true ?
                                 <ActivityIndicator size='small' color='white' />
