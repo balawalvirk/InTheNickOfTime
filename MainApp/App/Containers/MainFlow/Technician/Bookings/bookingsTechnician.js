@@ -45,6 +45,7 @@ class bookingTechnician extends Component {
           console.log("Doc", doc.data());
           bookings[i].UserName = doc.data().firstName
           bookings[i].photo = doc.data().photo
+          bookings[i].notification = doc.data().notification
         }
       })
       if (bookings[i].status === 'pending') {
@@ -63,6 +64,7 @@ class bookingTechnician extends Component {
   }
 
   updateBooking = async (booking, index) => {
+    not = []
     try {
       console.log('booking', booking)
       if (!booking.photo) {
@@ -70,8 +72,17 @@ class bookingTechnician extends Component {
       }
       booking.UserName = booking.userName
       if (booking.status === 'pending') {
+        try {
+          not = JSON.parse(booking.notification)
+          not.push("Booking request has been accepted by" + booking.technicianName)
+
+        } catch (err) {
+          not = []
+          not.push("Booking request has been accepted by " + booking.technicianName)
+        }
         booking.status = 'accepted'
         let result = await updateDocument('Bookings', booking.id, booking);
+        result = await updateDocument('Users', booking.userId, { notification: not });
         console.log('result', result);
         this.state.pending.splice(index, 1)
         this.setState({ accepted: [...this.state.accepted, booking] })

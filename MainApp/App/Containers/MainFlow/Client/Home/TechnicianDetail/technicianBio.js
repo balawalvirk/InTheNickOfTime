@@ -17,7 +17,7 @@ export default class TechnicianBio extends Component {
         console.log("TECHNICIAN CHECK", this.props.navigation.getParam('technician', ''));
 
         this.state = {
-            name: this.props.navigation.getParam('technician', '').firstName,
+            name: this.props.navigation.getParam('technician', '').name,
             aboutMe: this.props.navigation.getParam('technician', '').description,
             timings: this.props.navigation.getParam('technician', '').weekly_availability + " " + this.props.navigation.getParam('technician', '').daily_availability,
             photo: this.props.navigation.getParam('technician', '').photo

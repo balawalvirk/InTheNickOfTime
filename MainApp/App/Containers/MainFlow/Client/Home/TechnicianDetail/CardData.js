@@ -26,8 +26,8 @@ class CardData extends Component {
 
     };
 
-    confirmCard(){
-        
+    confirmCard() {
+
         this.props.navigation.navigate('payment', {
             services: this.props.navigation.getParam('services'),
             location: this.props.navigation.getParam('location'),
@@ -36,9 +36,10 @@ class CardData extends Component {
             services_cost: this.props.navigation.getParam('services_cost'),
             technician: this.props.navigation.getParam('technician'),
             comments: this.props.navigation.getParam('comments'),
-            address: this.props.navigation.getParam('address')
+            address: this.props.navigation.getParam('address'),
+            card: this.state.cardData
         })
-        
+
     }
 
     getCreditCardToken = (creditCardData) => {
@@ -72,9 +73,9 @@ class CardData extends Component {
         return (
             <View>
                 <View>
-                    <CreditCardInput style={{flex:1,height:400}} requiresName onChange={(cardData) => this.setState({ cardData })} />
+                    <CreditCardInput style={{ flex: 1, height: 400 }} requiresName onChange={(cardData) => this.setState({ cardData: cardData })} />
                 </View>
-                <TouchableOpacity style={styles.btnTxtContainer} onPress={()=>{this.confirmCard()}}>
+                <TouchableOpacity style={styles.btnTxtContainer} onPress={() => { this.confirmCard() }}>
                     <Text style={styles.btnTxt}>Next</Text>
                 </TouchableOpacity>
             </View>

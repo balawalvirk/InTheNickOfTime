@@ -123,7 +123,8 @@ class SignUpTechnician extends Component {
                 ratings: '',
                 locations_details: '',
                 description: '',
-                daily_availability: ''
+                daily_availability: '',
+                notification: []
             }
             console.log(jsonObect);
 
@@ -246,7 +247,7 @@ class SignUpTechnician extends Component {
                                     <Icon name='eye' color='rgb(217,217,217)' size={totalSize(2)} type='font-awesome' />
                                 </TouchableOpacity>
                             </View>
-                            <View style={styles.InputContainer}>
+                            {/* <View style={styles.InputContainer}>
                                 <Icon name='location-pin' color='rgb(66,67,69)' size={totalSize(3)} type='entypo' />
                                 <TextInput
                                     //onChangeText={(value) => this.getSchool_predictions(value)}
@@ -257,7 +258,7 @@ class SignUpTechnician extends Component {
                                     value={this.state.location}
                                     onChangeText={(text) => this.setState({ location: text })}
                                 />
-                            </View>
+                            </View> */}
                             <View style={[styles.txtContainer, { flexDirection: 'row', width: width(80), height: height(8), justifyContent: 'flex-start', backgroundColor: 'transparent', marginVertical: 0 }]}>
                                 <TouchableOpacity style={[styles.buttonSmall, { backgroundColor: 'rgb(219,0,0)' }]} onPress={() => this.image_picker()} >
                                     <Text style={[styles.welcome, { fontSize: totalSize(1), color: 'white', marginHorizontal: 5, marginVertical: 4 }]}>Upload Image</Text>
@@ -279,7 +280,7 @@ class SignUpTechnician extends Component {
                                             <ActivityIndicator size={'small'} color='white' />
                                             :
                                             <View style={styles.btnTxtContainer}>
-                                                <Text style={styles.btnTxt}>Signup</Text>
+                                                <Text style={styles.btnTxt}>Sign Up</Text>
                                             </View>
                                     }
                                 </TouchableOpacity>

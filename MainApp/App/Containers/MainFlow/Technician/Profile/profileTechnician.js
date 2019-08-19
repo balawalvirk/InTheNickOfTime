@@ -19,26 +19,42 @@ import Modal from 'react-native-modal'
 import AsyncStorage from '@react-native-community/async-storage';
 import { updateDocument } from '../../../../backend/firebase/utility';
 import Toast from 'react-native-simple-toast';
+import Loader from "../../../../Components/Loader"
 
 class ProfileTechnician extends Component {
   constructor(props) {
     super(props);
     this.state = {
       user: {},
-      day_from: '',
-      day_to: '',
-      time_from: '',
-      time_to: '',
+      day_from: 'N/A',
+      day_to: 'N/A',
+      time_from: new Date().getHours().toString(),
+      time_to: new Date().getHours().toString(),
       isModalVisibleForgetPassword: false,
+      isModalVisibleLocation: false,
       days: [
         { id: 1, item: 'Monday', val: 'Mon' },
         { id: 2, item: 'Tuesday', val: 'Tue' },
         { id: 3, item: 'Wednesday', val: 'Wed' },
-        { id: 4, item: 'Thursday', val: 'Thurs' },
+        { id: 4, item: 'Thursday', val: 'Thu' },
         { id: 4, item: 'Friday', val: 'Fri' },
         { id: 4, item: 'Saturday', val: 'Sat' },
         { id: 4, item: 'Sunday', val: 'Sun' },
       ],
+      locations: [
+        { id: 1, location: 'Sea site, New york, USA', travel_cost: 20 },
+        { id: 2, location: 'Top Valley, New york, USA', travel_cost: 25 },
+        { id: 3, location: 'Down Town, New york, USA', travel_cost: 45 },
+        { id: 4, location: 'Sea site, New york, USA', travel_cost: 30 }
+      ],
+      states_list: [
+        { id: 1, state_name: 'MaryLand' },
+        { id: 2, state_name: 'Verginia' },
+        { id: 3, state_name: 'Washingtn, DC' },
+      ],
+      cost: 0,
+      location: '',
+      loc_id: null
     };
   }
 
@@ -55,18 +71,57 @@ class ProfileTechnician extends Component {
     }
   }
 
+  async updateLocationCosts() {
+    if (this.state.location == '' || this.state.cost == 0) {
+      return
+    } else {
+      loc_arr = []
+      tmp = {
+        id: this.state.loc_id,
+        location: this.state.location,
+        travel_cost: this.state.cost
+      }
+      console.log(this.state.user.travel_locations);
+      if(this.state.user.travel_locations.length == 0){
+        kk = []
+        kk.push(this.state.location)
+        this.state.user.travel_locations = kk
+      }else{
+        kk = this.state.user.travel_locations
+        kk.push(this.state.location)
+        this.state.user.travel_locations = kk
+      }
+      try {
+        loc_arr = JSON.parse(this.state.user.locations_details)
+
+      } catch (err) {
+        loc_arr = []
+      }
+      loc_arr.push(tmp)
+      loc_arr = JSON.stringify(loc_arr)
+      this.state.user.locations_details = loc_arr
+      this._toggleModalLocation()
+      this.loader.show()
+      await updateDocument('Technician', this.state.user.id, this.state.user)
+      let tmpState = JSON.stringify(this.state.user)
+      await AsyncStorage.setItem('user', tmpState)
+      this.loader.hide()
+
+
+    }
+
+  }
+
   async componentDidMount() {
+    this.loader.show()
     usr = await AsyncStorage.getItem('user')
     usr = JSON.parse(usr)
     this.setState({ user: usr })
+    this.loader.hide()
   }
 
   async updateAvailability() {
     console.log(this.state.time_from, " ", this.state.time_to);
-    if (this.state.user.weekly_availability == null || this.state.user.weekly_availability == "" || this.state.user.daily_availability == null || this.state.user.daily_availability == "") {
-      Toast.show("Some Informatin is Missing")
-      return
-    }
     if (this.state.day_to == null || this.state.day_to == "" || this.state.day_from == null || this.state.day_from == "") {
       Toast.show("Some Informatin is Missing")
       return
@@ -83,23 +138,29 @@ class ProfileTechnician extends Component {
     weekly_availability = this.state.day_from + "-" + this.state.day_to;
     this.state.user.weekly_availability = weekly_availability;
     this.state.user.daily_availability = daily_availability;
+    this.setState({ isModalVisibleForgetPassword: false })
 
 
     console.log("WA", weekly_availability);
-
+    this.loader.show()
     await updateDocument('Technician', this.state.user.id, this.state.user)
     let tmpState = JSON.stringify(this.state.user)
     await AsyncStorage.setItem('user', tmpState)
+    this.loader.hide()
   }
 
   _toggleModalForgetPassword = () =>
     this.setState({ isModalVisibleForgetPassword: !this.state.isModalVisibleForgetPassword });
+
+  _toggleModalLocation = () =>
+    this.setState({ isModalVisibleLocation: !this.state.isModalVisibleLocation });
 
 
   render() {
     return (
 
       <View style={styles.container}>
+        <Loader ref={r => this.loader = r} />
         <View style={styles.uperContainer}>
 
           <TouchableOpacity onPress={() => this.props.navigation.navigate('editProfileTechnician')} style={{ width: totalSize(6), height: totalSize(6), backgroundColor: 'transparent', borderRadius: 100, alignItems: 'center', justifyContent: 'center', marginTop: 5, marginRight: 5 }}>
@@ -133,7 +194,11 @@ class ProfileTechnician extends Component {
               <Icon name='arrow-right' color='rgb(66,67,69)' size={totalSize(2)} type='simple-line-icon' />
             </View>
           </TouchableOpacity> */}
-          <TouchableOpacity style={styles.button2} >
+          <TouchableOpacity
+            style={styles.button2}
+            onPress={() => {
+              this._toggleModalLocation()
+            }} >
             <View style={styles.iconContainer}>
               <Icon name='location' color='white' size={totalSize(3)} type='entypo' />
             </View>
@@ -169,14 +234,15 @@ class ProfileTechnician extends Component {
             <View style={styles.schoolInputContainer} >
               <DateTimePicker
                 style={{ width: width(75) }}
-                date={this.state.time_from}
+                //date={this.state.time_from}
+
 
                 mode='time'
                 placeholder={this.state.time_from}
                 showIcon={false}
                 androidMode='spinner'
                 placeholderTextColor={'rgb(217,217,217)'}
-                format="h:mm a"
+                format="H:mm"
                 //minDate="2018-05-01"
                 //maxDate="2020-06-01"
                 confirmBtnText="Confirm"
@@ -187,13 +253,13 @@ class ProfileTechnician extends Component {
             <View style={styles.schoolInputContainer} >
               <DateTimePicker
                 style={{ width: width(75) }}
-                date={this.state.time_to}
+                //date={this.state.time_to}
                 mode='time'
                 placeholder={this.state.time_to}
                 showIcon={false}
                 androidMode='spinner'
                 placeholderTextColor={'rgb(217,217,217)'}
-                format="h:mm a"
+                format="H:mm"
                 //minDate="2018-05-01"
                 //maxDate="2020-06-01"
                 confirmBtnText="Confirm"
@@ -254,7 +320,7 @@ class ProfileTechnician extends Component {
 
               onPress={() => {
                 this.updateAvailability()
-                this.setState({ isModalVisibleForgetPassword: false })
+
               }} />
             <Button
               containerStyle={{
@@ -269,7 +335,118 @@ class ProfileTechnician extends Component {
 
           </View>
         </Modal>
-      </View>
+        <Modal
+          isVisible={this.state.isModalVisibleLocation} // Forget Password
+          animationIn='slideInUp'
+          animationOut='slideOutDown'
+          backdropColor='black'
+          animationInTiming={700}
+          animationOutTiming={700}
+          backdropOpacity={0.50}>
+          <View style={{ backgroundColor: 'white', height: height(80), width: width(95), alignSelf: 'center', borderRadius: 5 }}>
+
+            <Text
+              underlineColorAndroid='transparent'
+              style={[styles.TxtInput, { borderColor: 'grey', borderWidth: 1, margin: 15 }]}
+              onPress={() => {
+                this.setState({ showStates: !this.state.showStates })
+              }}
+
+            >
+              {this.state.location ? this.state.location : "Enter Location"}
+            </Text>
+
+            <View style={{ flexDirection: 'row', width: width(90), marginLeft: 15, marginTop: -15 }}>{
+              this.state.showStates ?
+                <View style={{ width: width(30), backgroundColor: 'white', elevation: 5 }}>
+                  <ScrollView>{
+                    this.state.states_list.map((item, key) => {
+                      return (
+                        <TouchableOpacity key={key} style={{ marginHorizontal: 5, borderBottomWidth: 0.4, borderColor: 'gray', elevation: 0 }}
+                          onPress={() => {
+                            this.setState({ showLocations: !this.state.showLocations })
+                          }}
+                        >
+                          <View style={{ marginVertical: 10, alignItems: 'flex-start', justifyContent: 'center' }}>
+                            <Text style={{ fontSize: totalSize(2), color: 'black', marginVertical: 3, fontWeight: 'bold' }}>{item.state_name}</Text>
+                            {/* <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Price: {item.service_price} $</Text>
+                                      <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Duration: {item.service_duration} min</Text>
+                                      <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Description: {item.description}</Text> */}
+                          </View>
+                        </TouchableOpacity>
+                      )
+                    })
+                  }
+                  </ScrollView>
+                </View>
+                :
+                null
+            }
+              {
+                this.state.showLocations ?
+                  <View style={{ width: width(40), backgroundColor: 'white', elevation: 5 }}>
+                    <ScrollView>
+                      {
+                        this.state.locations.map((item, key) => {
+                          return (
+                            <TouchableOpacity key={key} style={{ marginHorizontal: 5, borderBottomWidth: 0.4, borderColor: 'gray', elevation: 0 }}
+                              onPress={() => {
+                                this.setState({
+                                  location: item.location,
+                                  loc_id: item.id,
+                                  showLocations: false,
+                                  showStates: false
+                                })
+                              }}
+                            >
+                              <View style={{ marginVertical: 10, alignItems: 'flex-start', justifyContent: 'center' }}>
+                                <Text style={{ fontSize: totalSize(2), color: 'black', marginVertical: 3, fontWeight: 'normal' }}>{item.location}</Text>
+                                {/* <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Price: {item.service_price} $</Text>
+                                      <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Duration: {item.service_duration} min</Text>
+                                      <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Description: {item.description}</Text> */}
+                              </View>
+                            </TouchableOpacity>
+                          )
+                        })
+                      }
+                    </ScrollView>
+                  </View>
+                  :
+                  null
+              }
+            </View>
+            <TextInput
+              style={[styles.TxtInput, { backgroundColor: 'white', fontSize: totalSize(2.5), color: 'gray', flexDirection: 'row', margin: 15, borderColor: 'grey', borderWidth: 1 }]}
+              keyboardType='numeric'
+              placeholder="Enter Cost"
+              onChangeText={(text) => { this.setState({ cost: text }) }}
+            >
+            </TextInput>
+            <Button
+              containerStyle={{
+                margin: 2,
+                backgroundColor: colors.SPA_redColor
+              }}
+              title="Update"
+
+              onPress={async () => {
+                await this.updateLocationCosts()
+              }}>Update</Button>
+            <Button
+              containerStyle={{
+                margin: 2,
+                backgroundColor: colors.SPA_redColor
+              }}
+              title="Close"
+
+              onPress={() => {
+                this._toggleModalLocation()
+              }}>Close</Button>
+
+          </View>
+        </Modal>
+
+      </View >
 
     );
   }

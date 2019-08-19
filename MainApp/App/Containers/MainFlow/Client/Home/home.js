@@ -6,6 +6,7 @@ import Toast from 'react-native-simple-toast'
 import store from '../../../../Stores/orderStore';
 import images from '../../../../Themes/Images';
 import colors from '../../../../Themes/Colors';
+import AsyncStorage from '@react-native-community/async-storage';
 //import Modal from 'react-native-modal';
 //import api from '../../lib/api'
 class Home extends Component {
@@ -13,7 +14,8 @@ class Home extends Component {
         super(props);
         this.state = {
             isModalVisibleLogout: false,
-            loading: false
+            loading: false,
+            user: {}
         };
     }
     _toggleModalLogout = () =>
@@ -28,6 +30,18 @@ class Home extends Component {
         this.props.navigation.push('login')
         this._toggleModalLogout()
     }
+
+    async componentWillMount() {
+        await AsyncStorage.getItem('user', (error, data) => {
+            console.log("Splash", error)
+            console.log("Splash", data);
+
+            if (data) {
+                user = JSON.parse(data);
+                this.state.user = user
+            }
+        })
+    }
     componentDidMount() {
         //console.warn('Email is===>',store.RESPONSE)
     }
@@ -35,12 +49,14 @@ class Home extends Component {
         header: null
     }
     render() {
+        console.log(this.state.user.notification);
+        
         return (
             <ImageBackground source={images.HomeBG} style={styles.container}>
                 <View style={{ flex: 0.1, flexDirection: 'row', alignItems: 'center' }}>
                     <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-start', backgroundColor: 'transparent' }}>
                         <View style={{ width: 20 }}></View>
-                        <Icon name='bell' color={colors.SPA_redColor} type='octicon' size={totalSize(4)} onPress={() => this.props.navigation.navigate('notificationClient')} />
+                        <Icon name='bell' color={colors.SPA_redColor} type='octicon' size={totalSize(4)} onPress={() => this.props.navigation.navigate('notificationClient',{notif: this.state.user.notification})} />
                     </View>
                 </View>
                 <ImageBackground style={styles.lowerContainer}>
@@ -52,11 +68,11 @@ class Home extends Component {
                         </View>
                         <Text style={styles.welcome}> SALON & SPA</Text>
                     </View>
-                    <View style={{marginBottom: 100, ...styles.txtContainer}}>
+                    <View style={{ marginBottom: 100, ...styles.txtContainer }}>
                         <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal' }]}>BOOK BEAUTY & WELLNESS PROFESSIONALS</Text>
                         <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal' }]}> TO COME TO YOU!</Text>
                     </View>
-                    <View style={{marginTop: 100, ...styles.btnContainer}}>
+                    <View style={{ marginTop: 100, ...styles.btnContainer }}>
                         <TouchableOpacity style={styles.button} onPress={() => this.props.navigation.navigate('searchTechnician')}>
                             <View style={styles.btnTxtContainer}>
                                 <Text style={[styles.btnTxt, { fontWeight: 'bold', fontSize: totalSize(3) }]}>Book Now!</Text>
@@ -121,7 +137,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginVertical: height(-5),
-        
+
     },
     welcome: {
         fontSize: totalSize(4),

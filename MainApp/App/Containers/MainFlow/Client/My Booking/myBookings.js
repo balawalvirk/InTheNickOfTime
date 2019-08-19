@@ -32,7 +32,7 @@ class MyBookings extends Component {
       qSnapshot.forEach((doc) => {
         if (doc.exists) {
           console.log("Doc", doc.data());
-          arr[i].technicianName = doc.data().firstName
+          arr[i].technicianName = doc.data().name
           arr[i].photo = doc.data().photo
         }
       })

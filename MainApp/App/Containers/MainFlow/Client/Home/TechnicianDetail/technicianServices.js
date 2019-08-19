@@ -11,6 +11,7 @@ import Modal from 'react-native-modal'
 import DateTimePicker from 'react-native-datepicker'
 import styles from '../../../../Styles/technicianDetailStyles'
 import SimpleToast from 'react-native-simple-toast';
+import { isGenericTypeAnnotation } from '@babel/types';
 export default class TechnicianServices extends Component {
     constructor(props) {
         super(props);
@@ -33,20 +34,35 @@ export default class TechnicianServices extends Component {
             //     { id: 3, location: 'Down Town, New york, USA', travel_cost: 45 },
             //     { id: 4, location: 'Sea site, New york, USA', travel_cost: 30 }
             // ],
+
             technician: this.props.navigation.getParam('technician', ''),
-            travel_cost: 0,
+            travel_cost: 0.00,
             showServicesList: false,
             loadingSelectedService: false,
             selected_Services: [],
             loadingUnSelectedServices: false,
-            servicesTotalCost: 0,
-            totalCost: 0,
+            servicesTotalCost: 0.00,
+            totalCost: 0.00,
             date_time: null,
             isDateTimePickerVisible: false,
             isModalVisibleMessage: false,
             comment: null,
-            address: null
+            address: null,
+            day_from: null,
+            day_to: null,
+            time_from: null,
+            time_to: null
         };
+    }
+
+    getDayNumber(txt) {
+        if (txt == "Sun") { return 0 }
+        else if (txt == "Mon") { return 1 }
+        else if (txt == "Tue") { return 2 }
+        else if (txt == "Wed") { return 3 }
+        else if (txt == "Thu") { return 4 }
+        else if (txt == "Fri") { return 5 }
+        else if (txt == "Sat") { return 6 }
     }
     goToPayment = () => {
         console.log(this.state.servicesTotalCost, " -- ", this.state.locations, " -- ", this.state.date_time);
@@ -70,6 +86,46 @@ export default class TechnicianServices extends Component {
         this.setState({ showServicesList: !this.state.showServicesList })
     }
     _toggelModalMessage = () => {
+        tmp = this.state.technician.weekly_availability
+        tmp1 = tmp2 = tmp
+        tmp1 = tmp1.slice(0, 3)
+        tmp2 = tmp2.slice(4)
+        day = new Date(this.state.date_time)
+        day = day.getDay()
+        console.log(day, "-", this.getDayNumber(tmp1), "-", this.getDayNumber(tmp2));
+        console.log(this.getDayNumber(tmp1) <= this.state.date_time);
+        console.log(this.state.date_time <= this.getDayNumber(tmp2));
+
+        if (this.getDayNumber(tmp1) <= day && day <= this.getDayNumber(tmp2)) {
+            tmp = this.state.technician.daily_availability
+            time = tmp.split('-')
+            tmp1 = time[0]
+            tmp2 = time[1]
+            console.log(tmp1, "==", tmp2);
+            tmp1 = tmp1.split(':')
+            tmp1 = tmp1[0]
+            tmp2 = tmp2.split(':')
+            tmp2 = tmp2[0]
+            time = new Date(this.state.date_time)
+            time = time.getHours()
+            console.log(tmp1, '==', tmp2, '==', time);
+            if (tmp1 <= time && time <= tmp2) {
+                console.log('IF');
+
+            } else {
+                alert("Technician Not Available at specified time.")
+                return
+            }
+
+
+
+        } else {
+            alert("Technician Not Available at specified time.")
+            return
+        }
+
+
+        this.state.day_from = this.state
         this.setState({ isModalVisibleMessage: !this.state.isModalVisibleMessage })
     }
     selectService = async (id) => {
@@ -78,7 +134,7 @@ export default class TechnicianServices extends Component {
             if (id === this.state.Services_list[i].id) {
                 //await this.setState({ memberID: this.state.members[i].user_id })
                 await this.state.selected_Services.push(this.state.Services_list[i])
-                await this.setState({ servicesTotalCost: this.state.servicesTotalCost + this.state.Services_list[i].service_price })
+                await this.setState({ servicesTotalCost: parseInt(this.state.servicesTotalCost) + parseInt(this.state.Services_list[i].service_price) })
                 //await this.state.selected_members_IDs.push(this.state.members[i].user_id)
             }
         }
@@ -97,10 +153,6 @@ export default class TechnicianServices extends Component {
 
     }
 
-    componentDidMount() {
-        console.log(this.props.navigation.getParam('services_details', ''))
-        //console.log(JSON.parse(this.props.navigation.getParam('services_details', '')))
-    }
     render() {
 
         return (
@@ -194,8 +246,11 @@ export default class TechnicianServices extends Component {
                                         mode='dropdown'
                                         selectedValue={this.state.travel_cost}
                                         style={styles.PickerStyle}
-                                        onValueChange={(itemValue, itemIndex) =>
-                                            this.setState({ travel_cost: itemValue })
+                                        onValueChange={(itemValue, itemIndex) => {
+                                            kk = parseInt(itemValue)
+                                            this.setState({ travel_cost: kk })
+                                        }
+
                                         }>
                                         <Picker.Item label="Select Location" value='' />
                                         {
@@ -221,7 +276,7 @@ export default class TechnicianServices extends Component {
                                     />
                                 </View>
                                 <View style={[styles.txtContainer, {}]}>
-                                    <Text style={[styles.txtLarg, { fontSize: totalSize(2) }]}>Select Date&Time</Text>
+                                    <Text style={[styles.txtLarg, { fontSize: totalSize(2) }]}>Select Date & Time</Text>
                                 </View>
                                 <TouchableOpacity style={styles.schoolInputContainer}>
 
@@ -233,7 +288,7 @@ export default class TechnicianServices extends Component {
                                         showIcon={false}
                                         androidMode='spinner'
                                         placeholderTextColor={'rgb(217,217,217)'}
-                                        format="h:mm a, MM-DD-YYYY"
+                                        format="MM-DD-YYYY, h:mm a"
                                         //minDate="2018-05-01"
                                         //maxDate="2020-06-01"
                                         confirmBtnText="Confirm"
@@ -300,9 +355,9 @@ export default class TechnicianServices extends Component {
 
                         <View style={[styles.modalBody, { borderRadius: 5 }]}>
                             <View style={[styles.txtContainer, { backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', marginTop: height(5) }]}>
-                                <Text style={[styles.txtLarg, { fontSize: totalSize(1.8) }]}>If there is anything else your technician</Text>
+                                <Text style={[styles.txtLarg, { fontSize: totalSize(1.8) }]}>Is there is anything else your technician</Text>
                                 <Text style={[styles.txtLarg, { fontSize: totalSize(1.8) }]}>should know?</Text>
-                                <Text style={[styles.txtLarg, { fontSize: totalSize(1.8) }]}>There are no refunds for services that are unable to</Text>
+                                <Text style={[styles.txtLarg, { fontSize: totalSize(1.8), alignItems: 'center', justifyContent: 'center' }]}>There are no refunds for services that are unable to</Text>
                                 <Text style={[styles.txtLarg, { fontSize: totalSize(1.8) }]}>be provided due to lack of disclosure from client.</Text>
                             </View>
                             <View style={[styles.txtContainer, { backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', }]}>

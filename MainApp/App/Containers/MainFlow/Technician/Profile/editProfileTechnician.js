@@ -13,6 +13,7 @@ import images from '../../../../Themes/Images';
 import AsyncStorage from '@react-native-community/async-storage';
 import { uploadAsFile, editProfilePic } from '../../../../backend/firebase/auth_new';
 import { updateDocument } from '../../../../backend/firebase/utility';
+import Loader from '../../../../Components/Loader'
 
 class EditProfileTechnician extends Component {
     static navigationOptions = {
@@ -29,7 +30,7 @@ class EditProfileTechnician extends Component {
             avatarSource: null,
             camera: false,
             user: {},
-            
+
         };
     }
     image_picker = () => {
@@ -74,16 +75,17 @@ class EditProfileTechnician extends Component {
 
 
     async componentDidMount() {
+        this.loader.show()
         usr = await AsyncStorage.getItem('user')
         usr = JSON.parse(usr)
         this.setState({ user: usr })
-
+        this.loader.hide()
 
     }
 
-    
-    editeProfile = async () => {
 
+    editeProfile = async () => {
+        this.loader.show()
         if (this.state.avatarSource != null) {
             await editProfilePic(this.state.avatarSource, { collection: "Technician", uid: this.state.user.id }).then((res) => {
                 console.log(res);
@@ -95,12 +97,14 @@ class EditProfileTechnician extends Component {
         updateDocument('Technician', this.state.user.id, this.state.user)
         tmpState = JSON.stringify(this.state.user)
         AsyncStorage.setItem('user', tmpState)
+        this.loader.hide()
     }
     render() {
         //console.warn('image===>',store.USER_LOGIN.profile_pic);
         return (
 
             <View style={styles.Container}>
+                <Loader ref={r => this.loader = r} />
                 <View style={[styles.pfContainer, { marginVertical: height(5) }]}>
 
                     <Image source={this.state.user.photo ? { uri: this.state.user.photo } : images.profilePic} style={styles.profileImage} />
@@ -171,7 +175,7 @@ class EditProfileTechnician extends Component {
                 </View>
 
 
-                
+
             </View>
 
 

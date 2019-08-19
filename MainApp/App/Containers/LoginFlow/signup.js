@@ -53,6 +53,8 @@ class SignUp extends Component {
                 phoneNumber: this.state.phoneNumber || null,
                 userType: 'client',
                 avatarSource: this.state.avatarSource,
+                notification: []
+
             }
 
             let err = validate(jsonObect, SignUpConstraints, { format: 'flat' });

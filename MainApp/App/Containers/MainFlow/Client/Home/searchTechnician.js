@@ -46,9 +46,6 @@ class SearchTechnician extends Component {
                 { id: 1, state_name: 'MaryLand' },
                 { id: 2, state_name: 'Verginia' },
                 { id: 3, state_name: 'Washingtn, DC' },
-                { id: 4, state_name: 'MaryLand1' },
-                { id: 5, state_name: 'Verginia1' },
-                { id: 6, state_name: 'Washingtn, DC1' },
             ]
         };
     }

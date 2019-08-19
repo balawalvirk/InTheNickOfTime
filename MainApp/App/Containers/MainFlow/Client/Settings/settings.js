@@ -32,15 +32,15 @@ class Settings extends Component {
   share = async () => {
     try {
       const result = await Share.share({
-        title:"In the nick of time",
+        title: "In the nick of time",
         message:
           'Hi, I am using this awesome app you should also try this app. ',
-          url:'google.com'
+        url: 'google.com'
       });
 
       if (result.action === Share.sharedAction) {
         console.log(result.activityType);
-        
+
         if (result.activityType) {
           // shared with activity type of result.activityType
         } else {
@@ -75,7 +75,7 @@ class Settings extends Component {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.mainBtn} onPress={()=>{Linking.openURL('mailto:testing@mailinator.com?subject=In the Nick of Time &body=Hi Team,')}} >
+        <TouchableOpacity style={styles.mainBtn} onPress={() => { Linking.openURL('mailto:testing@mailinator.com?subject=In the Nick of Time &body=Hi Team,') }} >
           <View style={styles.btnIconContainer}>
             <View style={styles.IconContainer}>
               <Icon name="ios-mail" size={totalSize(2)} color='white' />
@@ -89,7 +89,22 @@ class Settings extends Component {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.mainBtn} onPress={()=>this.share()}>
+        <TouchableOpacity style={styles.mainBtn} onPress={() => { Linking.openURL('https://inthenickoftimespa.com/events-parties-form/') }} >
+          <View style={styles.btnIconContainer}>
+            <View style={styles.IconContainer}>
+              <Icon name="ios-calendar" size={totalSize(2)} color='white' />
+            </View>
+          </View>
+          <View style={styles.btnTxtContainer}>
+            <Text style={styles.btnTxt1}>Events</Text>
+          </View>
+          <View style={styles.arrowContainer}>
+            <Icon name="ios-arrow-forward" size={totalSize(2)} color='rgb(217,217,217)' />
+          </View>
+        </TouchableOpacity>
+
+
+        <TouchableOpacity style={styles.mainBtn} onPress={() => this.share()}>
           <View style={styles.btnIconContainer}>
             <View style={styles.IconContainer}>
               <Icon name="md-share" size={totalSize(2)} color='white' />
@@ -104,7 +119,7 @@ class Settings extends Component {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.mainBtn} onPress={()=>{this.props.navigation.navigate('WebViewOpensLink', {uri: 'https://play.google.com/store/apps/details?id=com.whatsapp'})}} >
+        <TouchableOpacity style={styles.mainBtn} onPress={() => { this.props.navigation.navigate('WebViewOpensLink', { uri: 'https://play.google.com/store/apps/details?id=com.whatsapp' }) }} >
           <View style={styles.btnIconContainer}>
             <View style={styles.IconContainer}>
               <Icon name="ios-star" size={totalSize(2)} color='white' />

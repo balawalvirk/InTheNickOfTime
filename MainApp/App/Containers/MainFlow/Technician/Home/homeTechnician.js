@@ -20,7 +20,7 @@ class HomeTechnician extends Component {
             loading_refresh: false,
             photo: null,
             name: '',
-            user:''
+            user: ''
         };
     }
 
@@ -41,7 +41,6 @@ class HomeTechnician extends Component {
         await AsyncStorage.getItem('user', (error, data) => {
             if (data) {
                 user = JSON.parse(data)
-                console.log("Async Data", user);
                 this.checkImage(user.photo)
                 this.setState({
                     name: user.name,
@@ -53,20 +52,21 @@ class HomeTechnician extends Component {
     }
 
     async componentDidMount() {
-        this.loader.show()
-        await this.loadUser()
-        this.loader.hide()
+        if (this.state.name == null || this.state.name == '') {
+            this.loader.show()
+            await this.loadUser()
+            this.loader.hide()
+        }
+
     }
 
     render() {
-        if (this.props.isFocused) {
-          this.loadUser()
-        }
+
         return (
             <View style={styles.Container}>
                 <Loader ref={r => this.loader = r} />
                 <View style={{ width: width(90), flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', backgroundColor: 'transparent', marginVertical: height(2) }}>
-                    <Icon name='bell' color={colors.SPA_redColor} type='octicon' size={totalSize(4)} onPress={() => this.props.navigation.navigate('notificationTechnician')} />
+                    <Icon name='bell' color={colors.SPA_redColor} type='octicon' size={totalSize(4)} onPress={() => this.props.navigation.navigate('notificationTechnician',{notif: this.state.user.notification})} />
                 </View>
                 <View style={styles.lowerContainer}>
                     <View style={styles.branchNameContainer}>
@@ -234,9 +234,13 @@ const styles = StyleSheet.create({
     },
     count: {
         // color: 'rgb(0,41,132)',
+        alignItems: 'center',
+        textAlignVertical: 'center',
         color: colors.SPA_graycolor,
         fontSize: totalSize(2),
-        marginBottom: height(1)
+        marginBottom: height(1),
+        justifyContent: 'center'
+
     },
     txt: {
         color: 'rgb(218,21,30)',

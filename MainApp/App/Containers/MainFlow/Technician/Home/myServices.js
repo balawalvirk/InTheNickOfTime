@@ -8,6 +8,8 @@ import colors from '../../../../Themes/Colors';
 import { getData, updateDocument } from '../../../../backend/firebase/utility';
 import AsyncStorage from '@react-native-community/async-storage';
 import { throwStatement } from '@babel/types';
+import Loader from "../../../../Components/Loader"
+
 _this = null;
 class MyServices extends Component {
   constructor(props) {
@@ -40,33 +42,46 @@ class MyServices extends Component {
       ]
     };
   }
-  async componentWillMount() {
+  async componentDidMount() {
+    this.loader.show()
+    sv = []
     user = await AsyncStorage.getItem('user')
     user = JSON.parse(user)
     console.log(user)
-    this.setState({ services: JSON.parse(user.service_details), user: user })
+    try {
+      sv = JSON.parse(user.service_details)
+    } catch (err) {
+      sv = []
+    }
+    this.setState({ services: sv, user: user })
     console.log(this.state.services);
     _this = this;
+
+
+    this.loader.hide()
+
   }
 
   addService = async () => {
     newService = {}
+    newService.id = new Date().getTime()
     newService.service_name = this.state.s_name
     newService.service_price = this.state.s_price
     newService.service_duration = this.state.s_duration
     newService.service_description = this.state.s_description
     newService.service_category = this.state.s_category
-    console.log("bef", this.state.user);
+    this.state.user.services.push(this.state.s_name)
     this.state.services.push(newService)
     tmp = this.state.services
     this.state.user.service_details = JSON.stringify(tmp)
     console.log(tmp);
     console.log(this.state.user);
 
-
+    this.loader.show()
     let rs = await updateDocument('Technician', this.state.user.id, this.state.user);
     await AsyncStorage.setItem('user', JSON.stringify(this.state.user));
     this.setState({ isModalVisible: !this.state.isModalVisible });
+    this.loader.hide()
   }
 
   updateService = async () => {
@@ -78,10 +93,14 @@ class MyServices extends Component {
     this.state.services[index].service_description = this.state.e_description
     this.state.services[index].service_duration = this.state.e_duration
     this.state.services[index].service_price = this.state.e_price
-
+    tmp_service = this.state.user.services
+    tmp_service.push(this.state.e_name)
+    this.state.user.services = tmp_service
+    console.log(tmp_service);
+    
     tmp = this.state.services
     this.state.user.service_details = JSON.stringify(tmp)
-
+    this.loader.show()
     await updateDocument('Technician', this.state.user.id, this.state.user).then(success => {
       AsyncStorage.setItem('user', JSON.stringify(this.state.user))
     })
@@ -89,17 +108,19 @@ class MyServices extends Component {
     this.setState({
       isModalVisibleEdite: !this.state.isModalVisibleEdite
     });
+    this.loader.hide()
   }
 
   deleteService = async (i) => {
-    this.state.services.splice(i,1)
+    this.state.services.splice(i, 1)
     tmp = this.state.services
     this.state.user.service_details = JSON.stringify(tmp)
-
+    this.loader.show()
     await updateDocument('Technician', this.state.user.id, this.state.user).then(success => {
       AsyncStorage.setItem('user', JSON.stringify(this.state.user))
     })
     this.setState(this.state)
+    this.loader.hide()
   }
 
   _toggleModal = () =>
@@ -138,7 +159,7 @@ class MyServices extends Component {
   render() {
     return (
       <View style={styles.Container}>
-
+        <Loader ref={r => this.loader = r} />
         <ScrollView
           showsVerticalScrollIndicator={false}>
           {
