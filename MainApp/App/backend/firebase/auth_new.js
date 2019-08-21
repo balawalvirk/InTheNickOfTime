@@ -7,9 +7,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 
 export async function signUp(user_profile) {
-  console.log("up", user_profile);
-
-
+  
   return new Promise((resolve, reject) => {
     firebase.auth().createUserWithEmailAndPassword(user_profile.email, user_profile.password).then(async () => {
 

@@ -21,7 +21,7 @@ class SignUpTechnician extends Component {
             email: '',
             password: '',
             confirm_password: '',
-            location: '',
+            phoneNumber: '',
             loading: false,
             camera: false,
             avatarSource: null,
@@ -77,31 +77,7 @@ class SignUpTechnician extends Component {
     }
 
     async register() {
-        // const email = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        // try {
-        //     if (this.state.email === "" || this.state.password === "" || this.state.name === "" || this.state.confirm_password === "" || this.state.location === "" || this.state.email === null || this.state.password === null || this.state.name === null || this.state.confirm_password === "" || this.state.location === "") {
-        //         Toast.show("Some fields are missing", Toast.LONG);
-        //         return;
-        //     }
-        //     if (this.state.password != this.state.confirm_password) {
-        //         Toast.show('Passwords do not match.', Toast.SHORT);
-        //         return;
-        //     }
-        //     if (email.test(this.state.email) == false) {
-        //         Toast.show("Invalid Email Entered")
-        //         return;
-        //     }
-        //     this.loader.show()
-        //     await signUp(this.state.email, this.state.password, this.state.name, '', '', 'technician',this.state.location);
-        //     Alert.alert('Success', 'User signed up successfully.', [{ text: 'OK', onPress: () => { this.props.navigation.navigate('login') } }]);
-        //     this.loader.hide()
-
-        // } catch (e) {
-        //     Alert.alert('Failure', 'Failed to sign up. Please try again.', [{ text: 'OK', onPress: () => { } }]);
-        // } finally {
-
-        // }
-
+        
         try {
 
             jsonObect = {
@@ -111,7 +87,6 @@ class SignUpTechnician extends Component {
                 email: this.state.email,
                 password: this.state.password,
                 confirmPassword: this.state.confirm_password,
-                location: this.state.location,
                 photo: null,
                 phoneNumber: this.state.phoneNumber || null,
                 userType: 'technician',
@@ -247,18 +222,16 @@ class SignUpTechnician extends Component {
                                     <Icon name='eye' color='rgb(217,217,217)' size={totalSize(2)} type='font-awesome' />
                                 </TouchableOpacity>
                             </View>
-                            {/* <View style={styles.InputContainer}>
-                                <Icon name='location-pin' color='rgb(66,67,69)' size={totalSize(3)} type='entypo' />
+                            <View style={styles.InputContainer}>
+                                <Icon name='phone' color='rgb(66,67,69)' size={totalSize(3)} />
                                 <TextInput
-                                    //onChangeText={(value) => this.getSchool_predictions(value)}
-                                    placeholder='Location'
+                                    onChangeText={(value) => this.setState({ phoneNumber: value })}
+                                    placeholder='Phone Number'
                                     placeholderTextColor='rgb(217,217,217)'
                                     underlineColorAndroid='transparent'
                                     style={styles.TxtInput}
-                                    value={this.state.location}
-                                    onChangeText={(text) => this.setState({ location: text })}
                                 />
-                            </View> */}
+                            </View>
                             <View style={[styles.txtContainer, { flexDirection: 'row', width: width(80), height: height(8), justifyContent: 'flex-start', backgroundColor: 'transparent', marginVertical: 0 }]}>
                                 <TouchableOpacity style={[styles.buttonSmall, { backgroundColor: 'rgb(219,0,0)' }]} onPress={() => this.image_picker()} >
                                     <Text style={[styles.welcome, { fontSize: totalSize(1), color: 'white', marginHorizontal: 5, marginVertical: 4 }]}>Upload Image</Text>
