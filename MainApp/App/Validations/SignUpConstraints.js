@@ -18,7 +18,10 @@ let SignUpConstraints = {
   },
   confirmPassword: {
     equality: "password"
-  }
+  },
+  phoneNumber: {
+    presence: true,
+  },
 };
 
 export default SignUpConstraints;

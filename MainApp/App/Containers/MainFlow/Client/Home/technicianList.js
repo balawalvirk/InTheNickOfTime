@@ -29,10 +29,12 @@ class TechniciansList extends Component {
         title: 'Search Results',
     }
 
-    render() {
-
+    componentDidMount() {
         console.log("Loc", this.state.locations);
+        console.log("DATA", this.state.data);
+    }
 
+    render() {
         return (
             <View style={styles.Container}>
                 <View style={{ flex: 1 }}>
@@ -45,6 +47,15 @@ class TechniciansList extends Component {
                             showsVerticalScrollIndicator={false}>
                             {
                                 this.state.Booking_list.map((items, key) => {
+                                    let rating = 0;
+                                    if (items.ratings != '') {
+                                        items.ratings = JSON.parse(items.ratings);
+                                        items.ratings.map(val => {
+                                            rating += val.rating;
+                                        });
+                                        rating = (items.ratings.length > 0) ? rating / items.ratings.length : rating;
+                                    }
+                                    
                                     return (
                                         <TouchableOpacity key={key} style={styles.shopContainer} onPress={() => this.props.navigation.navigate('technicianDetailTab', {
                                             services_details: items.service_details,
@@ -66,11 +77,13 @@ class TechniciansList extends Component {
                                                     {
                                                         items.services.map((item, key) => {
                                                             return (
-                                                                <Text key={key} style={styles.shopDetail}>{item}, </Text>
+                                                                <Text key={key} style={styles.shopDetail}>{item} </Text>
                                                             )
                                                         })
                                                     }
-
+                                                </View>
+                                                <View style={{ flexDirection: 'column' }}>
+                                                    <Text style={{...styles.shopDetail, fontWeight: 'bold' }}>Availability: {items.weekly_availability}, { items.daily_availability}</Text>
                                                 </View>
                                             </View>
                                             <View style={[styles.shopIconContainer, { backgroundColor: 'transparent', flexDirection: 'row' }]}>
@@ -81,7 +94,7 @@ class TechniciansList extends Component {
                                                         </View>
                                                     </TouchableOpacity> */}
                                                 <Icon name="star" size={totalSize(3)} color={colors.SPA_redColor} type='antdesign' />
-                                                <Text style={[styles.shopName, { color: colors.SPA_redColor, fontSize: totalSize(4) }]}>4.9</Text>
+                                                <Text style={[styles.shopName, { color: colors.SPA_redColor, fontSize: totalSize(4) }]}>{rating}</Text>
                                             </View>
                                         </TouchableOpacity>
                                     );

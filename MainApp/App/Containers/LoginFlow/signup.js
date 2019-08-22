@@ -54,7 +54,6 @@ class SignUp extends Component {
                 userType: 'client',
                 avatarSource: this.state.avatarSource,
                 notification: []
-
             }
 
             let err = validate(jsonObect, SignUpConstraints, { format: 'flat' });
@@ -208,6 +207,7 @@ class SignUp extends Component {
                                     placeholderTextColor='rgb(217,217,217)'
                                     underlineColorAndroid='transparent'
                                     style={styles.TxtInput}
+                                    keyboardType={'number-pad'}
                                 />
                             </View>
                             <View style={[styles.txtContainer, { flexDirection: 'row', width: width(80), height: height(8), justifyContent: 'flex-start', backgroundColor: 'transparent', marginVertical: 0 }]}>

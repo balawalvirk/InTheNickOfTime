@@ -301,6 +301,10 @@ export default class TechnicianServices extends Component {
                                 </TouchableOpacity>
                             </View>
                             <View style={[styles.txtContainer, { flexDirection: 'row', backgroundColor: 'transparent', justifyContent: 'flex-start', alignItems: 'center' }]}>
+                                <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal' }]}>Technician Availability:   </Text>
+                                <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal', marginVertical: 5, marginHorizontal: 5 }]}>{this.state.technician.weekly_availability}, {this.state.technician.daily_availability}</Text>
+                            </View>
+                            <View style={[styles.txtContainer, { flexDirection: 'row', backgroundColor: 'transparent', justifyContent: 'flex-start', alignItems: 'center' }]}>
                                 <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal' }]}>Travel Fee:   </Text>
                                 <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal', marginVertical: 5, marginHorizontal: 5 }]}>${this.state.travel_cost}</Text>
                             </View>
