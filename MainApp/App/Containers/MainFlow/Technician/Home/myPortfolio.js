@@ -17,6 +17,10 @@ const portfolio_images_list = [
 const numColums = 3
 
 const formatData = (data, numColumns) => {
+  
+  if (!data) 
+    data = [];
+
   const numberOfFullRows = Math.floor(data.length / numColumns);
 
   let numberOfElementsLastRow = data.length - (numberOfFullRows * numColumns);

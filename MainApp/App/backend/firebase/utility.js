@@ -22,6 +22,21 @@ export function connectFirebase() {
   if (!firebase.apps.length) {
     firebase.initializeApp(config);
   }
+
+  // Your web app's Firebase configuration
+  // var firebaseConfig = {
+  //   apiKey: "AIzaSyDCIxKAqUFfwdKvBfqDe2fREpJ80zoyfuE",
+  //   authDomain: "inthenickoftimespa-66dcc.firebaseapp.com",
+  //   databaseURL: "https://inthenickoftimespa-66dcc.firebaseio.com",
+  //   projectId: "inthenickoftimespa-66dcc",
+  //   storageBucket: "inthenickoftimespa-66dcc.appspot.com",
+  //   messagingSenderId: "952301872063",
+  //   appId: "1:952301872063:web:d6733ce986f657f2"
+  // };
+  // // Initialize Firebase
+  // if (!firebase.apps.length) {
+  //   firebase.initializeApp(firebaseConfig);
+  // }
 }
 
 

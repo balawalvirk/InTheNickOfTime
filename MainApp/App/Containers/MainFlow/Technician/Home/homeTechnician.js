@@ -88,7 +88,7 @@ class HomeTechnician extends Component {
 
                         </View>
                         <View style={styles.sqareView}>
-                            <Text style={styles.count}>4.3</Text>
+                            <Text style={styles.count}></Text>
                             <Text style={styles.txt}>CLIENT</Text>
                             <Text style={styles.txt}>RATING</Text>
 
