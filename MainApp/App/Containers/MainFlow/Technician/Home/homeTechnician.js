@@ -82,7 +82,7 @@ class HomeTechnician extends Component {
                             <Text style={styles.txt}>AVAILABILTIY</Text>
                         </View>
                         <View style={styles.sqareView}>
-                            <Text style={styles.count}>{this.state.user.weekly_availability}</Text>
+                            <Text style={styles.count}></Text>
                             <Text style={styles.txt}>WEEKLY</Text>
                             <Text style={styles.txt}>AVAILABILTIY</Text>
 

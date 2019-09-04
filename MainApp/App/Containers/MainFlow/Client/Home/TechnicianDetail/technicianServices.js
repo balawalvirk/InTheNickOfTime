@@ -300,10 +300,17 @@ export default class TechnicianServices extends Component {
                                     </View>
                                 </TouchableOpacity>
                             </View>
-                            <View style={[styles.txtContainer, { flexDirection: 'row', backgroundColor: 'transparent', justifyContent: 'flex-start', alignItems: 'center' }]}>
+                            <View style={{ backgroundColor: 'transparent', justifyContent: 'flex-start', alignItems: 'center' }}>
                                 <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal' }]}>Technician Availability:   </Text>
-                                <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal', marginVertical: 5, marginHorizontal: 5 }]}>{this.state.technician.weekly_availability}, {this.state.technician.daily_availability}</Text>
-                            </View>
+                                {this.state.technician.weekly_availability != "" && this.state.technician.weekly_availability != null &&  typeof this.state.technician.weekly_availability != 'string' ?
+                                this.state.technician.weekly_availability.map(i => {
+                                return <View style={{width : width(90), flexDirection : 'row'}}><Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal', marginVertical: 5, marginHorizontal: 5 }]}>{i.item}</Text>
+                                <View style={{flex : 1,alignItems : 'flex-end', justifyContent : 'center'}}><Text style={{textAlign : 'left'}}>{i.time_from} - {i.time_to}</Text></View>
+                                </View>
+                                }) 
+                                :
+                                        <Text></Text>}
+                                </View>
                             <View style={[styles.txtContainer, { flexDirection: 'row', backgroundColor: 'transparent', justifyContent: 'flex-start', alignItems: 'center' }]}>
                                 <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal' }]}>Travel Fee:   </Text>
                                 <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal', marginVertical: 5, marginHorizontal: 5 }]}>${this.state.travel_cost}</Text>

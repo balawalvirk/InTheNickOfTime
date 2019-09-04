@@ -175,7 +175,7 @@ class MyServices extends Component {
                     </View>
                     <View style={styles.shopTxtContainer}>
                       <Text style={styles.shopName}>{service.service_name}</Text>
-                      <Text style={styles.shopDetail}>Price: {service.service_price} $</Text>
+                      <Text style={styles.shopDetail}>Price: $ {service.service_price}</Text>
                       <Text style={styles.shopDetail}>Duration: {service.service_duration} min</Text>
                     </View>
                     <View style={styles.shopIconContainer}>

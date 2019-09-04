@@ -83,7 +83,7 @@ class TechniciansList extends Component {
                                                     }
                                                 </View>
                                                 <View style={{ flexDirection: 'column' }}>
-                                                    <Text style={{...styles.shopDetail, fontWeight: 'bold' }}>Availability: {items.weekly_availability}, { items.daily_availability}</Text>
+                                                    <Text style={{...styles.shopDetail, fontWeight: 'bold' }}>Availability: different</Text>
                                                 </View>
                                             </View>
                                             <View style={[styles.shopIconContainer, { backgroundColor: 'transparent', flexDirection: 'row' }]}>

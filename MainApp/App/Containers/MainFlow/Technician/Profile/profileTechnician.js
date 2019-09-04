@@ -13,6 +13,7 @@ import {
 import { height, width, totalSize } from 'react-native-dimension'
 import DateTimePicker from 'react-native-datepicker'
 import { Icon, Button } from 'react-native-elements'
+import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
 import colors from '../../../../Themes/Colors';
 import images from '../../../../Themes/Images';
 import Modal from 'react-native-modal'
@@ -28,18 +29,20 @@ class ProfileTechnician extends Component {
       user: {},
       day_from: 'N/A',
       day_to: 'N/A',
-      time_from: new Date().getHours().toString(),
-      time_to: new Date().getHours().toString(),
+      time_from: '-',
+      time_to: '-',
       isModalVisibleForgetPassword: false,
       isModalVisibleLocation: false,
+      index : 0,
+      day : 'Monday',
       days: [
-        { id: 1, item: 'Monday', val: 'Mon' },
-        { id: 2, item: 'Tuesday', val: 'Tue' },
-        { id: 3, item: 'Wednesday', val: 'Wed' },
-        { id: 4, item: 'Thursday', val: 'Thu' },
-        { id: 4, item: 'Friday', val: 'Fri' },
-        { id: 4, item: 'Saturday', val: 'Sat' },
-        { id: 4, item: 'Sunday', val: 'Sun' },
+        { id: 1, item: 'Monday', val: 'Mon',color : 'blue', time_from : "" , time_to : ""  },
+        { id: 2, item: 'Tuesday', val: 'Tue',color : '#000', time_from : '', time_to : ''  },
+        { id: 3, item: 'Wednesday', val: 'Wed',color : '#000', time_from : '', time_to : ''  },
+        { id: 4, item: 'Thursday', val: 'Thu',color : '#000', time_from : '', time_to : ''  },
+        { id: 4, item: 'Friday', val: 'Fri',color : '#000', time_from : '', time_to : '' },
+        { id: 4, item: 'Saturday', val: 'Sat',color : '#000', time_from : '', time_to : '' },
+        { id: 4, item: 'Sunday', val: 'Sun',color : '#000', time_from : '', time_to : ''  },
       ],
       locations: [
         { id: 1, location: 'Sea site, New york, USA', travel_cost: 20 },
@@ -122,22 +125,10 @@ class ProfileTechnician extends Component {
 
   async updateAvailability() {
     console.log(this.state.time_from, " ", this.state.time_to);
-    if (this.state.day_to == null || this.state.day_to == "" || this.state.day_from == null || this.state.day_from == "") {
-      Toast.show("Some Informatin is Missing")
-      return
-    }
-    if (this.state.time_from == null || this.state.time_from == "" || this.state.time_to == null || this.state.time_to == "") {
-      Toast.show("Some Informatin is Missing")
-      return
-    }
-    if (this.state.time_to == this.state.time_from || this.state.day_from == this.state.day_to) {
-      Toast.show("To and From Time and Date can't be same")
-      return
-    }
-    daily_availability = this.state.time_from + "-" + this.state.time_to
-    weekly_availability = this.state.day_from + "-" + this.state.day_to;
-    this.state.user.weekly_availability = weekly_availability;
-    this.state.user.daily_availability = daily_availability;
+    
+    weekly_availability = this.state.time_from + "-" + this.state.time_to;
+    this.state.user.weekly_availability = this.state.days;
+    this.state.user.daily_availability = '';
     this.setState({ isModalVisibleForgetPassword: false })
 
 
@@ -242,12 +233,17 @@ class ProfileTechnician extends Component {
                 showIcon={false}
                 androidMode='spinner'
                 placeholderTextColor={'rgb(217,217,217)'}
-                format="H:mm"
+                format="H:mm a"
                 //minDate="2018-05-01"
                 //maxDate="2020-06-01"
                 confirmBtnText="Confirm"
                 cancelBtnText="Cancel"
-                onDateChange={(date) => { this.setState({ time_from: date }) }}
+                onDateChange={(date) => { this.setState({ time_from: date }) 
+                if(this.state.time_to != '-' && this.state.time_to != date){
+                  this.state.days[this.state.index].time_from = date;
+                  this.state.days[this.state.index].time_to = this.state.time_to
+                }
+              }}
               />
             </View>
             <View style={styles.schoolInputContainer} >
@@ -259,17 +255,22 @@ class ProfileTechnician extends Component {
                 showIcon={false}
                 androidMode='spinner'
                 placeholderTextColor={'rgb(217,217,217)'}
-                format="H:mm"
+                format="H:mm a"
                 //minDate="2018-05-01"
                 //maxDate="2020-06-01"
                 confirmBtnText="Confirm"
                 cancelBtnText="Cancel"
-                onDateChange={(date) => { this.setState({ time_to: date }) }}
+                onDateChange={(date) => { this.setState({ time_to: date }); 
+                if(this.state.time_from != '-' && this.state.time_from != date){
+                  this.state.days[this.state.index].time_from = this.state.time_from;
+                  this.state.days[this.state.index].time_to = date
+                }
+              }}
               />
             </View>
 
             <Text style={{ fontSize: totalSize(2.5), color: 'gray', flexDirection: 'row', alignSelf: 'center', margin: 15 }}>Weekly Availability</Text>
-            <View style={styles.schoolInputContainer2}>
+            {/* <View style={styles.schoolInputContainer2}>
               <Picker
 
                 mode='dropdown'
@@ -308,16 +309,79 @@ class ProfileTechnician extends Component {
 
                 }
               </Picker>
-            </View>
+            </View> */}
+            <View style={{
+              width : width(90),
+              flexDirection : 'row',
+              flexWrap : 'wrap',
+              justifyContent : 'center'
+            }}>
+              {this.state.days.map((i,index) => {
+                return <TouchableOpacity style={{
+                  height : height(8),
+                  width : width(30),
+                  alignItems : 'center',
+                  justifyContent  :'center',
+                  flexDirection : 'row'
+                }}
+                onPress={()=>{
+                  if (this.state.index != index) {
+                    const a = Object.assign({}, this.state.days[this.state.index]);
+                    a.color = '#000';
+                    const currentIndex = Object.assign({}, this.state.days[index]);
+                    currentIndex.color='blue';
+                    const b = Object.assign([], this.state.days);
+                    b[index] = currentIndex;
+                    b[this.state.index] = a;
+                   
+                    this.setState({
+                      days : b,
+                      index : index,
+                      time_from: b[index].time_from == "" ? '-' : b[index].time_from,
+                      time_to: b[index].time_to == "" ? '-' : b[index].time_to,
+                    })
+                 
+                    console.log(b)
+                  }
+                  // else if(this.state.index != index) {
+                  //   const a = Object.assign({}, this.state.days[this.state.index]);
+                  //   a.color = '#000';
+                  //   const currentIndex = Object.assign({}, this.state.days[index]);
+                  //   currentIndex.color='blue'
+                  //   const b = Object.assign([], this.state.days);
+                  //   b[index] = currentIndex;
+                  //   b[this.state.index] = a;
 
+                  //   this.setState({
+                  //     days : b,
+                  //     index : index,
+                  //     time_from: b[index].time_from == "" ? new Date().getHours().toString() : b[index].time_from,
+                  //     time_to: b[index].time_to == "" ? new Date().getHours().toString() : b[index].time_to,
+
+                  //   })
+
+                  //   // Toast.show("Time is same please try again")
+                  // }
+                  
+                }}
+                >
+                  <Text style={{color : i.color}}>{i.item}</Text> 
+                    <TouchableOpacity style={{marginLeft  : 5}} onPress={()=>{
+                      this.state.days[index].time_from = "";
+                      this.state.days[index].time_to = ""
+                    }}><MCI name={'reload'} size={14} style={{height : 14, width : 14}}></MCI></TouchableOpacity>
+                  
+                </TouchableOpacity>
+              })}
+            </View>
 
             <Button
               containerStyle={{
                 margin: 2,
-                backgroundColor: colors.SPA_redColor
+                
               }}
               title="Update"
-
+              buttonStyle={{backgroundColor : colors.SPA_redColor}}
               onPress={() => {
                 this.updateAvailability()
 
@@ -327,6 +391,7 @@ class ProfileTechnician extends Component {
                 margin: 2,
                 backgroundColor: colors.SPA_redColor
               }}
+              buttonStyle={{backgroundColor : colors.SPA_redColor}}
               title="Close"
 
               onPress={() => {
