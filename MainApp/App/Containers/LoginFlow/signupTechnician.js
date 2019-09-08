@@ -91,7 +91,7 @@ class SignUpTechnician extends Component {
                 phoneNumber: this.state.phoneNumber || null,
                 userType: 'technician',
                 avatarSource: this.state.avatarSource,
-                weekly_availability: '',
+                weekly_availability: [],
                 travel_locations: [],
                 services: [],
                 service_details: '',
