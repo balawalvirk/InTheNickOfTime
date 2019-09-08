@@ -16,7 +16,7 @@ class SearchTechnician extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            service: 'Hair',
+            service: '',
             showServicesList: false,
             showCategoryList: false,
             showStates: false,
@@ -29,7 +29,7 @@ class SearchTechnician extends Component {
                 { id: 5, service_name: 'Face Cleaning', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service' },
                 { id: 6, service_name: 'Hair Diy', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service' },
             ],
-            location: 'MaryLand',
+            location: '',
             locations: [
                 { id: 1, location: 'Sea site, New york, USA', travel_cost: 20 },
                 { id: 2, location: 'Top Valley, New york, USA', travel_cost: 25 },
@@ -54,25 +54,25 @@ class SearchTechnician extends Component {
         title: 'Search',
     }
 
-    compare = (arr1, arr2) => {
-
+    compare = (respServices, respLocations, serviceToMatch, locationToMatch) => {
 
         let final = []
-        arr1.forEach(e1 => arr2.forEach((e2) => {
-            console.log(e1.UserId, "  ", e2.UserId)
-            if (JSON.stringify(e1) == JSON.stringify(e2)) {
-                final.push(e1);
+        let userIDSet = new Set()
+        respServices.forEach(function (data) {
+            if (data.data()['services'].includes(serviceToMatch) &&
+                data.data()['travel_locations'].includes(locationToMatch)){
+                    userIDSet.add(data.data()['UserId'])
+                    final.push(data.data())
             }
-        }
-        ))
-        console.log(final, "Fimnal");
+        })
+        respLocations.forEach(function (data) {
+            if (data.data()['services'].includes(serviceToMatch) &&
+                data.data()['travel_locations'].includes(locationToMatch)&&
+                !userIDSet.has(data.data()['UserId'])){
+                    final.push(data.data())
+            }
+        })
         return final
-
-
-        // this.setState({
-        //     final
-        // })
-
     }
 
     searchTechnicians = async () => {
@@ -82,44 +82,22 @@ class SearchTechnician extends Component {
                 service: this.state.service,
                 location: this.state.location,
             }
-
+            
             let err = validate(jsonObject, SearchTechConstraints, { format: 'flat' });
             if (err) {
-                // this.loader.hide();
                 Alert.alert('Error!', err.join('\n'), [{ text: 'OK', onPress: () => { } }]);
             } else {
                 this.loader.show();
-                let matchedLocations = []
-                let matchedServices = []
-                await firebase.firestore().collection("Technician").where("services", "array-contains", this.state.service).get().then(resp => {
-                    console.log("resp", resp);
-                    if (resp.empty == false) {
-                        resp.forEach(function (data) {
-                            user = data.data()
-                            matchedServices.push(data.data())
-                        })
-                    }
-                })
-
-                await firebase.firestore().collection("Technician").where("travel_locations", "array-contains", this.state.location).get().then(resp => {
-                    console.log("loc_resp", resp);
-                    if (resp.empty == false) {
-                        resp.forEach(function (data) {
-                            user = data.data()
-                            matchedLocations.push(data.data())
-                        })
-                    }
-                })
-
-                let array = this.compare(matchedLocations, matchedServices)
-                console.log("Sent Array", array);
-                // this.loader.hide()
-                this.props.navigation.navigate('techniciansList', { data: array })
+                let respServices = await firebase.firestore().collection("Technician").where("services", "array-contains", this.state.service).get()
+                let respTravelLocations = await firebase.firestore().collection("Technician").where("travel_locations", "array-contains", this.state.location).get()
+                let technicians = this.compare(respServices,respTravelLocations,this.state.service,this.state.location)
+                this.loader.hide()
+                this.props.navigation.navigate('techniciansList', { data: technicians})
             }
 
         } catch (e) {
             console.log(e);
-            Alert.alert('Failure', 'Something went wrong. Please try again.', [{ text: 'OK', onPress: () => { } }]);
+            Alert.alert('Failure', JSON.stringify(e), [{ text: 'OK', onPress: () => { } }]);
         } finally {
             this.loader.hide();
         }

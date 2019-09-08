@@ -19,10 +19,8 @@ class Splash extends Component {
 
         console.log(JSON.stringify({ id: 1, location: 'Sea site, New york, USA', travel_cost: 20 }));
         connectFirebase();
-        await AsyncStorage.getItem('user', (error, data) => {
-            console.log("Splash",error)
-            console.log("Splash",data);
-
+        try{
+            let data = await AsyncStorage.getItem('user');
             if (data) {
                 user = JSON.parse(data);
                 console.log(user);
@@ -34,15 +32,18 @@ class Splash extends Component {
                     setTimeout(() => { this.props.navigation.replace('technicianTab') }, 5000);
 
                 } else {
-                    AsyncStorage.clear();
+                    AsyncStorage.getAllKeys().then(AsyncStorage.multiRemove);
                     setTimeout(() => { this.props.navigation.replace('login') }, 5000);
                 }
             }
             else {
-                AsyncStorage.clear();
+                AsyncStorage.getAllKeys().then(AsyncStorage.multiRemove);
                 setTimeout(() => { this.props.navigation.replace('login') }, 5000);
+                AsyncStorage.setItem("test","test");
             }
-        })
+        }catch(e){
+            alert(JSON.stringify(e));
+        }
     }
 
 

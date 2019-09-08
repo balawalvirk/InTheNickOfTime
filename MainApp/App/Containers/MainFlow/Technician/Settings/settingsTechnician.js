@@ -23,7 +23,7 @@ class SettingTechnician extends Component {
 
   logOut = async () => {
     await signOut()
-    await AsyncStorage.clear()
+    await AsyncStorage.getAllKeys().then(AsyncStorage.multiRemove)
     this._toggleModalLogout()
     this.props.navigation.push('login')
   }
