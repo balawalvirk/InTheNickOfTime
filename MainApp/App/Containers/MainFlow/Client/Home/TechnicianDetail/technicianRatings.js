@@ -9,6 +9,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import Modal from 'react-native-modal'
 import styles from '../../../../Styles/technicianDetailStyles'
 import firebase from 'firebase'
+import { getAllOfCollection} from "../../../../../backend/firebase/utility";
 export class TechnicianRatings extends Component {
     constructor(props) {
         super(props);

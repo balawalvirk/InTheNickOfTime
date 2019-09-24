@@ -36,7 +36,7 @@ class TechniciansList extends Component {
     }
     async fetchOrder() {
         let TempList = [];
-
+        this.setState({Booking_list: []});
         let RList = this.props.navigation.getParam('data', "Nothing");
 
         RList.forEach(element => {
