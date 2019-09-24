@@ -4,7 +4,7 @@ import images from '../../../../Themes/Images';
 import { width, height, totalSize } from 'react-native-dimension'
 import { Icon } from 'react-native-elements'
 import colors from '../../../../Themes/Colors';
-
+import { getUserBookings,getAllOfCollection, getUserId, saveData } from '../../../../backend/firebase/utility'
 import { throwStatement } from '@babel/types';
 
 
@@ -14,7 +14,7 @@ class TechniciansList extends Component {
         this.state = {
             service: this.props.navigation.getParam('service', "abc"),
             locations: this.props.navigation.getParam('location', "abc"),
-            Booking_list: this.props.navigation.getParam('data', "Nothing")
+            Booking_list: [],
             // [
             // { id: 1, client_name: 'Lina', client_profile_pic: images.profilePic, service_name: 'Hand massage', service_code: '025012', Address: '18002 Sea Island olace, New York, USA', service_price: '50', dateTime: '8:00AM 06-15-19', Categories: ['Care', 'NailCare', 'Facials', 'Hair'] },
             // { id: 2, client_name: 'Salish', client_profile_pic: images.profilePic, service_name: 'Face Cleaning & Facial', Address: '18002 Sea Island olace, New York, USA', service_duration: '30', service_price: '50', dateTime: '8:00AM 06-15-19', Categories: ['Care', 'NailCare', 'Facials', 'Hair'] },
@@ -30,10 +30,50 @@ class TechniciansList extends Component {
     }
 
     componentDidMount() {
-        console.log("Loc", this.state.locations);
-        console.log("DATA", this.state.data);
+        this.props.navigation.addListener("willFocus", () => {
+            this.fetchOrder();
+        });
+    }
+    async fetchOrder() {
+        let TempList = [];
+
+        let RList = this.props.navigation.getParam('data', "Nothing");
+
+        RList.forEach(element => {
+
+            this.GetRatting(element);
+
+
+        });
+
+
+
     }
 
+
+
+    async GetRatting(element) {
+        let TempList2 = [];
+        let isRated = false;
+        let totalrating = 0;
+        let RList2 = await getAllOfCollection("Ratting");
+
+        RList2.forEach(element2 => {
+            if (element2.technicianId === element.UserId) {
+                isRated = true;
+                TempList2.push(element2);
+                totalrating += element2.rating;
+            }
+        });
+        if (isRated) {
+            element.rating = totalrating / TempList2.length;
+        } else {
+            element.rating = 0;
+        }
+        let TempList = this.state.Booking_list;
+        TempList.push(element)
+        this.setState({ Booking_list: TempList });
+    }
     render() {
         return (
             <View style={styles.Container}>
@@ -46,60 +86,75 @@ class TechniciansList extends Component {
                         <ScrollView
                             showsVerticalScrollIndicator={false}>
                             {
-                                this.state.Booking_list.map((items, key) => {
-                                    let rating = 0;
-                                    if (items.ratings != '') {
-                                        items.ratings = JSON.parse(items.ratings);
-                                        items.ratings.map(val => {
-                                            rating += val.rating;
-                                        });
-                                        rating = (items.ratings.length > 0) ? rating / items.ratings.length : rating;
-                                    }
-                                    
-                                    return (
-                                        <TouchableOpacity key={key} style={styles.shopContainer} onPress={() => this.props.navigation.navigate('technicianDetailTab', {
-                                            services_details: items.service_details,
-                                            location_details: items.locations_details,
-                                            technician: items
-                                        })}>
-                                            <View style={styles.shopImageContainer}>
+                                this.state.Booking_list.length > 0 ?
+                                    this.state.Booking_list.map((items, key) => {
+                                        let rating = 0;
+                                        // if (items.ratings != '') {
+                                        //     items.ratings = JSON.parse(items.ratings);
+                                        //     items.ratings.map(val => {
+                                        //         rating += val.rating;
+                                        //     });
+                                        //     rating = (items.ratings.length > 0) ? rating / items.ratings.length : rating;
+                                        // }
 
-                                                <Image source={items.photo
-                                                    ? { uri: items.photo }
-                                                    : images.profilePic} style={styles.shopImage} />
+                                        return (
+                                            <TouchableOpacity key={key} style={styles.shopContainer} onPress={() => this.props.navigation.navigate('technicianDetailTab', {
+                                                services_details: items.service_details,
+                                                location_details: items.locations_details,
+                                                technician: items
+                                            })}>
+                                                <View style={styles.shopImageContainer}>
 
-                                            </View>
-                                            <View style={styles.shopTxtContainer}>
-                                                <Text style={styles.shopName}>{items.name}</Text>
-                                                {/* <Text style={styles.shopDetail}>At {items.dateTime}</Text> */}
-                                                {/* <Text style={styles.shopDetail}>{items.Address}</Text> */}
-                                                <View style={{ flexDirection: 'row' }}>
-                                                    {
-                                                        items.services.map((item, key) => {
-                                                            return (
-                                                                <Text key={key} style={styles.shopDetail}>{item} </Text>
-                                                            )
-                                                        })
-                                                    }
+                                                    <Image source={items.photo
+                                                        ? { uri: items.photo }
+                                                        : images.profilePic} style={styles.shopImage} />
+
                                                 </View>
-                                                <View style={{ flexDirection: 'column' }}>
-                                                    <Text style={{...styles.shopDetail, fontWeight: 'bold' }}>Availability: different</Text>
+                                                <View style={styles.shopTxtContainer}>
+                                                    <Text style={styles.shopName}>{items.name}</Text>
+                                                    {/* <Text style={styles.shopDetail}>At {items.dateTime}</Text> */}
+                                                    {/* <Text style={styles.shopDetail}>{items.Address}</Text> */}
+                                                    <View style={{ flexDirection: 'row' }}>
+                                                        {
+                                                            items.services.map((item, key) => {
+                                                                return (
+                                                                    <Text key={key} style={styles.shopDetail}>{item} </Text>
+                                                                )
+                                                            })
+                                                        }
+                                                    </View>
+                                                    <View style={{ flexDirection: 'column' }}>
+                                                        <Text style={{ ...styles.shopDetail, fontWeight: 'bold' }}>Availability: different</Text>
+                                                    </View>
                                                 </View>
-                                            </View>
-                                            <View style={[styles.shopIconContainer, { backgroundColor: 'transparent', flexDirection: 'row' }]}>
-                                                {/* <TouchableOpacity style={[styles.iconContainer, { backgroundColor: colors.SPA_graycolor }]} >
+                                                <View style={[styles.shopIconContainer, { backgroundColor: 'transparent', flexDirection: 'row' }]}>
+                                                    {/* <TouchableOpacity style={[styles.iconContainer, { backgroundColor: colors.SPA_graycolor }]} >
                                                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: 4, marginHorizontal: 7, }}>
                                                             <Icon name="star" size={totalSize(2)} color="white" type='antdesign' />
                                                             <Text style={[styles.shopName, { color: 'white', fontSize: totalSize(3) }]}>4.9</Text>
                                                         </View>
                                                     </TouchableOpacity> */}
-                                                <Icon name="star" size={totalSize(3)} color={colors.SPA_redColor} type='antdesign' />
-                                                <Text style={[styles.shopName, { color: colors.SPA_redColor, fontSize: totalSize(4) }]}>{rating}</Text>
-                                            </View>
-                                        </TouchableOpacity>
-                                    );
+                                                    <Icon name="star" size={totalSize(3)} color={colors.SPA_redColor} type='antdesign' />
+                                                    <Text style={[styles.shopName, { color: colors.SPA_redColor, fontSize: totalSize(4) }]}>{items.rating}</Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                        );
 
-                                })
+                                    })
+                                    :
+                                    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", }}>
+                                        <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2), left: width(0), marginTop: "50%" }]}>No Technician</Text>
+                                        {/* <TouchableOpacity style={styles.button} onPress={() => this.AddCategory()}>
+                                                <View style={styles.btnTxtContainer}>
+                                                    {
+                                                        this.state.loading === true ?
+                                                            <ActivityIndicator size={'small'} color='white' />
+                                                            :
+                                                            <Text style={styles.btnTxt}>+ Category</Text>
+                                                    }
+                                                </View>
+                                            </TouchableOpacity> */}
+                                    </View>
                             }
                         </ScrollView>
                     </View>

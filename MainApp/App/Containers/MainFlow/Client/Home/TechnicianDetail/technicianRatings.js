@@ -28,28 +28,44 @@ export class TechnicianRatings extends Component {
         };
     }
 
-    getNameAndPic = async () => {
-        techRatings = JSON.parse(this.props.navigation.getParam("technician").ratings)
-        totalRatings = 0
-        for (i = 0; i < techRatings.length; i++) {
-            totalRatings += techRatings[i].rating
+    async fetchOrder() {
+        let TempList = [];
 
-            let qSnapshot = await firebase.firestore().collection('Users').where('UserId', '==', techRatings[i].id).get()
-            qSnapshot.forEach((doc) => {
-                if (doc.exists) {
-                    console.log("Doc", doc.data());
-                    techRatings[i].name = doc.data().name
-                    techRatings[i].photo = doc.data().photo
-                }
-            })
-        }
-        totalRatings = totalRatings / techRatings.length
-        this.setState({ overallRatings: totalRatings })
-        return techRatings
+        let RList = await getAllOfCollection("Technician");
+
+        RList.forEach(element => {
+
+            this.GetRatting(element);
+
+
+        });
+
+    }
+    async GetRatting(element) {
+        let TempList2 = [];
+        let isRated = false;
+        let totalrating = 0;
+        let RList2 = await getAllOfCollection("Ratting");
+
+        RList2.forEach(element2 => {
+            if (element2.technicianId === element.UserId) {
+                isRated = true;
+                TempList2.push(element2);
+                totalrating += element2.rating;
+            }
+        });
+
+        totalrating = totalrating / TempList2.length;
+
+        this.setState({ TechnicianRatings: TempList2, overallRatings: totalrating });
     }
     async componentDidMount() {
-        ratings = await this.getNameAndPic()
-        this.setState({ TechnicianRatings: ratings })
+        //  this.loader.show()
+        this.props.navigation.addListener("willFocus", () => {
+            this.setState({ isDataLoad: false });
+            this.fetchOrder();
+        });
+        // this.loader.hide()
     }
     _toggleModal = () =>
         this.setState({ isModalVisible: !this.state.isModalVisible });
@@ -94,48 +110,63 @@ export class TechnicianRatings extends Component {
                         showsVerticalScrollIndicator={false}
                     >
                         {
-                            this.state.TechnicianRatings.map((item, key) => {
-                                let img = null;
-                                console.log("phot",item.photo);
-                                
-                                if (item.photo != null) {
-                                    img = { uri: item.photo }
-                                } else {
-                                    img = images.profilePic
-                                }
-                                console.log("photooio",img);
-                                return (
-                                    <View key={key} style={styles.detailContainer} >
-                                        {/* <View style={styles.iconContainerSmall}>
+                            this.state.TechnicianRatings.length > 0 ?
+                                this.state.TechnicianRatings.map((item, key) => {
+                                    let img = null;
+                                    console.log("phot", item.photo);
+
+                                    if (item.photo != null) {
+                                        img = { uri: item.photo }
+                                    } else {
+                                        img = images.profilePic
+                                    }
+                                    console.log("photooio", img);
+                                    return (
+                                        <View key={key} style={styles.detailContainer} >
+                                            {/* <View style={styles.iconContainerSmall}>
                                         <Icon name='person' color='rgb(180,210,53)' size={totalSize(4)} />
                                     </View> */}
-                                        <Image source={img} style={[styles.profilePicReivew]} />
-                                        <View style={{ alignItems: 'flex-start', justifyContent: 'center', width: width(60), backgroundColor: 'transparent', marginVertical: height(3) }}>
-                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                <Text style={[styles.txtLarg, { fontSize: totalSize(2) }]}>{item.name}</Text>
-                                                <View style={{ width: width(2) }}></View>
-                                                <StarRating
-                                                    disabled={false}
-                                                    emptyStar={'ios-star-outline'}
-                                                    fullStar={'ios-star'}
-                                                    halfStar={'ios-star-half'}
-                                                    iconSet={'Ionicons'}
-                                                    maxStars={5}
-                                                    starSize={totalSize(1.5)}
-                                                    rating={item.rating}
-                                                    //selectedStar={(rating) => this.onStarRatingPress(rating)}
-                                                    fullStarColor={colors.SPA_redColor}
-                                                />
+                                            <Image source={img} style={[styles.profilePicReivew]} />
+                                            <View style={{ alignItems: 'flex-start', justifyContent: 'center', width: width(60), backgroundColor: 'transparent', marginVertical: height(3) }}>
+                                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                    <Text style={[styles.txtLarg, { fontSize: totalSize(2) }]}>{item.name}</Text>
+                                                    <View style={{ width: width(2) }}></View>
+                                                    <StarRating
+                                                        disabled={false}
+                                                        emptyStar={'ios-star-outline'}
+                                                        fullStar={'ios-star'}
+                                                        halfStar={'ios-star-half'}
+                                                        iconSet={'Ionicons'}
+                                                        maxStars={5}
+                                                        starSize={totalSize(1.5)}
+                                                        rating={item.rating}
+                                                        //selectedStar={(rating) => this.onStarRatingPress(rating)}
+                                                        fullStarColor={colors.SPA_redColor}
+                                                    />
+                                                </View>
+                                                <Text style={[styles.txtSmall, { fontSize: totalSize(1.25) }]}>{item.comment}</Text>
                                             </View>
-                                            <Text style={[styles.txtSmall, { fontSize: totalSize(1.25) }]}>{item.comment}</Text>
+                                            <View style={{ alignItems: 'flex-end', justifyContent: 'flex-end', width: width(15), backgroundColor: 'transparent' }}>
+                                                <Text style={[styles.txtSmall, { fontSize: totalSize(1.25) }]}>{item.date}</Text>
+                                            </View>
+                                            <View style={{ width: width(5) }}></View>
                                         </View>
-                                        <View style={{ alignItems: 'flex-end', justifyContent: 'flex-end', width: width(15), backgroundColor: 'transparent' }}>
-                                            <Text style={[styles.txtSmall, { fontSize: totalSize(1.25) }]}>{item.date}</Text>
-                                        </View>
-                                        <View style={{ width: width(5) }}></View>
-                                    </View>
-                                )
-                            })
+                                    )
+                                })
+                                :
+                                <View style={{ flex: 1, alignItems: "center", justifyContent: "center", }}>
+                                    <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2), left: width(0), marginTop: "50%" }]}>No Rating</Text>
+                                    {/* <TouchableOpacity style={styles.button} onPress={() => this.AddCategory()}>
+                                                <View style={styles.btnTxtContainer}>
+                                                    {
+                                                        this.state.loading === true ?
+                                                            <ActivityIndicator size={'small'} color='white' />
+                                                            :
+                                                            <Text style={styles.btnTxt}>+ Category</Text>
+                                                    }
+                                                </View>
+                                            </TouchableOpacity> */}
+                                </View>
                         }
                     </ScrollView>
                 </View>
