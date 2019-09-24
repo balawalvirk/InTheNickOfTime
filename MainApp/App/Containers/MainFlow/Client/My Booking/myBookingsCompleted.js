@@ -1,13 +1,17 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, Image } from 'react-native';
 import images from '../../../../Themes/Images';
 import { width, height, totalSize } from 'react-native-dimension'
 import { Icon } from 'react-native-elements'
 import colors from '../../../../Themes/Colors';
-import { getUserBookings } from '../../../../backend/firebase/utility'
+import { getUserBookings, getUserId, saveData } from '../../../../backend/firebase/utility'
 import Loader from '../../../../Components/Loader';
 import firebase from 'firebase'
-class myBookings extends Component {
+import StarRating from 'react-native-star-rating';
+import Modal from 'react-native-modal'
+import styles2 from '../../../Styles/technicianDetailStyles'
+import { TouchableOpacity } from 'react-native-gesture-handler';
+class myBookingsCompleted extends Component {
   constructor(props) {
     super(props);
 
@@ -31,20 +35,21 @@ class myBookings extends Component {
     arr = await getUserBookings('Bookings')
     for (i = 0; i < arr.length; i++) {
       console.log("arr", arr[i].technicianId);
-      // let qSnapshot = await firebase.firestore().collection('Technician').where('UserId', '==', arr[i].technicianId).get()
-      // qSnapshot.forEach((doc) => {
-      //   if (doc.exists) {
-      //     console.log("Doc", doc.data());
-      //     arr[i].technicianName = doc.data().name
-      //     arr[i].photo = doc.data().photo
-      //   }
-      // })
+      let qSnapshot = await firebase.firestore().collection('Ratting').where('BookingId', '==', arr[i].id).get()
+      qSnapshot.forEach((doc) => {
+        if (doc.exists) {
+          console.log("Doc", doc.data());
+         // arr[i].technicianName = doc.data().name
+         // arr[i].photo = doc.data().photo
+         arr[i].isRated= doc.data().isRated;;
+         arr[i].rating= doc.data().rating;
+        }
+      })
       if (arr[i].status !== undefined) {
-        arr[i].status === 'accepted' ? TempArry.push(arr[i]) : null
+        if (arr[i].status === 'completed') {
+          TempArry.push(arr[i])
+        }
       }
-      // if (arr[i].status === 'Accepted') {
-      //   TempArry.push(arr[i]);
-      // }
 
     }
     this.setState({ Booking_list: TempArry });
@@ -61,6 +66,58 @@ class myBookings extends Component {
       this.fetchOrders();
     });
     // this.loader.hide()
+  }
+
+
+  _toggleModal = () =>
+    this.setState({ isModalVisible: !this.state.isModalVisible });
+
+
+  RattingBtn(index) {
+    this.setState({ ActiveIndex: index });
+    this._toggleModal();
+  }
+  async RattingSubmit() {
+    let User = await getUserId();
+    let ID = this.uniqueID();
+    let Obj = {
+      id: ID,
+      name: User.name,
+      rating: this.state.starCount,
+      comment: this.state.comment,
+      date: new Date().toDateString(),
+      UserId: User.UserId,
+      BookingId: this.state.Booking_list[this.state.ActiveIndex].id,
+      technicianId: this.state.Booking_list[this.state.ActiveIndex].technicianId,
+    }
+    await saveData("Ratting", ID, Obj);
+    let TempList = this.state.Booking_list;
+    TempList[this.state.ActiveIndex].isRated = true;
+    TempList[this.state.ActiveIndex].rating = this.state.starCount;
+    await saveData("Bookings", TempList[this.state.ActiveIndex].id, TempList[this.state.ActiveIndex]);
+    this.setState({ starCount: 0, comment: "", ActiveIndex: 0, Booking_list: TempList });
+   
+
+
+
+  }
+
+
+  uniqueID() {
+    function chr4() {
+      return Math.random().toString(16).slice(-4);
+    }
+    return chr4() + chr4() +
+      '-' + chr4() +
+      '-' + chr4() +
+      '-' + chr4() +
+      '-' + chr4() + chr4() + chr4();
+  }
+  onStarRatingPress(rating) {
+    this.setState({
+      starCount: rating
+    });
+    //console.warn('Rating===>', rating)
   }
 
   render() {
@@ -80,45 +137,52 @@ class myBookings extends Component {
                   </View>
                   :
                   this.state.Booking_list.length > 0 ?
-                  this.state.Booking_list.map((items, key) => {
-                    let img = null;
-                    if (items.photo != null) {
-                      img = { uri: items.photo }
-                    } else {
-                      img = images.profilePic
-                    }
-                    return (
-                      <View key={key} style={styles.shopContainer}>
-                        <View style={styles.shopImageContainer}>
-                          <Image source={img} style={styles.shopImage} />
-                        </View>
-                        <View style={styles.shopTxtContainer}>
-                          <Text style={styles.shopName}>{items.technicianName}</Text>
-                          <Text style={styles.shopDetail}>At {items.servicesList}</Text>
-                          <Text style={styles.shopDetail}>At {items.date_time}</Text>
-                          <Text style={styles.shopDetail}>{items.location}</Text>
-                        </View>
-                        <View style={[styles.shopIconContainer]}>
-                          {/* <TouchableOpacity style={styles.iconContainer} >
-                               <Icon name="pencil" size={totalSize(2)} color="white" type='font-awesome' />
-                               </TouchableOpacity> */}
-                          <View style={[styles.statusContainer]} >
-
-                            <Text style={[styles.shopName, { fontSize: totalSize(1.5), color: colors.SPA_redColor, fontWeight: 'normal' }]}>{items.status}</Text>
+                    this.state.Booking_list.map((items, key) => {
+                      let img = null;
+                      if (items.photo != null) {
+                        img = { uri: items.photo }
+                      } else {
+                        img = images.profilePic
+                      }
+                      return (
+                        <View key={key} style={styles.shopContainer}>
+                          <View style={styles.shopImageContainer}>
+                            <Image source={img} style={styles.shopImage} />
                           </View>
-                          {
-                            items.status === 'accepted' ?
-                              <Icon name="primitive-dot" size={totalSize(2.5)} color={colors.SPA_Green} type='octicon' />
-                              :
-                              <Icon name="primitive-dot" size={totalSize(2.5)} color={items.status === 'pending' ? colors.SPA_graycolor : colors.error} type='octicon' />
-                          }
-                        </View>
-                      </View>
-                    );
+                          <View style={styles.shopTxtContainer}>
+                            <Text style={styles.shopName}>{items.technicianName}</Text>
+                            <Text style={styles.shopDetail}>At {items.servicesList}</Text>
+                            <Text style={styles.shopDetail}>At {items.date_time}</Text>
+                            <Text style={styles.shopDetail}>{items.location}</Text>
+                          </View>
+                          <View style={[styles.shopIconContainer]}>
 
-                  })
-                  :
-                  <View style={{ flex: 1, alignItems: "center", justifyContent: "center", }}>
+
+                            {items.isRated ?
+                              <StarRating
+                                disabled={false}
+                                emptyStar={'ios-star-outline'}
+                                fullStar={'ios-star'}
+                                halfStar={'ios-star-half'}
+                                iconSet={'Ionicons'}
+                                maxStars={5}
+                                starSize={totalSize(1.5)}
+                                rating={item.rating}
+                                //selectedStar={(rating) => this.onStarRatingPress(rating)}
+                                fullStarColor={colors.SPA_redColor}
+                              />
+                              :
+                              <TouchableOpacity onPress={() => this.RattingBtn(key)} style={[styles2.button, { borderRadius: 5, backgroundColor: colors.SPA_redColor, marginRight: 0, height: 30, width: 80 }]}>
+                                <Text style={[styles2.buttonTxt, { fontWeight: "bold" }]}>Rate it</Text>
+                              </TouchableOpacity>
+                            }
+                          </View>
+                        </View>
+                      );
+
+                    })
+                    :
+                    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", }}>
                       <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2), left: width(0), marginTop: "50%" }]}>No Booking</Text>
                       {/* <TouchableOpacity style={styles.button} onPress={() => this.AddCategory()}>
                           <View style={styles.btnTxtContainer}>
@@ -130,18 +194,72 @@ class myBookings extends Component {
                               }
                           </View>
                       </TouchableOpacity> */}
-                  </View>
+                    </View>
               }
             </ScrollView>
           </View>
         </View>
+        <Modal
+          isVisible={this.state.isModalVisible}
+          animationIn='slideInUp'
+          animationOut='slideOutDown'
+          backdropColor='black'
+          animationInTiming={500}
+          animationOutTiming={500}
+          backdropOpacity={0.50}
+          onBackdropPress={this._toggleModal}>
 
+          <View>
+            <View style={styles2.modalHeader}>
+              <Text style={[styles2.txtLarg, { fontSize: totalSize(2), color: 'white' }]}>Rate a Technician</Text>
+            </View>
+            <View style={styles2.modalBody}>
+              <View style={styles2.starTxtContainer}>
+                <Text style={styles2.txtSmall}>
+                  Tap to Rate:
+                                </Text>
+                <View style={{ width: width(5) }}></View>
+                <StarRating
+                  disabled={false}
+                  emptyStar={'ios-star-outline'}
+                  fullStar={'ios-star'}
+                  halfStar={'ios-star-half'}
+                  iconSet={'Ionicons'}
+                  maxStars={5}
+                  starSize={totalSize(3)}
+                  rating={this.state.starCount}
+                  selectedStar={(rating) => this.onStarRatingPress(rating)}
+                  fullStarColor={colors.SPA_redColor}
+                />
+              </View>
+              <View style={styles2.inputTxtContainer}>
+                <Text style={[styles2.txtSmall, { marginVertical: 3, color: colors.SPA_redColor }]}>Comment</Text>
+                <View style={styles2.commentInputView}>
+                  <TextInput
+                    onChangeText={(value) => this.setState({ comment: value })}
+                    placeholder='ENTER COMMENT HERE'
+                    placeholderTextColor='rgb(245,245,238)'
+                    style={styles2.commentInput}
+                  />
+                </View>
+              </View>
+              <TouchableOpacity onPress={() => this.RattingSubmit()} style={styles2.buttonModal}>
+                {
+                  this.state.loadind_rate === true ?
+                    <ActivityIndicator color='white' size={'small'} />
+                    :
+                    <Text style={{ fontSize: totalSize(1.5), color: 'white' }}>Submit</Text>
+                }
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </View>
     );
   }
 }
 
-export default myBookings;
+export default myBookingsCompleted;
 
 const styles = StyleSheet.create({
   Container: {
@@ -198,7 +316,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     elevation: 5,
     backgroundColor: 'white',
-    marginVertical: height(0.5),
+    marginVertical: height(1),
     marginHorizontal: width(2),
     flexDirection: 'row',
     //alignItems: 'center',

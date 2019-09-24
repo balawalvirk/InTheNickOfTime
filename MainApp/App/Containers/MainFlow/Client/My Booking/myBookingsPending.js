@@ -7,7 +7,7 @@ import colors from '../../../../Themes/Colors';
 import { getUserBookings } from '../../../../backend/firebase/utility'
 import Loader from '../../../../Components/Loader';
 import firebase from 'firebase'
-class myBookings extends Component {
+class myBookingsPending extends Component {
   constructor(props) {
     super(props);
 
@@ -40,11 +40,8 @@ class myBookings extends Component {
       //   }
       // })
       if (arr[i].status !== undefined) {
-        arr[i].status === 'accepted' ? TempArry.push(arr[i]) : null
+        arr[i].status === 'pending' ? TempArry.push(arr[i]) : null
       }
-      // if (arr[i].status === 'Accepted') {
-      //   TempArry.push(arr[i]);
-      // }
 
     }
     this.setState({ Booking_list: TempArry });
@@ -66,9 +63,9 @@ class myBookings extends Component {
   render() {
     return (
       <View style={styles.Container}>
-
+       
         <View style={{ flex: 1 }}>
-
+          
 
           <View style={{ flex: 4, alignItems: 'center' }}>
             <ScrollView
@@ -141,7 +138,7 @@ class myBookings extends Component {
   }
 }
 
-export default myBookings;
+export default myBookingsPending;
 
 const styles = StyleSheet.create({
   Container: {

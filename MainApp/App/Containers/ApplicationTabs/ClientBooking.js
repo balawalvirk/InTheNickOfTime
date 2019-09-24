@@ -3,36 +3,37 @@ import { totalSize } from 'react-native-dimension';
 import { Icon } from 'react-native-elements'; 
 
 import { createMaterialTopTabNavigator } from 'react-navigation';
-import TechnicianBio from '../MainFlow/Client/Home/TechnicianDetail/technicianBio';
-import TechnicianPortfolio from '../MainFlow/Client/Home/TechnicianDetail/technicianPortfolio';
-import TechnicianServices from '../MainFlow/Client/Home/TechnicianDetail/technicianServices';
+import AcceptedBooking from '../MainFlow/Client/My Booking/myBookings';
+import PendingBooking from '../MainFlow/Client/My Booking/myBookingsPending';
+import CanceledBooking from '../MainFlow/Client/My Booking/myBookingInCancel';
+import CompletedBooking from '../MainFlow/Client/My Booking/myBookingsCompleted';
 import colors from '../../Themes/Colors';
 import { TechnicianRatings } from '../MainFlow/Client/Home/TechnicianDetail/technicianRatings';
 export default createMaterialTopTabNavigator({
-    Bio: {
-        screen: TechnicianBio,
+    Pending: {
+        screen: PendingBooking,
         navigationOptions: {
             header: null,
             tabBarIcon: ({ tintColor }) => (<Icon name='tasks' size={totalSize(2)} type='font-awesome' color={tintColor} />)
         }
         
     },
-    Portfolio: {
-        screen: TechnicianPortfolio,
+    Accepted: {
+        screen: AcceptedBooking,
         navigationOptions: {
             header: null,
             tabBarIcon: ({ tintColor }) => (<Icon name='note' size={totalSize(2)} type='material-icon' color={tintColor} />)
         }
     },
-    Services: {
-        screen: TechnicianServices,
+    Completed : {
+        screen: CompletedBooking,
         navigationOptions: {
             header: null,
             tabBarIcon: ({ tintColor }) => (<Icon name='note' size={totalSize(2)} type='material-icon' color={tintColor} />)
         }
     },
-    Ratings: {
-        screen: TechnicianRatings,
+    Canceled: {
+        screen: CanceledBooking,
         navigationOptions: {
             header: null,
             tabBarIcon: ({ tintColor }) => (<Icon name='note' size={totalSize(2)} type='material-icon' color={tintColor} />)

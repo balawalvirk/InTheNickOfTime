@@ -16,6 +16,7 @@ import EditProfileClient from '../Containers/MainFlow/Client/Profile/editProfile
 import SearchTechnician from '../Containers/MainFlow/Client/Home/searchTechnician';
 import TechniciansList from '../Containers/MainFlow/Client/Home/technicianList';
 import TechnicianDetailTab from '../Containers/ApplicationTabs/TechnicianDetailTopTab';
+import ClientBooking from '../Containers/ApplicationTabs/ClientBooking';
 import Payment from '../Containers/MainFlow/Client/Home/TechnicianDetail/payment';
 import WebViewOpensLink from './../Containers/MainFlow/Client/Settings/WebViewOpensLink';
 import CardData from './../Containers/MainFlow/Client/Home/TechnicianDetail/CardData'
@@ -56,6 +57,12 @@ const AppNavigator = createStackNavigator({
         screen: TechnicianDetailTab,
         navigationOptions: {
             title: 'Technician Detail',
+        }
+    },
+    clientBooking: {
+        screen: ClientBooking,
+        navigationOptions: {
+            title: "Bookings"
         }
     },
     editProfileClient: {

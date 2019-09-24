@@ -434,6 +434,14 @@ async function getUser() {
   return user;
 }
 
+export async function getUserId() {
+  k = await AsyncStorage.getItem('user')
+  user = JSON.parse(k)
+  console.log(user);
+  
+  return user;
+}
+
 setNameAndPic = async (dd) => {
   i = 0
   for (d of dd) {

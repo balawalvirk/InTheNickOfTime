@@ -7,7 +7,7 @@ import colors from '../../../../Themes/Colors';
 import { getUserBookings } from '../../../../backend/firebase/utility'
 import Loader from '../../../../Components/Loader';
 import firebase from 'firebase'
-class myBookings extends Component {
+class myBookingInCancel extends Component {
   constructor(props) {
     super(props);
 
@@ -39,10 +39,11 @@ class myBookings extends Component {
       //     arr[i].photo = doc.data().photo
       //   }
       // })
-      if (arr[i].status !== undefined) {
-        arr[i].status === 'accepted' ? TempArry.push(arr[i]) : null
+      if (arr[i].status!== undefined) {
+        arr[i].status !== 'accepted' && arr[i].status !== 'pending' ? TempArry.push(arr[i]) : null
       }
-      // if (arr[i].status === 'Accepted') {
+
+      // if (arr[i].status !== 'Accepted' && arr[i].status !== 'Pending') {
       //   TempArry.push(arr[i]);
       // }
 
@@ -66,9 +67,9 @@ class myBookings extends Component {
   render() {
     return (
       <View style={styles.Container}>
-
+        <Loader ref={r => this.loader = r} />
         <View style={{ flex: 1 }}>
-
+         
 
           <View style={{ flex: 4, alignItems: 'center' }}>
             <ScrollView
@@ -79,6 +80,7 @@ class myBookings extends Component {
                     <ActivityIndicator size='large' color="rgb(0,41,132)" />
                   </View>
                   :
+
                   this.state.Booking_list.length > 0 ?
                   this.state.Booking_list.map((items, key) => {
                     let img = null;
@@ -141,7 +143,7 @@ class myBookings extends Component {
   }
 }
 
-export default myBookings;
+export default myBookingInCancel;
 
 const styles = StyleSheet.create({
   Container: {

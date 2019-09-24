@@ -6,7 +6,7 @@ import Home from '../MainFlow/Client/Home/home';
 import { totalSize } from 'react-native-dimension';
 import { Icon, Overlay } from 'react-native-elements'
 import ProfileClient from '../MainFlow/Client/Profile/profileClient';
-import MyBookings from '../MainFlow/Client/My Booking/myBookings';
+import MyBookings from './ClientBooking';
 import Settings from '../MainFlow/Client/Settings/settings';
 import OurStory from '../MainFlow/Client/ourStory/ourStory'
 const tabNavigator = createBottomTabNavigator({

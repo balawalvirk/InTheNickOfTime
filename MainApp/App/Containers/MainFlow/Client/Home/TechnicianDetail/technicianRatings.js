@@ -60,6 +60,12 @@ export class TechnicianRatings extends Component {
         });
         //console.warn('Rating===>', rating)
     }
+
+    async RattingSubmit() {
+
+    }
+
+
     render() {
         console.log("tech ratings", this.state.TechnicianRatings);
 
@@ -177,7 +183,7 @@ export class TechnicianRatings extends Component {
                                     />
                                 </View>
                             </View>
-                            <TouchableOpacity onPress={() => this._toggleModal()} style={styles.buttonModal}>
+                            <TouchableOpacity onPress={() => this.RattingSubmit()} style={styles.buttonModal}>
                                 {
                                     this.state.loadind_rate === true ?
                                         <ActivityIndicator color='white' size={'small'} />

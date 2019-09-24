@@ -99,6 +99,7 @@ class Payment extends Component {
                 Booking.amount = Booking.services_cost + Booking.travel_cost
                 Booking.address = this.props.navigation.getParam('address')
                 Booking.card = this.props.navigation.getParam('card')
+                Booking.id= this.props.navigation.getParam('technician', '').id
                 this.setState({ amount: Booking.amount })
                 Booking.comments = this.props.navigation.getParam("comments", '')
                 await createData("Bookings", Booking);
@@ -126,6 +127,17 @@ class Payment extends Component {
         }
         //console.log("String Booking", JSON.parse(JSON.stringify(Booking)));
     }
+
+    uniqueID() {
+        function chr4() {
+          return Math.random().toString(16).slice(-4);
+        }
+        return chr4() + chr4() +
+          '-' + chr4() +
+          '-' + chr4() +
+          '-' + chr4() +
+          '-' + chr4() + chr4() + chr4();
+      }
 
     render() {
         return (
