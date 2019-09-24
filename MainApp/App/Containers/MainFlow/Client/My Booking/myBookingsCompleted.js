@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, Image } from 'react-native';
+// import { View, Text, StyleSheet, ScrollView, TextInput, Image, Button } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator, TouchableOpacity, TextInput } from 'react-native';
+
 import images from '../../../../Themes/Images';
 import { width, height, totalSize } from 'react-native-dimension'
 import { Icon } from 'react-native-elements'
@@ -10,7 +12,7 @@ import firebase from 'firebase'
 import StarRating from 'react-native-star-rating';
 import Modal from 'react-native-modal'
 import styles2 from '../../../Styles/technicianDetailStyles'
-import { TouchableOpacity } from 'react-native-gesture-handler';
+// import { TouchableOpacity } from 'react-native-gesture-handler';
 class myBookingsCompleted extends Component {
   constructor(props) {
     super(props);
@@ -35,18 +37,19 @@ class myBookingsCompleted extends Component {
     arr = await getUserBookings('Bookings')
     for (i = 0; i < arr.length; i++) {
       console.log("arr", arr[i].technicianId);
-      let qSnapshot = await firebase.firestore().collection('Ratting').where('BookingId', '==', arr[i].id).get()
-      qSnapshot.forEach((doc) => {
-        if (doc.exists) {
-          console.log("Doc", doc.data());
-         // arr[i].technicianName = doc.data().name
-         // arr[i].photo = doc.data().photo
-         arr[i].isRated= doc.data().isRated;;
-         arr[i].rating= doc.data().rating;
-        }
-      })
       if (arr[i].status !== undefined) {
         if (arr[i].status === 'completed') {
+
+          let qSnapshot = await firebase.firestore().collection('Ratting').where('BookingId', '==', arr[i].id).get()
+          qSnapshot.forEach((doc) => {
+            if (doc.exists) {
+              console.log("Doc", doc.data());
+              // arr[i].technicianName = doc.data().name
+              // arr[i].photo = doc.data().photo
+              arr[i].isRated = doc.data().isRated;
+              arr[i].rating = doc.data().rating;
+            }
+          })
           TempArry.push(arr[i])
         }
       }
@@ -78,11 +81,13 @@ class myBookingsCompleted extends Component {
     this._toggleModal();
   }
   async RattingSubmit() {
+
     let User = await getUserId();
     let ID = this.uniqueID();
     let Obj = {
       id: ID,
       name: User.name,
+      isRated: true,
       rating: this.state.starCount,
       comment: this.state.comment,
       date: new Date().toDateString(),
@@ -94,11 +99,10 @@ class myBookingsCompleted extends Component {
     let TempList = this.state.Booking_list;
     TempList[this.state.ActiveIndex].isRated = true;
     TempList[this.state.ActiveIndex].rating = this.state.starCount;
-    await saveData("Bookings", TempList[this.state.ActiveIndex].id, TempList[this.state.ActiveIndex]);
     this.setState({ starCount: 0, comment: "", ActiveIndex: 0, Booking_list: TempList });
-   
 
 
+    this._toggleModal();
 
   }
 
@@ -167,7 +171,7 @@ class myBookingsCompleted extends Component {
                                 iconSet={'Ionicons'}
                                 maxStars={5}
                                 starSize={totalSize(1.5)}
-                                rating={item.rating}
+                                rating={items.rating}
                                 //selectedStar={(rating) => this.onStarRatingPress(rating)}
                                 fullStarColor={colors.SPA_redColor}
                               />
@@ -197,6 +201,8 @@ class myBookingsCompleted extends Component {
                     </View>
               }
             </ScrollView>
+
+
           </View>
         </View>
         <Modal
@@ -242,16 +248,17 @@ class myBookingsCompleted extends Component {
                     style={styles2.commentInput}
                   />
                 </View>
+                <TouchableOpacity onPress={() => this.RattingSubmit()} style={styles2.buttonModal}>
+                  {
+
+                    <Text style={{ fontSize: totalSize(2), color: 'white', fontWeight: "bold" }}>Submit</Text>
+                  }
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity onPress={() => this.RattingSubmit()} style={styles2.buttonModal}>
-                {
-                  this.state.loadind_rate === true ?
-                    <ActivityIndicator color='white' size={'small'} />
-                    :
-                    <Text style={{ fontSize: totalSize(1.5), color: 'white' }}>Submit</Text>
-                }
-              </TouchableOpacity>
+
+
             </View>
+
           </View>
         </Modal>
       </View>

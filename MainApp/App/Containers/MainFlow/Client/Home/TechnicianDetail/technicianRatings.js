@@ -76,11 +76,11 @@ export class TechnicianRatings extends Component {
                         <Text style={[styles.txtLarg, { fontSize: totalSize(2) }]}>  Overall Rating   </Text>
                         <Text style={[styles.txtLarg, { fontSize: totalSize(3), color: colors.SPA_redColor }]}>{this.state.overallRatings}</Text>
                     </View>
-                    <View style={{ flex: 1, backgroundColor: 'transparent', justifyContent: 'center', alignItems: 'flex-end' }}>
-                        {/* <TouchableOpacity onPress={() => this._toggleModal()} style={[styles.button, { borderRadius: 5, backgroundColor: colors.SPA_redColor, marginRight: 10 }]}>
+                    {/* <View style={{ flex: 1, backgroundColor: 'transparent', justifyContent: 'center', alignItems: 'flex-end' }}>
+                        <TouchableOpacity onPress={() => this._toggleModal()} style={[styles.button, { borderRadius: 5, backgroundColor: colors.SPA_redColor, marginRight: 10 }]}>
                             <Text style={styles.buttonTxt}>Rate it</Text>
-                        </TouchableOpacity> */}
-                    </View>
+                        </TouchableOpacity>
+                    </View> */}
                 </View>
                 <View style={{ flex: 4, alignItems: 'center', backgroundColor: 'transparent' }}>
                     <ScrollView
