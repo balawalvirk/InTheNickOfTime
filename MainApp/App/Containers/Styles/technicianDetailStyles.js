@@ -77,6 +77,7 @@ export default StyleSheet.create({
         flexDirection: 'row',
         marginTop: 5,
         marginHorizontal: 5,
+        marginVertical: 5,
         alignItems: 'center',
         elevation: 5,
         borderRadius: 5

@@ -9,7 +9,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import Modal from 'react-native-modal'
 import styles from '../../../../Styles/technicianDetailStyles'
 import firebase from 'firebase'
-import { getAllOfCollection} from "../../../../../backend/firebase/utility";
+import { getAllOfCollection } from "../../../../../backend/firebase/utility";
 export class TechnicianRatings extends Component {
     constructor(props) {
         super(props);
@@ -30,30 +30,22 @@ export class TechnicianRatings extends Component {
     }
 
     async fetchOrder() {
-        let TempList = [];
-
-        let RList = await getAllOfCollection("Technician");
-
-        RList.forEach(element => {
-
-            this.GetRatting(element);
-
-
-        });
-
+        // let RList = await getAllOfCollection("Technician");
+        let RList = this.props.navigation.getParam('technician', "Nothing");
+        this.GetRatting(RList);
     }
     async GetRatting(element) {
         let TempList2 = [];
         let isRated = false;
         let totalrating = 0;
-        let RList2 = await getAllOfCollection("Ratting");
+        let RList2 = await firebase.firestore().collection("Ratting").where("technicianId", "==", element.UserId).get()
 
         RList2.forEach(element2 => {
-            if (element2.technicianId === element.UserId) {
-                isRated = true;
-                TempList2.push(element2);
-                totalrating += element2.rating;
-            }
+            //  if (element2.technicianId === element.UserId) {
+            isRated = true;
+            TempList2.push(element2.data());
+            totalrating += element2.data().rating;
+            // }
         });
 
         totalrating = totalrating / TempList2.length;
@@ -87,8 +79,8 @@ export class TechnicianRatings extends Component {
         console.log("tech ratings", this.state.TechnicianRatings);
 
         return (
-            <View style={styles.container}>
-                <View style={{ flex: 1, backgroundColor: 'transparent', flexDirection: 'row' }}>
+            <View style={{ flex: 1, alignItems: "center"}}>
+                <View style={{ flex: 0.5, backgroundColor: 'transparent', flexDirection: 'row' }}>
                     <View style={{ flex: 1, backgroundColor: 'transparent', alignItems: 'center', flexDirection: 'row' }}>
                         <Text style={[styles.txtLarg, { fontSize: totalSize(2) }]}>  Overall Rating   </Text>
                         <Text style={[styles.txtLarg, { fontSize: totalSize(3), color: colors.SPA_redColor }]}>{this.state.overallRatings}</Text>
@@ -101,13 +93,6 @@ export class TechnicianRatings extends Component {
                 </View>
                 <View style={{ flex: 4, alignItems: 'center', backgroundColor: 'transparent' }}>
                     <ScrollView
-                        style={{ marginBottom: 10 }}
-                        ref={ref => this.scrollView = ref}
-                        onContentSizeChange={(contentWidth, contentHeight) => {
-                            if (this.state.postCom) {
-                                this.scrollView.scrollToEnd({ animated: true });
-                            }
-                        }}
                         showsVerticalScrollIndicator={false}
                     >
                         {

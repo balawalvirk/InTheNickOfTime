@@ -6,7 +6,7 @@ import { Icon } from 'react-native-elements'
 import colors from '../../../../Themes/Colors';
 import { getUserBookings,getAllOfCollection, getUserId, saveData } from '../../../../backend/firebase/utility'
 import { throwStatement } from '@babel/types';
-
+import firebase from 'firebase';
 
 class TechniciansList extends Component {
     constructor(props) {
@@ -28,7 +28,7 @@ class TechniciansList extends Component {
     static navigationOptions = {
         title: 'Search Results',
     }
-
+ 
     componentDidMount() {
         this.props.navigation.addListener("willFocus", () => {
             this.fetchOrder();
@@ -38,32 +38,22 @@ class TechniciansList extends Component {
         let TempList = [];
         this.setState({Booking_list: []});
         let RList = this.props.navigation.getParam('data', "Nothing");
-
         RList.forEach(element => {
-
             this.GetRatting(element);
-
-
         });
-
-
-
     }
-
-
-
     async GetRatting(element) {
         let TempList2 = [];
         let isRated = false;
         let totalrating = 0;
-        let RList2 = await getAllOfCollection("Ratting");
+        let RList2 =  await firebase.firestore().collection("Ratting").where("technicianId", "==", element.UserId).get()
 
         RList2.forEach(element2 => {
-            if (element2.technicianId === element.UserId) {
+            // if (element2.technicianId === element.UserId) {
                 isRated = true;
-                TempList2.push(element2);
-                totalrating += element2.rating;
-            }
+                TempList2.push(element2.data());
+                totalrating += element2.data().rating;
+            // }
         });
         if (isRated) {
             element.rating = totalrating / TempList2.length;

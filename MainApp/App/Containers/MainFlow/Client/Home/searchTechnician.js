@@ -153,7 +153,7 @@ class SearchTechnician extends Component {
                                                         return (
                                                             <TouchableOpacity key={key} style={{ marginHorizontal: 5, borderBottomWidth: 0.4, borderColor: 'gray', elevation: 0 }}
                                                                 onPress={() => {
-                                                                    this.setState({ showServicesList: !this.state.showServicesList,ServicesIndex: key  })
+                                                                    this.setState({ showServicesList: !this.state.showServicesList,ServicesIndex: key, ServiceId: item.id  })
                                                                 }}
                                                             >
                                                                 <View style={{ marginVertical: 10, alignItems: 'flex-start', justifyContent: 'center' }}>
@@ -184,7 +184,7 @@ class SearchTechnician extends Component {
                                                             <TouchableOpacity key={key} style={{ marginHorizontal: 5, borderBottomWidth: 0.4, borderColor: 'gray', elevation: 0 }}
                                                                 onPress={() => {
                                                                     this.setState({
-                                                                        service: item.Name,
+                                                                        service: item.Name, 
                                                                         showServicesList: false,
                                                                         showCategoryList: false
                                                                     })
@@ -265,7 +265,7 @@ class SearchTechnician extends Component {
                                                             <TouchableOpacity key={key} style={{ marginHorizontal: 5, borderBottomWidth: 0.4, borderColor: 'gray', elevation: 0 }}
                                                                 onPress={() => {
                                                                     this.setState({
-                                                                        location: item.location,
+                                                                        location: item.Name,
                                                                         showLocations: false,
                                                                         showStates: false
                                                                     })
