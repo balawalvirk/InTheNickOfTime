@@ -100,9 +100,9 @@ class SearchTechnician extends Component {
                 Alert.alert('Error!', err.join('\n'), [{ text: 'OK', onPress: () => { } }]);
             } else {
                 this.loader.show();
-                let respServices = await firebase.firestore().collection("Technician").where("services", "array-contains", this.state.service).get()
-                let respTravelLocations = await firebase.firestore().collection("Technician").where("travel_locations", "array-contains", this.state.location).get()
-                let technicians = this.compare(respServices,respTravelLocations,this.state.service,this.state.location)
+                let respServices = await firebase.firestore().collection("Technician").where("services", "array-contains", this.state.ServiceId).get()
+                let respTravelLocations = await firebase.firestore().collection("Technician").where("travel_locations", "array-contains", this.state.LocationId).get()
+                let technicians = this.compare(respServices,respTravelLocations,this.state.ServiceId,this.state.LocationId)
                 this.loader.hide()
                 this.props.navigation.navigate('techniciansList', { data: technicians})
             }
@@ -235,7 +235,7 @@ class SearchTechnician extends Component {
                                                 return (
                                                     <TouchableOpacity key={key} style={{ marginHorizontal: 5, borderBottomWidth: 0.4, borderColor: 'gray', elevation: 0 }}
                                                         onPress={() => {
-                                                            this.setState({ showLocations: !this.state.showLocations,LocationIndex: key })
+                                                            this.setState({ showLocations: !this.state.showLocations,LocationIndex: key, LocationId: item.id })
                                                         }}
                                                     >
                                                         <View style={{ marginVertical: 10, alignItems: 'flex-start', justifyContent: 'center' }}>

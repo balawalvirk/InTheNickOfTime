@@ -7,6 +7,7 @@ const images = {
     masterCardLogo:require('../Images/MastercardLogo.png'),
     AMEXlogo:require('../Images/AMEXname2.png'),
     story_pic:require('../Images/storyPicN.jpg'),
+    story_pic2:require('../Images/storyPicN1.jpg'),
 }
 
 export default images;

@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet,Image } from 'react-native';
+import { View, Text, StyleSheet,Image, ScrollView, Easing } from 'react-native';
 import { totalSize, width,height } from 'react-native-dimension';
 import colors from '../../../../Themes/Colors';
 import images from '../../../../Themes/Images';
-
+import ZoomImage from 'react-native-zoom-image';
 class OurStory extends Component {
     constructor(props) {
         super(props);
@@ -14,6 +14,7 @@ class OurStory extends Component {
     render() {
         return (
             <View style={styles.contanier}>
+                <ScrollView>
                 <View style={styles.headindContainer}>
                     <Text style={styles.heading}> My Story </Text>
                 </View>
@@ -52,9 +53,21 @@ class OurStory extends Component {
                     <Text style={styles.body}>Established 2014</Text>
                    </View>
                    <View style={styles.picContainer}>
-             <Image source={images.story_pic} style={styles.pic}/>
+                   <ZoomImage source={images.story_pic2} 
+                   imgStyle={styles.pic2}
+                   duration={200}
+                       
+                        easingFunc={Easing.ease}
+                   />
+                   <ZoomImage source={images.story_pic} 
+                   imgStyle={styles.pic}
+                   duration={200}
+                       
+                        easingFunc={Easing.ease}
+                   />
                    </View>
                 </View>
+                </ScrollView>
             </View>
         );
     }
@@ -115,7 +128,12 @@ const styles = StyleSheet.create({
       // backgroundColor: 'black',
     },
     pic:{
-        height:height(30),
-        width:width(40)
+        height:height(25),
+        width:width(30)
+    },
+    pic2:{
+        height:height(15),
+        width:width(20),
+        marginVertical: 10
     }
 })
