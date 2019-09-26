@@ -17,7 +17,7 @@ export default class TechnicianServices extends Component {
         super(props);
 
         this.state = {
-            Services_list: JSON.parse(this.props.navigation.getParam('services_details', '')),
+            Services_list:this.props.navigation.getParam('services_details', ''),
             // [
             //     { id: 1, service_name: 'Hand massage', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service...we will provide you the full tension free service..we will provide you the full tension free service' },
             //     { id: 2, service_name: 'Face Cleaning', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service' },
@@ -27,7 +27,7 @@ export default class TechnicianServices extends Component {
             //     { id: 6, service_name: 'Hair Diy', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service' },
             // ],
             location: null,
-            travel_locations: JSON.parse(this.props.navigation.getParam('location_details', '')),
+            travel_locations:this.props.navigation.getParam('location_details', ''),
             // [
             //     { id: 1, location: 'Sea site, New york, USA', travel_cost: 20 },
             //     { id: 2, location: 'Top Valley, New york, USA', travel_cost: 25 },
@@ -134,7 +134,7 @@ export default class TechnicianServices extends Component {
             if (id === this.state.Services_list[i].id) {
                 //await this.setState({ memberID: this.state.members[i].user_id })
                 await this.state.selected_Services.push(this.state.Services_list[i])
-                await this.setState({ servicesTotalCost: parseInt(this.state.servicesTotalCost) + parseInt(this.state.Services_list[i].service_price) })
+                await this.setState({ servicesTotalCost: parseInt(this.state.servicesTotalCost) + parseInt(this.state.Services_list[i].Cost) })
                 //await this.state.selected_members_IDs.push(this.state.members[i].user_id)
             }
         }
@@ -147,7 +147,7 @@ export default class TechnicianServices extends Component {
 
     UnselectService = async (itemIndex) => {
         this.setState({ loadingUnSelectedServices: true })
-        await this.setState({ servicesTotalCost: this.state.servicesTotalCost - this.state.selected_Services[itemIndex].service_price })
+        await this.setState({ servicesTotalCost: this.state.servicesTotalCost - this.state.selected_Services[itemIndex].Cost })
         await this.state.selected_Services.splice(itemIndex, 1)
         await this.setState({ loadingUnSelectedServices: false })
 
@@ -184,10 +184,10 @@ export default class TechnicianServices extends Component {
                                                             }}
                                                         >
                                                             <View style={{ marginVertical: 10, alignItems: 'flex-start', justifyContent: 'center' }}>
-                                                                <Text style={{ fontSize: totalSize(2), color: 'black', marginVertical: 3, fontWeight: 'bold' }}>{item.service_name}</Text>
-                                                                <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Price: ${item.service_price}</Text>
-                                                                <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Duration: {item.service_duration} min</Text>
-                                                                <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Description: {item.description}</Text>
+                                                                <Text style={{ fontSize: totalSize(2), color: 'black', marginVertical: 3, fontWeight: 'bold' }}>{item.Name}</Text>
+                                                                <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Price: ${item.Cost}</Text>
+                                                                <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Duration: {item.Duration} min</Text>
+                                                                <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Description: {item.Description}</Text>
                                                             </View>
                                                         </TouchableOpacity>
                                                     )
@@ -213,8 +213,8 @@ export default class TechnicianServices extends Component {
                                                     <View key={key} style={{ borderRadius: 25, marginHorizontal: width(1), marginVertical: height(1), backgroundColor: colors.SPA_redColor, elevation: 3, shadowOpacity: 2, shadowColor: 'gray' }}>
                                                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
                                                             <View style={{ marginHorizontal: width(4), marginVertical: height(1), alignItems: 'flex-start', justifyContent: 'center', backgroundColor: 'transparent' }}>
-                                                                <Text style={{ fontSize: totalSize(1.5), color: 'white' }}>{item.service_name}</Text>
-                                                                <Text style={{ fontSize: totalSize(1.5), color: 'white' }}>Price: ${item.service_price}</Text>
+                                                                <Text style={{ fontSize: totalSize(1.5), color: 'white' }}>{item.Name}</Text>
+                                                                <Text style={{ fontSize: totalSize(1.5), color: 'white' }}>Price: ${item.Cost}</Text>
                                                             </View>
                                                             <Icon name='ios-close-circle' size={totalSize(4)} type='ionicon' color='white' onPress={() => this.UnselectService(key)} />
                                                             <View style={{ width: 5 }}></View>
@@ -256,7 +256,7 @@ export default class TechnicianServices extends Component {
                                         {
                                             this.state.travel_locations.map((item, key) => {
                                                 return (
-                                                    <Picker.Item key={key} label={item.location} value={item.travel_cost} />
+                                                    <Picker.Item key={key} label={item.Name} value={item.Cost} />
                                                 )
                                             })
 

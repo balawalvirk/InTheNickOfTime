@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator, TouchableOpacity, TextInput } from 'react-native';
 import images from '../../../../Themes/Images';
 import { width, height, totalSize } from 'react-native-dimension'
 import { Icon } from 'react-native-elements'
 import colors from '../../../../Themes/Colors';
-import { getUserBookings,getAllOfCollection, getUserId, saveData } from '../../../../backend/firebase/utility'
+import { getUserBookings, getAllOfCollection, getData, getUserId, saveData } from '../../../../backend/firebase/utility'
 import { throwStatement } from '@babel/types';
 import firebase from 'firebase';
 
@@ -14,6 +14,7 @@ class TechniciansList extends Component {
         this.state = {
             service: this.props.navigation.getParam('service', "abc"),
             locations: this.props.navigation.getParam('location', "abc"),
+            isDataLoded: false,
             Booking_list: [],
             // [
             // { id: 1, client_name: 'Lina', client_profile_pic: images.profilePic, service_name: 'Hand massage', service_code: '025012', Address: '18002 Sea Island olace, New York, USA', service_price: '50', dateTime: '8:00AM 06-15-19', Categories: ['Care', 'NailCare', 'Facials', 'Hair'] },
@@ -28,31 +29,34 @@ class TechniciansList extends Component {
     static navigationOptions = {
         title: 'Search Results',
     }
- 
+
     componentDidMount() {
         this.props.navigation.addListener("willFocus", () => {
             this.fetchOrder();
         });
     }
     async fetchOrder() {
-        let TempList = [];
-        this.setState({Booking_list: []});
+        await this.setState({ isDataLoded: false });
+        this.setState({ Booking_list: [] });
+        this.getLocations();
+        this.GetServices();
         let RList = this.props.navigation.getParam('data', "Nothing");
         RList.forEach(element => {
             this.GetRatting(element);
         });
+        await this.setState({ isDataLoded: true });
     }
     async GetRatting(element) {
         let TempList2 = [];
         let isRated = false;
         let totalrating = 0;
-        let RList2 =  await firebase.firestore().collection("Ratting").where("technicianId", "==", element.UserId).get()
+        let RList2 = await firebase.firestore().collection("Ratting").where("technicianId", "==", element.UserId).get()
 
         RList2.forEach(element2 => {
             // if (element2.technicianId === element.UserId) {
-                isRated = true;
-                TempList2.push(element2.data());
-                totalrating += element2.data().rating;
+            isRated = true;
+            TempList2.push(element2.data());
+            totalrating += element2.data().rating;
             // }
         });
         if (isRated) {
@@ -64,6 +68,15 @@ class TechniciansList extends Component {
         TempList.push(element)
         this.setState({ Booking_list: TempList });
     }
+    async GetServices() {
+        let ServiceObj = await getData("Category", this.props.navigation.getParam('ServiceID', "Nothing"));
+        this.setState({ service: ServiceObj.SubList });
+
+    }
+    async getLocations() {
+        let LocationObj = await getData("Location", this.props.navigation.getParam('LocationID', "Nothing"));
+        this.setState({ locations: LocationObj.SubList });
+    }
     render() {
         return (
             <View style={styles.Container}>
@@ -71,70 +84,78 @@ class TechniciansList extends Component {
                     <View style={{ flex: 0.5, alignItems: 'flex-start', justifyContent: 'flex-end', }}>
                         <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(3), left: width(5) }]}>Technicians</Text>
                     </View>
+                    {this.state.isDataLoded ?
+                        <View style={{ flex: 4, alignItems: 'center' }}>
+                            <ScrollView
+                                showsVerticalScrollIndicator={false}>
+                                {
+                                    this.state.Booking_list.length > 0 ?
+                                        this.state.Booking_list.map((items, key) => {
+                                            let rating = 0;
+                                            // if (items.ratings != '') {
+                                            //     items.ratings = JSON.parse(items.ratings);
+                                            //     items.ratings.map(val => {
+                                            //         rating += val.rating;
+                                            //     });
+                                            //     rating = (items.ratings.length > 0) ? rating / items.ratings.length : rating;
+                                            // }
 
-                    <View style={{ flex: 4, alignItems: 'center' }}>
-                        <ScrollView
-                            showsVerticalScrollIndicator={false}>
-                            {
-                                this.state.Booking_list.length > 0 ?
-                                    this.state.Booking_list.map((items, key) => {
-                                        let rating = 0;
-                                        // if (items.ratings != '') {
-                                        //     items.ratings = JSON.parse(items.ratings);
-                                        //     items.ratings.map(val => {
-                                        //         rating += val.rating;
-                                        //     });
-                                        //     rating = (items.ratings.length > 0) ? rating / items.ratings.length : rating;
-                                        // }
+                                            return (
+                                                <TouchableOpacity key={key} style={styles.shopContainer} onPress={() => this.props.navigation.navigate('technicianDetailTab', {
+                                                    services_details: this.state.service,
+                                                    location_details: this.state.locations,
+                                                    technician: items
+                                                })}>
+                                                    <View style={styles.shopImageContainer}>
 
-                                        return (
-                                            <TouchableOpacity key={key} style={styles.shopContainer} onPress={() => this.props.navigation.navigate('technicianDetailTab', {
-                                                services_details: items.service_details,
-                                                location_details: items.locations_details,
-                                                technician: items
-                                            })}>
-                                                <View style={styles.shopImageContainer}>
+                                                        <Image source={items.photo
+                                                            ? { uri: items.photo }
+                                                            : images.profilePic} style={styles.shopImage} />
 
-                                                    <Image source={items.photo
-                                                        ? { uri: items.photo }
-                                                        : images.profilePic} style={styles.shopImage} />
-
-                                                </View>
-                                                <View style={styles.shopTxtContainer}>
-                                                    <Text style={styles.shopName}>{items.name}</Text>
-                                                    {/* <Text style={styles.shopDetail}>At {items.dateTime}</Text> */}
-                                                    {/* <Text style={styles.shopDetail}>{items.Address}</Text> */}
-                                                    <View style={{ flexDirection: 'row' }}>
-                                                        {
-                                                            items.services.map((item, key) => {
-                                                                return (
-                                                                    <Text key={key} style={styles.shopDetail}>{item} </Text>
-                                                                )
-                                                            })
-                                                        }
                                                     </View>
-                                                    <View style={{ flexDirection: 'column' }}>
-                                                        <Text style={{ ...styles.shopDetail, fontWeight: 'bold' }}>Availability: different</Text>
-                                                    </View>
-                                                </View>
-                                                <View style={[styles.shopIconContainer, { backgroundColor: 'transparent', flexDirection: 'row' }]}>
-                                                    {/* <TouchableOpacity style={[styles.iconContainer, { backgroundColor: colors.SPA_graycolor }]} >
-                                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: 4, marginHorizontal: 7, }}>
-                                                            <Icon name="star" size={totalSize(2)} color="white" type='antdesign' />
-                                                            <Text style={[styles.shopName, { color: 'white', fontSize: totalSize(3) }]}>4.9</Text>
+                                                    <View style={styles.shopTxtContainer}>
+                                                        <Text style={styles.shopName}>{items.name}</Text>
+                                                        {/* <Text style={styles.shopDetail}>At {items.dateTime}</Text> */}
+                                                        {/* <Text style={styles.shopDetail}>{items.Address}</Text> */}
+                                                        <View style={{ flexDirection: 'row' }}>
+                                                            {
+                                                                this.state.service.map((item, key) => {
+                                                                    return (
+                                                                        <Text key={key} style={styles.shopDetail}>{item.Name} </Text>
+                                                                    )
+                                                                })
+                                                            }
                                                         </View>
-                                                    </TouchableOpacity> */}
-                                                    <Icon name="star" size={totalSize(3)} color={colors.SPA_redColor} type='antdesign' />
-                                                    <Text style={[styles.shopName, { color: colors.SPA_redColor, fontSize: totalSize(4) }]}>{items.rating}</Text>
-                                                </View>
-                                            </TouchableOpacity>
-                                        );
+                                                        <View style={{ flexDirection: 'column' }}>
+                                                            <Text style={{ ...styles.shopDetail, fontWeight: 'bold' }}>Availability: different</Text>
+                                                        </View>
+                                                    </View>
+                                                    <View style={[styles.shopIconContainer, { backgroundColor: 'transparent', flexDirection: 'row' }]}>
+                                                        {/* <TouchableOpacity style={[styles.iconContainer, { backgroundColor: colors.SPA_graycolor }]} >
+                                                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: 4, marginHorizontal: 7, }}>
+                                                         <Icon name="star" size={totalSize(2)} color="white" type='antdesign' />
+                                                         <Text style={[styles.shopName, { color: 'white', fontSize: totalSize(3) }]}>4.9</Text>
+                                                     </View>
+                                                 </TouchableOpacity> */}
+                                                        <Icon name="star" size={totalSize(3)} color={colors.SPA_redColor} type='antdesign' />
+                                                        <Text style={[styles.shopName, { color: colors.SPA_redColor, fontSize: totalSize(4) }]}>{items.rating}</Text>
+                                                    </View>
+                                                </TouchableOpacity>
+                                            );
 
-                                    })
-                                    :
-                                    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", }}>
-                                        <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2), left: width(0), marginTop: "50%" }]}>No Technician</Text>
-                                        {/* <TouchableOpacity style={styles.button} onPress={() => this.AddCategory()}>
+                                        })
+                                        :
+                                        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", }}>
+                                            <ActivityIndicator style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2), left: width(0), marginTop: "50%" }]} />
+                                        </View>
+                                }
+                            </ScrollView>
+                        </View>
+
+                        :
+                        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", }}>
+                            <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2), left: width(0), marginTop: "50%" }]}>No Rating</Text>
+                            {/* <TouchableOpacity style={styles.button} onPress={() => this.AddCategory()}>
                                                 <View style={styles.btnTxtContainer}>
                                                     {
                                                         this.state.loading === true ?
@@ -144,10 +165,7 @@ class TechniciansList extends Component {
                                                     }
                                                 </View>
                                             </TouchableOpacity> */}
-                                    </View>
-                            }
-                        </ScrollView>
-                    </View>
+                        </View>}
                 </View>
 
             </View>

@@ -104,7 +104,7 @@ class SearchTechnician extends Component {
                 let respTravelLocations = await firebase.firestore().collection("Technician").where("travel_locations", "array-contains", this.state.LocationId).get()
                 let technicians = this.compare(respServices,respTravelLocations,this.state.ServiceId,this.state.LocationId)
                 this.loader.hide()
-                this.props.navigation.navigate('techniciansList', { data: technicians})
+                this.props.navigation.navigate('techniciansList', { data: technicians, ServiceID:this.state.ServiceId , LocationID: this.state.LocationId})
             }
 
         } catch (e) {
