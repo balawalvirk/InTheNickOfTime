@@ -47,35 +47,59 @@ class TechniciansList extends Component {
         await this.setState({ isDataLoded: true });
     }
     async GetRatting(element) {
-        let TempList2 = [];
-        let isRated = false;
-        let totalrating = 0;
-        let RList2 = await firebase.firestore().collection("Ratting").where("technicianId", "==", element.UserId).get()
 
-        RList2.forEach(element2 => {
-            // if (element2.technicianId === element.UserId) {
-            isRated = true;
-            TempList2.push(element2.data());
-            totalrating += element2.data().rating;
-            // }
-        });
-        if (isRated) {
-            element.rating = totalrating / TempList2.length;
-        } else {
-            element.rating = 0;
+        if (element.isApproved !== undefined && element.isActive !== undefined) {
+
+            if (element.isApproved && element.isActive) {
+                let TempList2 = [];
+                let isRated = false;
+                let totalrating = 0;
+                let RList2 = await firebase.firestore().collection("Ratting").where("technicianId", "==", element.UserId).get()
+
+                RList2.forEach(element2 => {
+                    // if (element2.technicianId === element.UserId) {
+                    isRated = true;
+                    TempList2.push(element2.data());
+                    totalrating += element2.data().rating;
+                    // }
+                });
+                if (isRated) {
+                    element.rating = totalrating / TempList2.length;
+                } else {
+                    element.rating = 0;
+                }
+                let TempList = this.state.Booking_list;
+                TempList.push(element)
+                this.setState({ Booking_list: TempList });
+            }
         }
-        let TempList = this.state.Booking_list;
-        TempList.push(element)
-        this.setState({ Booking_list: TempList });
     }
     async GetServices() {
-        let ServiceObj = await getData("Category", this.props.navigation.getParam('ServiceID', "Nothing"));
-        this.setState({ service: ServiceObj.SubList });
+
+        let ServiceObj = await getData("Category", this.props.navigation.getParam('ServiceID2', "Nothing"));
+        this.setState({SList: ServiceObj.SubList});
+       
+        ServiceObj.SubList.forEach(element2 => {
+                if (element2.id === this.props.navigation.getParam('ServiceID', "Nothing")) {
+                    this.setState({ service: element2 });
+                }
+
+            });
+       
+
 
     }
     async getLocations() {
-        let LocationObj = await getData("Location", this.props.navigation.getParam('LocationID', "Nothing"));
-        this.setState({ locations: LocationObj.SubList });
+        let LocationObj = await getData("Location", this.props.navigation.getParam('LocationID2', "Nothing"));
+        this.setState({LList: LocationObj.SubList});
+       
+        LocationObj.SubList.forEach(element2 => {
+                if (element2.id === this.props.navigation.getParam('LocationID', "Nothing")) {
+                    this.setState({ locations: element2 });
+                }
+
+            });
+       
     }
     render() {
         return (
@@ -102,8 +126,8 @@ class TechniciansList extends Component {
 
                                             return (
                                                 <TouchableOpacity key={key} style={styles.shopContainer} onPress={() => this.props.navigation.navigate('technicianDetailTab', {
-                                                    services_details: this.state.service,
-                                                    location_details: this.state.locations,
+                                                    services_details: this.state.SList,
+                                                    location_details: this.state.LList,
                                                     technician: items
                                                 })}>
                                                     <View style={styles.shopImageContainer}>
@@ -118,13 +142,9 @@ class TechniciansList extends Component {
                                                         {/* <Text style={styles.shopDetail}>At {items.dateTime}</Text> */}
                                                         {/* <Text style={styles.shopDetail}>{items.Address}</Text> */}
                                                         <View style={{ flexDirection: 'row' }}>
-                                                            {
-                                                                this.state.service.map((item, key) => {
-                                                                    return (
-                                                                        <Text key={key} style={styles.shopDetail}>{item.Name} </Text>
-                                                                    )
-                                                                })
-                                                            }
+
+                                                            <Text key={key} style={styles.shopDetail}>{this.state.service.Name} </Text>
+
                                                         </View>
                                                         <View style={{ flexDirection: 'column' }}>
                                                             <Text style={{ ...styles.shopDetail, fontWeight: 'bold' }}>Availability: different</Text>
@@ -146,7 +166,17 @@ class TechniciansList extends Component {
                                         })
                                         :
                                         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", }}>
-                                            <ActivityIndicator style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2), left: width(0), marginTop: "50%" }]} />
+                                            <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2), left: width(0), marginTop: "50%" }]}>No Technician</Text>
+                                            {/* <TouchableOpacity style={styles.button} onPress={() => this.AddCategory()}>
+                                                            <View style={styles.btnTxtContainer}>
+                                                                {
+                                                                    this.state.loading === true ?
+                                                                        <ActivityIndicator size={'small'} color='white' />
+                                                                        :
+                                                                        <Text style={styles.btnTxt}>+ Category</Text>
+                                                                }
+                                                            </View>
+                                                        </TouchableOpacity> */}
                                         </View>
                                 }
                             </ScrollView>
@@ -154,18 +184,9 @@ class TechniciansList extends Component {
 
                         :
                         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", }}>
-                            <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2), left: width(0), marginTop: "50%" }]}>No Rating</Text>
-                            {/* <TouchableOpacity style={styles.button} onPress={() => this.AddCategory()}>
-                                                <View style={styles.btnTxtContainer}>
-                                                    {
-                                                        this.state.loading === true ?
-                                                            <ActivityIndicator size={'small'} color='white' />
-                                                            :
-                                                            <Text style={styles.btnTxt}>+ Category</Text>
-                                                    }
-                                                </View>
-                                            </TouchableOpacity> */}
-                        </View>}
+                            <ActivityIndicator style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2), left: width(0), marginTop: "50%" }]} />
+                        </View>
+                    }
                 </View>
 
             </View>
@@ -228,8 +249,8 @@ const styles = StyleSheet.create({
         width: width(90),
         height: height(10),
         borderRadius: 4,
-        //elevation: 5,
-        //backgroundColor: 'white',
+        elevation: 5,
+        backgroundColor: 'white',
         marginVertical: height(0.5),
         marginHorizontal: width(2),
         flexDirection: 'row',

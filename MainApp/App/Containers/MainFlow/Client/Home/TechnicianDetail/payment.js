@@ -85,6 +85,8 @@ class Payment extends Component {
                     console.log(res);
                     Booking.userId = res.id
                     Booking.userName = res.name
+                    Booking.Email= res.email
+                    Booking.phoneNumber= res.phoneNumber
                 }
                 for (i = 0; i < this.props.navigation.getParam('services', 0).length; i++) {
                     Booking.servicesList = Booking.servicesList + " " + this.props.navigation.getParam('services', '')[i].service_name
@@ -92,7 +94,7 @@ class Payment extends Component {
                 Booking.services_cost = parseFloat(this.props.navigation.getParam('services_cost', 0.00))
                 Booking.travel_cost = parseFloat(this.props.navigation.getParam('travel_cost', 0.00))
                 Booking.date_time = this.props.navigation.getParam('date_time', '')
-                Booking.location = this.props.navigation.getParam('location', '')[0].location
+                Booking.location = this.props.navigation.getParam('location', '')[0].Name
                 Booking.services = this.props.navigation.getParam('services', '')
                 Booking.technicianId = this.props.navigation.getParam('technician', '').UserId
                 Booking.technicianName = this.props.navigation.getParam('technician', '').name

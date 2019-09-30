@@ -104,7 +104,9 @@ class SearchTechnician extends Component {
                 let respTravelLocations = await firebase.firestore().collection("Technician").where("travel_locations", "array-contains", this.state.LocationId).get()
                 let technicians = this.compare(respServices,respTravelLocations,this.state.ServiceId,this.state.LocationId)
                 this.loader.hide()
-                this.props.navigation.navigate('techniciansList', { data: technicians, ServiceID:this.state.ServiceId , LocationID: this.state.LocationId})
+                this.props.navigation.navigate('techniciansList', { data: technicians, ServiceID:this.state.ServiceId , LocationID: this.state.LocationId,
+                    ServiceID2:this.state.ServiceId2 , LocationID2: this.state.LocationId2
+                })
             }
 
         } catch (e) {
@@ -153,7 +155,7 @@ class SearchTechnician extends Component {
                                                         return (
                                                             <TouchableOpacity key={key} style={{ marginHorizontal: 5, borderBottomWidth: 0.4, borderColor: 'gray', elevation: 0 }}
                                                                 onPress={() => {
-                                                                    this.setState({ showServicesList: !this.state.showServicesList,ServicesIndex: key, ServiceId: item.id  })
+                                                                    this.setState({ showServicesList: !this.state.showServicesList,ServicesIndex: key,ServiceId2: item.id ,  })
                                                                 }}
                                                             >
                                                                 <View style={{ marginVertical: 10, alignItems: 'flex-start', justifyContent: 'center' }}>
@@ -185,6 +187,7 @@ class SearchTechnician extends Component {
                                                                 onPress={() => {
                                                                     this.setState({
                                                                         service: item.Name, 
+                                                                        ServiceId: item.id ,
                                                                         showServicesList: false,
                                                                         showCategoryList: false
                                                                     })
@@ -235,7 +238,7 @@ class SearchTechnician extends Component {
                                                 return (
                                                     <TouchableOpacity key={key} style={{ marginHorizontal: 5, borderBottomWidth: 0.4, borderColor: 'gray', elevation: 0 }}
                                                         onPress={() => {
-                                                            this.setState({ showLocations: !this.state.showLocations,LocationIndex: key, LocationId: item.id })
+                                                            this.setState({ showLocations: !this.state.showLocations,LocationIndex: key, LocationId2: item.id })
                                                         }}
                                                     >
                                                         <View style={{ marginVertical: 10, alignItems: 'flex-start', justifyContent: 'center' }}>
@@ -266,6 +269,7 @@ class SearchTechnician extends Component {
                                                                 onPress={() => {
                                                                     this.setState({
                                                                         location: item.Name,
+                                                                        LocationId: item.id,
                                                                         showLocations: false,
                                                                         showStates: false
                                                                     })

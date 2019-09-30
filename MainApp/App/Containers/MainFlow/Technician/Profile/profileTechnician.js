@@ -18,10 +18,10 @@ import colors from '../../../../Themes/Colors';
 import images from '../../../../Themes/Images';
 import Modal from 'react-native-modal'
 import AsyncStorage from '@react-native-community/async-storage';
-import { updateDocument } from '../../../../backend/firebase/utility';
+import { updateDocument, getAllOfCollection, saveData } from '../../../../backend/firebase/utility';
 import Toast from 'react-native-simple-toast';
 import Loader from "../../../../Components/Loader"
-
+import firebase from 'firebase';
 class ProfileTechnician extends Component {
   constructor(props) {
     super(props);
@@ -33,16 +33,17 @@ class ProfileTechnician extends Component {
       time_to: '-',
       isModalVisibleForgetPassword: false,
       isModalVisibleLocation: false,
-      index : 0,
-      day : 'Monday',
+      index: 0,
+      day: 'Sunday',
+      Cindex: '',
       days: [
-        { id: 1, item: 'Monday', val: 'Mon',color : 'blue', time_from : "" , time_to : ""  },
-        { id: 2, item: 'Tuesday', val: 'Tue',color : '#000', time_from : '', time_to : ''  },
-        { id: 3, item: 'Wednesday', val: 'Wed',color : '#000', time_from : '', time_to : ''  },
-        { id: 4, item: 'Thursday', val: 'Thu',color : '#000', time_from : '', time_to : ''  },
-        { id: 4, item: 'Friday', val: 'Fri',color : '#000', time_from : '', time_to : '' },
-        { id: 4, item: 'Saturday', val: 'Sat',color : '#000', time_from : '', time_to : '' },
-        { id: 4, item: 'Sunday', val: 'Sun',color : '#000', time_from : '', time_to : ''  },
+        { id: 0, item: 'Sunday', val: 'Sun', color: '#000', time_from: '', time_to: '', isAvailable: false },
+        { id: 1, item: 'Monday', val: 'Mon', color: 'blue', time_from: "", time_to: "", isAvailable: false },
+        { id: 2, item: 'Tuesday', val: 'Tue', color: '#000', time_from: '', time_to: '', isAvailable: false },
+        { id: 3, item: 'Wednesday', val: 'Wed', color: '#000', time_from: '', time_to: '', isAvailable: false },
+        { id: 4, item: 'Thursday', val: 'Thu', color: '#000', time_from: '', time_to: '', isAvailable: false },
+        { id: 5, item: 'Friday', val: 'Fri', color: '#000', time_from: '', time_to: '', isAvailable: false },
+        { id: 6, item: 'Saturday', val: 'Sat', color: '#000', time_from: '', time_to: '', isAvailable: false },
       ],
       locations: [
         { id: 1, location: 'Sea site, New york, USA', travel_cost: 20 },
@@ -75,7 +76,7 @@ class ProfileTechnician extends Component {
   }
 
   async updateLocationCosts() {
-    if (this.state.location == '' || this.state.cost == 0) {
+    if (this.state.location == '') {
       return
     } else {
       loc_arr = []
@@ -85,13 +86,13 @@ class ProfileTechnician extends Component {
         travel_cost: this.state.cost
       }
       console.log(this.state.user.travel_locations);
-      if(this.state.user.travel_locations.length == 0){
+      if (this.state.user.travel_locations.length == 0) {
         kk = []
-        kk.push(this.state.location)
+        kk.push(this.state.loc_id)
         this.state.user.travel_locations = kk
-      }else{
+      } else {
         kk = this.state.user.travel_locations
-        kk.push(this.state.location)
+        kk.push(this.state.loc_id)
         this.state.user.travel_locations = kk
       }
       try {
@@ -116,16 +117,64 @@ class ProfileTechnician extends Component {
   }
 
   async componentDidMount() {
-    this.loader.show()
-    usr = await AsyncStorage.getItem('user')
-    usr = JSON.parse(usr)
-    this.setState({ user: usr })
-    this.loader.hide()
+
+    this.props.navigation.addListener("willFocus", async () => {
+      if (this.state.name == null || this.state.name == '') {
+        this.loader.show()
+        await this.loadUser();
+        await this.loadLocations();
+        this.loader.hide()
+      }
+    });
+
+
+    // this.loader.show()
+    // usr = await AsyncStorage.getItem('user')
+    // usr = JSON.parse(usr)
+    // this.setState({ user: usr })
+    // this.loader.hide()
   }
+  async loadLocations() {
+    let LList = [];
+    let LocationList = await getAllOfCollection("Location");
+    LocationList.forEach(element => {
+      if (element.SubList !== undefined) {
+        LList.push(element);
+      }
+    });
+    this.setState({ states_list: LList });
+  }
+  loadUser = async () => {
+    await AsyncStorage.getItem('user', (error, data) => {
+      if (data) {
+        user = JSON.parse(data)
+        this.GetRatting(user);
+        this.setState({
+          name: user.name,
+          email: user.email,
+
+        })
+      }
+    })
+  }
+  async GetRatting(element) {
+
+    let TechnicianList = await firebase.firestore().collection("Technician").where("UserId", "==", element.UserId).get()
+    TechnicianList.forEach(element3 => {
+      if (element3.data().weekly_availability !== undefined) {
+        this.setState({ days: element3.data().weekly_availability })
+      }
+    });
+    this.setState({ user: element })
+    //     }
+    // }
+  }
+
+
 
   async updateAvailability() {
     console.log(this.state.time_from, " ", this.state.time_to);
-    
+
     weekly_availability = this.state.time_from + "-" + this.state.time_to;
     this.state.user.weekly_availability = this.state.days;
     this.state.user.daily_availability = '';
@@ -138,6 +187,23 @@ class ProfileTechnician extends Component {
     let tmpState = JSON.stringify(this.state.user)
     await AsyncStorage.setItem('user', tmpState)
     this.loader.hide()
+  }
+
+  async addLocation() {
+    let TechnicianList = await firebase.firestore().collection("Technician").where("UserId", "==", this.state.user.UserId).get()
+    TechnicianList.forEach(element3 => {
+      let Obj = element3.data();
+      let TempList = Obj.travel_locations;
+
+      if (!TempList.includes(this.state.ss_category)) {
+        TempList[0]= this.state.ss_category;
+      }
+
+      Obj.travel_locations = TempList;
+      // alert(this.state.user.id);
+      saveData("Technician", this.state.user.id, Obj)
+    });
+    this._toggleModalLocation();
   }
 
   _toggleModalForgetPassword = () =>
@@ -238,12 +304,15 @@ class ProfileTechnician extends Component {
                 //maxDate="2020-06-01"
                 confirmBtnText="Confirm"
                 cancelBtnText="Cancel"
-                onDateChange={(date) => { this.setState({ time_from: date }) 
-                if(this.state.time_to != '-' && this.state.time_to != date){
-                  this.state.days[this.state.index].time_from = date;
-                  this.state.days[this.state.index].time_to = this.state.time_to
-                }
-              }}
+                onDateChange={(date) => {
+                  this.setState({ time_from: date })
+                  if (this.state.time_to != '-' && this.state.time_to != date) {
+                    this.state.days[this.state.index].time_from = date;
+                    this.state.days[this.state.index].time_to = this.state.time_to
+                    this.state.days[this.state.index].isAvailable = true
+
+                  }
+                }}
               />
             </View>
             <View style={styles.schoolInputContainer} >
@@ -260,117 +329,80 @@ class ProfileTechnician extends Component {
                 //maxDate="2020-06-01"
                 confirmBtnText="Confirm"
                 cancelBtnText="Cancel"
-                onDateChange={(date) => { this.setState({ time_to: date }); 
-                if(this.state.time_from != '-' && this.state.time_from != date){
-                  this.state.days[this.state.index].time_from = this.state.time_from;
-                  this.state.days[this.state.index].time_to = date
-                }
-              }}
+                onDateChange={(date) => {
+                  this.setState({ time_to: date });
+                  if (this.state.time_from != '-' && this.state.time_from != date) {
+                    this.state.days[this.state.index].time_from = this.state.time_from;
+                    this.state.days[this.state.index].time_to = date
+                    this.state.days[this.state.index].isAvailable = true
+                  }
+                }}
               />
             </View>
 
             <Text style={{ fontSize: totalSize(2.5), color: 'gray', flexDirection: 'row', alignSelf: 'center', margin: 15 }}>Weekly Availability</Text>
-            {/* <View style={styles.schoolInputContainer2}>
-              <Picker
 
-                mode='dropdown'
-                selectedValue={this.state.day_from}
-                style={styles.PickerStyle}
-                onValueChange={(itemValue, itemIndex) =>
-                  this.setState({ day_from: itemValue })
-                }>
-                <Picker.Item key={'from'} label='From' value={'from'} />
-                {
-                  this.state.days.map((item, key) => {
-                    return (
-                      <Picker.Item key={key} label={item.item} value={item.val} />
-                    )
-                  })
-
-                }
-              </Picker>
-            </View>
-            <View style={styles.schoolInputContainer2}>
-              <Picker
-
-                mode='dropdown'
-                selectedValue={this.state.day_to}
-                style={styles.PickerStyle}
-                onValueChange={(itemValue, itemIndex) =>
-                  this.setState({ day_to: itemValue })
-                }>
-                <Picker.Item key='to' label="To" value='to' />
-                {
-                  this.state.days.map((item, key) => {
-                    return (
-                      <Picker.Item key={key} label={item.item} value={item.val} />
-                    )
-                  })
-
-                }
-              </Picker>
-            </View> */}
             <View style={{
-              width : width(90),
-              flexDirection : 'row',
-              flexWrap : 'wrap',
-              justifyContent : 'center'
+              width: width(90),
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              justifyContent: 'center'
             }}>
-              {this.state.days.map((i,index) => {
+              {this.state.days.map((i, index) => {
                 return <TouchableOpacity style={{
-                  height : height(8),
-                  width : width(30),
-                  alignItems : 'center',
-                  justifyContent  :'center',
-                  flexDirection : 'row'
+                  height: height(8),
+                  width: width(30),
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexDirection: 'row'
                 }}
-                onPress={()=>{
-                  if (this.state.index != index) {
-                    const a = Object.assign({}, this.state.days[this.state.index]);
-                    a.color = '#000';
-                    const currentIndex = Object.assign({}, this.state.days[index]);
-                    currentIndex.color='blue';
-                    const b = Object.assign([], this.state.days);
-                    b[index] = currentIndex;
-                    b[this.state.index] = a;
-                   
-                    this.setState({
-                      days : b,
-                      index : index,
-                      time_from: b[index].time_from == "" ? '-' : b[index].time_from,
-                      time_to: b[index].time_to == "" ? '-' : b[index].time_to,
-                    })
-                 
-                    console.log(b)
-                  }
-                  // else if(this.state.index != index) {
-                  //   const a = Object.assign({}, this.state.days[this.state.index]);
-                  //   a.color = '#000';
-                  //   const currentIndex = Object.assign({}, this.state.days[index]);
-                  //   currentIndex.color='blue'
-                  //   const b = Object.assign([], this.state.days);
-                  //   b[index] = currentIndex;
-                  //   b[this.state.index] = a;
+                  onPress={() => {
+                    if (this.state.index != index) {
+                      const a = Object.assign({}, this.state.days[this.state.index]);
+                      a.color = '#000';
+                      const currentIndex = Object.assign({}, this.state.days[index]);
+                      currentIndex.color = 'blue';
+                      const b = Object.assign([], this.state.days);
+                      b[index] = currentIndex;
+                      b[this.state.index] = a;
 
-                  //   this.setState({
-                  //     days : b,
-                  //     index : index,
-                  //     time_from: b[index].time_from == "" ? new Date().getHours().toString() : b[index].time_from,
-                  //     time_to: b[index].time_to == "" ? new Date().getHours().toString() : b[index].time_to,
+                      this.setState({
+                        days: b,
+                        index: index,
+                        time_from: b[index].time_from == "" ? '-' : b[index].time_from,
+                        time_to: b[index].time_to == "" ? '-' : b[index].time_to,
+                      })
 
-                  //   })
+                      console.log(b)
+                    }
+                    // else if(this.state.index != index) {
+                    //   const a = Object.assign({}, this.state.days[this.state.index]);
+                    //   a.color = '#000';
+                    //   const currentIndex = Object.assign({}, this.state.days[index]);
+                    //   currentIndex.color='blue'
+                    //   const b = Object.assign([], this.state.days);
+                    //   b[index] = currentIndex;
+                    //   b[this.state.index] = a;
 
-                  //   // Toast.show("Time is same please try again")
-                  // }
-                  
-                }}
+                    //   this.setState({
+                    //     days : b,
+                    //     index : index,
+                    //     time_from: b[index].time_from == "" ? new Date().getHours().toString() : b[index].time_from,
+                    //     time_to: b[index].time_to == "" ? new Date().getHours().toString() : b[index].time_to,
+
+                    //   })
+
+                    //   // Toast.show("Time is same please try again")
+                    // }
+
+                  }}
                 >
-                  <Text style={{color : i.color}}>{i.item}</Text> 
-                    <TouchableOpacity style={{marginLeft  : 5}} onPress={()=>{
-                      this.state.days[index].time_from = "";
-                      this.state.days[index].time_to = ""
-                    }}><MCI name={'reload'} size={14} style={{height : 14, width : 14}}></MCI></TouchableOpacity>
-                  
+                  <Text style={{ color: i.color }}>{i.item}</Text>
+                  <TouchableOpacity style={{ marginLeft: 5 }} onPress={() => {
+                    this.state.days[index].time_from = "";
+                    this.state.days[index].time_to = ""
+                  }}><MCI name={'reload'} size={14} style={{ height: 14, width: 14 }}></MCI></TouchableOpacity>
+
                 </TouchableOpacity>
               })}
             </View>
@@ -378,10 +410,10 @@ class ProfileTechnician extends Component {
             <Button
               containerStyle={{
                 margin: 2,
-                
+
               }}
               title="Update"
-              buttonStyle={{backgroundColor : colors.SPA_redColor}}
+              buttonStyle={{ backgroundColor: colors.SPA_redColor }}
               onPress={() => {
                 this.updateAvailability()
 
@@ -391,7 +423,7 @@ class ProfileTechnician extends Component {
                 margin: 2,
                 backgroundColor: colors.SPA_redColor
               }}
-              buttonStyle={{backgroundColor : colors.SPA_redColor}}
+              buttonStyle={{ backgroundColor: colors.SPA_redColor }}
               title="Close"
 
               onPress={() => {
@@ -401,115 +433,99 @@ class ProfileTechnician extends Component {
           </View>
         </Modal>
         <Modal
-          isVisible={this.state.isModalVisibleLocation} // Forget Password
+          isVisible={this.state.isModalVisibleLocation}
           animationIn='slideInUp'
           animationOut='slideOutDown'
           backdropColor='black'
-          animationInTiming={700}
-          animationOutTiming={700}
-          backdropOpacity={0.50}>
-          <View style={{ backgroundColor: 'white', height: height(80), width: width(95), alignSelf: 'center', borderRadius: 5 }}>
+          animationInTiming={250}
+          animationOutTiming={250}
+          backdropOpacity={0.50}
+          onBackdropPress={this._toggleModalLocation}>
+          <View >
+            <View style={styles.popUpTop}>
+              <Text style={styles.popUpTopTxt}>Location</Text>
+              <View style={{ width: width(25) }}></View>
+              <TouchableOpacity onPress={this._toggleModalLocation} style={{ marginRight: width(1) }} >
+                <Icon name="close" size={totalSize(4)} color="white" />
+              </TouchableOpacity>
+            </View>
 
-            <Text
-              underlineColorAndroid='transparent'
-              style={[styles.TxtInput, { borderColor: 'grey', borderWidth: 1, margin: 15 }]}
-              onPress={() => {
-                this.setState({ showStates: !this.state.showStates })
-              }}
 
-            >
-              {this.state.location ? this.state.location : "Enter Location"}
-            </Text>
 
-            <View style={{ flexDirection: 'row', width: width(90), marginLeft: 15, marginTop: -15 }}>{
-              this.state.showStates ?
-                <View style={{ width: width(30), backgroundColor: 'white', elevation: 5 }}>
-                  <ScrollView>{
-                    this.state.states_list.map((item, key) => {
-                      return (
-                        <TouchableOpacity key={key} style={{ marginHorizontal: 5, borderBottomWidth: 0.4, borderColor: 'gray', elevation: 0 }}
-                          onPress={() => {
-                            this.setState({ showLocations: !this.state.showLocations })
-                          }}
-                        >
-                          <View style={{ marginVertical: 10, alignItems: 'flex-start', justifyContent: 'center' }}>
-                            <Text style={{ fontSize: totalSize(2), color: 'black', marginVertical: 3, fontWeight: 'bold' }}>{item.state_name}</Text>
-                            {/* <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Price: {item.service_price} $</Text>
-                                      <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Duration: {item.service_duration} min</Text>
-                                      <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Description: {item.description}</Text> */}
-                          </View>
-                        </TouchableOpacity>
-                      )
-                    })
-                  }
-                  </ScrollView>
+            <View style={styles.popUpContainerService}>
+
+              <View style={styles.inputTxtContainer} >
+                <Text style={styles.popUpText}>Location</Text>
+                <View style={{ marginTop: height(1), alignItems: 'center', justifyContent: 'center', width: width(80), height: height(6), borderRadius: 5, elevation: 5, backgroundColor: 'white', }}>
+                  <Picker
+                    mode='dropdown'
+                    selectedValue={this.state.s_category}
+                    style={styles.PickerStyle}
+                    onValueChange={(itemValue, itemIndex) =>
+                      this.setState({ s_category: itemValue, Cindex: itemIndex })
+                    }>
+                    <Picker.Item label="Select Location" value='' />
+                    {
+                      this.state.states_list.map((item, key) => {
+                        return (
+                          <Picker.Item key={key} label={item.Name} value={item.id} />
+                        )
+                      })
+
+                    }
+                  </Picker>
+                </View>
+              </View>
+              {this.state.Cindex !== "" ?
+                // <View>
+                //   <Text>
+                //     {this.state.Cindex}
+                //   </Text>
+                // </View> 
+                <View style={styles.inputTxtContainer} >
+                  <Text style={styles.popUpText}>Sub Location</Text>
+                  <View style={{ marginTop: height(1), alignItems: 'center', justifyContent: 'center', width: width(80), height: height(6), borderRadius: 5, elevation: 5, backgroundColor: 'white', }}>
+                    <Picker
+                      mode='dropdown'
+                      selectedValue={this.state.ss_category}
+                      style={styles.PickerStyle}
+                      onValueChange={(itemValue, itemIndex) =>
+                        this.setState({ ss_category: itemValue })
+                      }>
+                      <Picker.Item label="Select Sub Location" value='' />
+                      {
+                        this.state.states_list[this.state.Cindex - 1].SubList !== undefined &&
+                          this.state.states_list[this.state.Cindex - 1].SubList.length > 0 ?
+                          this.state.states_list[this.state.Cindex - 1].SubList.map((item, key) => {
+                            return (
+                              <Picker.Item key={key} label={item.Name} value={item.id} />
+                            )
+                          })
+                          :
+                          null
+                      }
+                    </Picker>
+                  </View>
                 </View>
                 :
                 null
-            }
-              {
-                this.state.showLocations ?
-                  <View style={{ width: width(40), backgroundColor: 'white', elevation: 5 }}>
-                    <ScrollView>
-                      {
-                        this.state.locations.map((item, key) => {
-                          return (
-                            <TouchableOpacity key={key} style={{ marginHorizontal: 5, borderBottomWidth: 0.4, borderColor: 'gray', elevation: 0 }}
-                              onPress={() => {
-                                this.setState({
-                                  location: item.location,
-                                  loc_id: item.id,
-                                  showLocations: false,
-                                  showStates: false
-                                })
-                              }}
-                            >
-                              <View style={{ marginVertical: 10, alignItems: 'flex-start', justifyContent: 'center' }}>
-                                <Text style={{ fontSize: totalSize(2), color: 'black', marginVertical: 3, fontWeight: 'normal' }}>{item.location}</Text>
-                                {/* <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Price: {item.service_price} $</Text>
-                                      <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Duration: {item.service_duration} min</Text>
-                                      <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Description: {item.description}</Text> */}
-                              </View>
-                            </TouchableOpacity>
-                          )
-                        })
-                      }
-                    </ScrollView>
-                  </View>
-                  :
-                  null
               }
+
+              <TouchableOpacity style={styles.btnFinish} onPress={() => {
+                this.addLocation()
+              }}>
+                {
+                  this.state.loading === true ?
+                    <ActivityIndicator size="small" color="white" />
+                    :
+                    <Text style={styles.btnFinishTxt}>Add</Text>
+                }
+              </TouchableOpacity>
             </View>
-            <TextInput
-              style={[styles.TxtInput, { backgroundColor: 'white', fontSize: totalSize(2.5), color: 'gray', flexDirection: 'row', margin: 15, borderColor: 'grey', borderWidth: 1 }]}
-              keyboardType='numeric'
-              placeholder="Enter Cost"
-              onChangeText={(text) => { this.setState({ cost: text }) }}
-            >
-            </TextInput>
-            <Button
-              containerStyle={{
-                margin: 2,
-                backgroundColor: colors.SPA_redColor
-              }}
-              title="Update"
-
-              onPress={async () => {
-                await this.updateLocationCosts()
-              }}>Update</Button>
-            <Button
-              containerStyle={{
-                margin: 2,
-                backgroundColor: colors.SPA_redColor
-              }}
-              title="Close"
-
-              onPress={() => {
-                this._toggleModalLocation()
-              }}>Close</Button>
-
           </View>
+
         </Modal>
+
 
       </View >
 
@@ -531,6 +547,48 @@ const styles = StyleSheet.create({
     backgroundColor: colors.SPA_redColor
 
 
+  },
+  popUpContainerService: {
+    width: width(90),
+    elevation: 10,
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderBottomRightRadius: 5,
+    borderBottomLeftRadius: 5,
+  },
+  inputTxtContainer: {
+    width: width(80),
+    marginVertical: height(1),
+    //backgroundColor:'blue'
+  },
+  popUpTop: {
+    borderTopRightRadius: 5,
+    borderTopLeftRadius: 5,
+    height: height(7),
+    width: width(90),
+    backgroundColor: colors.SPA_redColor,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    //alignSelf: 'center'
+    flexDirection: 'row'
+  },
+  popUpTopTxt: {
+    fontSize: totalSize(2),
+    fontWeight: '300',
+    color: 'white'
+  },
+  btnFinish: {
+    width: width(80),
+    height: height(6),
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.SPA_redColor,
+    borderRadius: 5,
+    marginVertical: height(3)
+  },
+  btnFinishTxt: {
+    color: 'white',
+    fontSize: totalSize(1.8)
   },
   searchContainer: {
     width: width(70),

@@ -7,7 +7,7 @@ import Toast from 'react-native-simple-toast'
 import Loader from '../../../../Components/Loader';
 import { height, width, totalSize } from 'react-native-dimension';
 import { withNavigationFocus } from 'react-navigation';
-
+import firebase from 'firebase';
 
 class HomeTechnician extends Component {
     constructor(props) {
@@ -42,21 +42,71 @@ class HomeTechnician extends Component {
             if (data) {
                 user = JSON.parse(data)
                 this.checkImage(user.photo)
+                this.GetRatting(user);
                 this.setState({
                     name: user.name,
                     email: user.email,
-                    user: user
+
                 })
             }
         })
     }
+    async GetRatting(element) {
 
-    async componentDidMount() {
-        if (this.state.name == null || this.state.name == '') {
-            this.loader.show()
-            await this.loadUser()
-            this.loader.hide()
+        // if (element.isApproved !== undefined && element.isActive !== undefined) {
+
+        //     if (element.isApproved && element.isActive) {
+        let TempList2 = [];
+        let isRated = false;
+        let totalrating = 0;
+        let RList2 = await firebase.firestore().collection("Ratting").where("technicianId", "==", element.UserId).get()
+
+        // alert(element.UserId);
+
+        let TechnicianList = await firebase.firestore().collection("Technician").where("UserId", "==", element.UserId).get()
+        TechnicianList.forEach(element3 => {
+            // if (element2.technicianId === element.UserId) {
+            // alert(element3.data().weekly_availability);
+            if (element3.data().weekly_availability !== undefined) {
+                element.weekly_availability = element3.data().weekly_availability;
+                day = new Date();
+                day = day.getDay();
+                if (element.weekly_availability[day].isAvailable !== undefined && element.weekly_availability[day].isAvailable) {
+                    element.daily_availability = element.weekly_availability[day].time_from + " - " + element.weekly_availability[day].time_to
+                }
+
+                // alert(element.weekly_availability[0].isAvailable);
+            }
+
+            // }
+        });
+        RList2.forEach(element2 => {
+            // if (element2.technicianId === element.UserId) {
+            isRated = true;
+            TempList2.push(element2.data());
+            totalrating += element2.data().rating;
+            // }
+        });
+        if (isRated) {
+            element.rating = totalrating / TempList2.length;
+        } else {
+            element.rating = 0;
         }
+        this.setState({ user: element })
+        //     }
+        // }
+    }
+    async componentDidMount() {
+
+        this.props.navigation.addListener("willFocus", async () => {
+            if (this.state.name == null || this.state.name == '') {
+                this.loader.show()
+                await this.loadUser()
+                this.loader.hide()
+            }
+        });
+
+
 
     }
 
@@ -66,7 +116,7 @@ class HomeTechnician extends Component {
             <View style={styles.Container}>
                 <Loader ref={r => this.loader = r} />
                 <View style={{ width: width(90), flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', backgroundColor: 'transparent', marginVertical: height(2) }}>
-                    <Icon name='bell' color={colors.SPA_redColor} type='octicon' size={totalSize(4)} onPress={() => this.props.navigation.navigate('notificationTechnician',{notif: this.state.user.notification})} />
+                    <Icon name='bell' color={colors.SPA_redColor} type='octicon' size={totalSize(4)} onPress={() => this.props.navigation.navigate('notificationTechnician', { notif: this.state.user.notification })} />
                 </View>
                 <View style={styles.lowerContainer}>
                     <View style={styles.branchNameContainer}>
@@ -77,19 +127,56 @@ class HomeTechnician extends Component {
                     </View>
                     <View style={styles.tokensContainer}>
                         <View style={styles.sqareView}>
-                            <Text style={styles.count}>{this.state.user.daily_availability}</Text>
-                            <Text style={styles.txt}>DAILY</Text>
+                            <View style={{
+                                flexDirection: "row", alignItems: "center", marginHorizontal: 10, marginVertical: 10, flexWrap: 'wrap',
+                                flex: 1,
+                            }}>
+                                {
+                                    this.state.user.daily_availability !== undefined ?
+                                        <Text style={{ fontSize: totalSize(1.6), color: colors.SPA_graycolor, }}>{this.state.user.daily_availability}</Text>
+                                        :
+                                        null
+                                }
+
+                            </View>
+
+                            <Text style={styles.txt}>TODAY</Text>
                             <Text style={styles.txt}>AVAILABILTIY</Text>
                         </View>
                         <View style={styles.sqareView}>
-                            <Text style={styles.count}></Text>
+                            <View style={{
+                                flexDirection: "row", alignItems: "center", marginHorizontal: 10, marginVertical: 10, flexWrap: 'wrap',
+                                flex: 1,
+                            }}>
+                                {
+                                    this.state.user.weekly_availability !== undefined ?
+                                        this.state.user.weekly_availability.map((item, key) => {
+                                            return (
+                                                <View key={key} style={{ flexDirection: "column" }}>
+                                                    {item.isAvailable ? <Text style={{ fontSize: totalSize(1.6), color: colors.SPA_graycolor, }}>{item.val},</Text>
+                                                        :
+                                                        null
+                                                    }
+                                                </View>
+                                            );
+                                        })
+                                        :
+                                        null
+                                }
+                            </View>
                             <Text style={styles.txt}>WEEKLY</Text>
                             <Text style={styles.txt}>AVAILABILTIY</Text>
 
                         </View>
                         <View style={styles.sqareView}>
-                            <Text style={styles.count}></Text>
-                            <Text style={styles.txt}>CLIENT</Text>
+                            <View style={{
+                                flexDirection: "row", alignItems: "center", marginHorizontal: 10, marginVertical: 10, flexWrap: 'wrap',
+                                flex: 1,
+                            }}>
+                                <Icon name="star" size={totalSize(2)} color={colors.SPA_redColor} type='antdesign' />
+                                <Text style={[styles.count, {marginLeft: 10}]}>{this.state.user.rating}</Text>
+                            </View>
+
                             <Text style={styles.txt}>RATING</Text>
 
                         </View>
@@ -238,7 +325,7 @@ const styles = StyleSheet.create({
         textAlignVertical: 'center',
         color: colors.SPA_graycolor,
         fontSize: totalSize(2),
-        marginBottom: height(1),
+        marginBottom: height(0.3),
         justifyContent: 'center'
 
     },

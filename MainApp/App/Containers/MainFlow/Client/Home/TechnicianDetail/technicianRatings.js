@@ -18,7 +18,7 @@ export class TechnicianRatings extends Component {
             starCount: 0,
             comment: '',
             TechnicianRatings: [],
-            overallRatings: 0
+            overallRatings: "0"
             // [
             //     { id: 1, name: 'Max Tim', comment: 'He is very good in convieing this moral of lecture. He is very good in convieing this moral of lecture', date: '25-08-2018', rating: 4 },
             // { id: 2, name: 'Leo Lenardo', comment: 'He is very good in convieing this moral of lecture', date: '25-08-2018', rating: 2 },
@@ -47,8 +47,12 @@ export class TechnicianRatings extends Component {
             totalrating += element2.data().rating;
             // }
         });
-
-        totalrating = totalrating / TempList2.length;
+        if(isRated) {
+            totalrating = totalrating / TempList2.length;
+        } else {
+            totalrating =0;
+        }
+        
 
         this.setState({ TechnicianRatings: TempList2, overallRatings: totalrating });
     }

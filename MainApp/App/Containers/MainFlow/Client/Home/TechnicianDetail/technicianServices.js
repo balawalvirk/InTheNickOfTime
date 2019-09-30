@@ -12,12 +12,13 @@ import DateTimePicker from 'react-native-datepicker'
 import styles from '../../../../Styles/technicianDetailStyles'
 import SimpleToast from 'react-native-simple-toast';
 import { isGenericTypeAnnotation } from '@babel/types';
+import firebase from 'firebase';
 export default class TechnicianServices extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            Services_list:this.props.navigation.getParam('services_details', ''),
+            Services_list: this.props.navigation.getParam('services_details', ''),
             // [
             //     { id: 1, service_name: 'Hand massage', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service...we will provide you the full tension free service..we will provide you the full tension free service' },
             //     { id: 2, service_name: 'Face Cleaning', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service' },
@@ -27,7 +28,7 @@ export default class TechnicianServices extends Component {
             //     { id: 6, service_name: 'Hair Diy', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service' },
             // ],
             location: null,
-            travel_locations:this.props.navigation.getParam('location_details', ''),
+            travel_locations: this.props.navigation.getParam('location_details', ''),
             // [
             //     { id: 1, location: 'Sea site, New york, USA', travel_cost: 20 },
             //     { id: 2, location: 'Top Valley, New york, USA', travel_cost: 25 },
@@ -85,33 +86,56 @@ export default class TechnicianServices extends Component {
     _toggleShowServicesList = () => {
         this.setState({ showServicesList: !this.state.showServicesList })
     }
-    _toggelModalMessage = () => {
-        tmp = this.state.technician.weekly_availability
-        tmp1 = tmp2 = tmp
-        tmp1 = tmp1.slice(0, 3)
-        tmp2 = tmp2.slice(4)
-        day = new Date(this.state.date_time)
-        day = day.getDay()
-        console.log(day, "-", this.getDayNumber(tmp1), "-", this.getDayNumber(tmp2));
-        console.log(this.getDayNumber(tmp1) <= this.state.date_time);
-        console.log(this.state.date_time <= this.getDayNumber(tmp2));
 
-        if (this.getDayNumber(tmp1) <= day && day <= this.getDayNumber(tmp2)) {
-            tmp = this.state.technician.daily_availability
-            time = tmp.split('-')
-            tmp1 = time[0]
-            tmp2 = time[1]
-            console.log(tmp1, "==", tmp2);
-            tmp1 = tmp1.split(':')
-            tmp1 = tmp1[0]
-            tmp2 = tmp2.split(':')
-            tmp2 = tmp2[0]
+    async componentDidMount() {
+
+        this.props.navigation.addListener("willFocus", async () => {
+
+
+            await this.getList()
+
+
+        });
+
+
+
+    }
+    async getList() {
+        let TechnicianList = await firebase.firestore().collection("Technician").where("UserId", "==", this.state.technician.UserId).get()
+        TechnicianList.forEach(element3 => {
+            if (element3.data().weekly_availability !== undefined) {
+                this.state.technician.weekly_availability = element3.data().weekly_availability;
+            }
+        });
+    }
+
+    _toggelModalMessage = async () => {
+
+        tmp = this.state.technician.weekly_availability
+        // tmp1 = tmp2 = tmp
+        // tmp1 = tmp1.slice(0, 3)
+        // tmp2 = tmp2.slice(4)
+        let day = new Date(this.state.date_time)
+        let day2 = day.getDay()
+
+        // console.log(day, "-", this.getDayNumber(tmp1), "-", this.getDayNumber(tmp2));
+        // console.log(this.getDayNumber(tmp1) <= this.state.date_time);
+        // console.log(this.state.date_time <= this.getDayNumber(tmp2));
+        // alert(this.state.date_time+ " : " + day);
+        if (tmp !== undefined && tmp[day2].isAvailable) {
+
+
+
+
             time = new Date(this.state.date_time)
             time = time.getHours()
-            console.log(tmp1, '==', tmp2, '==', time);
-            if (tmp1 <= time && time <= tmp2) {
-                console.log('IF');
+            console.log(tmp.time_from, '==', tmp.time_to, '==', time);
+            if (tmp.time_from !== "" && tmp.time_to !== "") {
+                if (tmp.time_from <= time && time <= tmp.time_to) {
 
+                    console.log('IF');
+
+                }
             } else {
                 alert("Technician Not Available at specified time.")
                 return
@@ -276,19 +300,20 @@ export default class TechnicianServices extends Component {
                                     />
                                 </View>
                                 <View style={[styles.txtContainer, {}]}>
-                                    <Text style={[styles.txtLarg, { fontSize: totalSize(2) }]}>Select Date & Time</Text>
+                                    <Text style={[styles.txtLarg, { fontSize: totalSize(2) }]}>Select Date</Text>
                                 </View>
                                 <TouchableOpacity style={styles.schoolInputContainer}>
 
                                     <DateTimePicker
                                         style={{ width: width(75) }}
                                         date={this.state.date_time}
-                                        mode='datetime'
-                                        placeholder="Select Date & Time"
+                                        mode="date"
+                                        placeholder="Select Date"
                                         showIcon={false}
                                         androidMode='spinner'
                                         placeholderTextColor={'rgb(217,217,217)'}
-                                        format="MM-DD-YYYY, h:mm a"
+                                        //  format="MM-DD-YYYY h:mm a"
+                                        format="YYYY-MM-DD"
                                         //minDate="2018-05-01"
                                         //maxDate="2020-06-01"
                                         confirmBtnText="Confirm"
@@ -299,18 +324,19 @@ export default class TechnicianServices extends Component {
                                         <Icon name='calendar-clock' color='gray' size={totalSize(3)} type='material-community' />
                                     </View>
                                 </TouchableOpacity>
+
                             </View>
                             <View style={{ backgroundColor: 'transparent', justifyContent: 'flex-start', alignItems: 'center' }}>
                                 <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal' }]}>Technician Availability:   </Text>
-                                {this.state.technician.weekly_availability != "" && this.state.technician.weekly_availability != null &&  typeof this.state.technician.weekly_availability != 'string' ?
-                                this.state.technician.weekly_availability.map(i => {
-                                return <View style={{width : width(90), flexDirection : 'row'}}><Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal', marginVertical: 5, marginHorizontal: 5 }]}>{i.item}</Text>
-                                <View style={{flex : 1,alignItems : 'flex-end', justifyContent : 'center'}}><Text style={{textAlign : 'left'}}>{i.time_from} - {i.time_to}</Text></View>
-                                </View>
-                                }) 
-                                :
-                                        <Text></Text>}
-                                </View>
+                                {this.state.technician.weekly_availability != "" && this.state.technician.weekly_availability != null && typeof this.state.technician.weekly_availability != 'string' ?
+                                    this.state.technician.weekly_availability.map(i => {
+                                        return <View style={{ width: width(90), flexDirection: 'row' }}><Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal', marginVertical: 5, marginHorizontal: 5 }]}>{i.item}</Text>
+                                            <View style={{ flex: 1, alignItems: 'flex-end', justifyContent: 'center' }}><Text style={{ textAlign: 'left' }}>{i.time_from} - {i.time_to}</Text></View>
+                                        </View>
+                                    })
+                                    :
+                                    <Text></Text>}
+                            </View>
                             <View style={[styles.txtContainer, { flexDirection: 'row', backgroundColor: 'transparent', justifyContent: 'flex-start', alignItems: 'center' }]}>
                                 <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal' }]}>Travel Fee:   </Text>
                                 <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal', marginVertical: 5, marginHorizontal: 5 }]}>${this.state.travel_cost}</Text>
