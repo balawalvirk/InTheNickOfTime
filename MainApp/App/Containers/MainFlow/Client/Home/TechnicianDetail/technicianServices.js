@@ -100,13 +100,29 @@ export default class TechnicianServices extends Component {
 
 
     }
+
+
+
+
     async getList() {
+        let List = this.state.Services_list;
         let TechnicianList = await firebase.firestore().collection("Technician").where("UserId", "==", this.state.technician.UserId).get()
         TechnicianList.forEach(element3 => {
             if (element3.data().weekly_availability !== undefined) {
                 this.state.technician.weekly_availability = element3.data().weekly_availability;
             }
+
+            if (element3.data().Subservices !== undefined && element3.data().Subservices.length > 0) {
+                element3.data().Subservices.forEach(element => {
+                    if(element.ServiceId === this.props.navigation.getParam('ServiceId', "Nothing")) {
+                        List.push(element);
+                    }
+                    
+                });
+
+            }
         });
+        this.state.Services_list= List;
     }
 
     _toggelModalMessage = async () => {

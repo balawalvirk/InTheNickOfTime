@@ -188,6 +188,9 @@ class HomeTechnician extends Component {
                         <TouchableOpacity onPress={() => this.props.navigation.navigate('myServices')} style={styles.btnRed}>
                             <Text style={styles.btnTxt}>My Services</Text>
                         </TouchableOpacity>
+                        <TouchableOpacity onPress={() => this.props.navigation.navigate('mySuperServices')} style={styles.btnRed}>
+                            <Text style={styles.btnTxt}>My Sub Services</Text>
+                        </TouchableOpacity>
                     </View>
 
                 </View>
@@ -337,7 +340,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         height: height(6),
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        flex:1,
+        flexWrap: 'wrap',
     },
     btnRed: {
         shadowColor: 'gray',
@@ -349,7 +354,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         elevation: 5,
         borderRadius: 3,
-        marginRight: width(2)
+        marginRight: width(2),
+        marginBottom: 15
     },
     btnBlue: {
         shadowColor: 'gray',

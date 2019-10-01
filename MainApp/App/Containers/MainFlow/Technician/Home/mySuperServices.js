@@ -11,7 +11,7 @@ import { throwStatement } from '@babel/types';
 import Loader from "../../../../Components/Loader"
 import firebase from 'firebase';
 _this = null;
-class MyServices extends Component {
+class mySuperServices extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -71,26 +71,21 @@ class MyServices extends Component {
     });
 
     this.setState({ Categories_list: ServicesList });
+    this.loadServicesList();
+  }
 
+  async loadServicesList() {
     let List = [];
     let TechnicianList = await firebase.firestore().collection("Technician").where("UserId", "==", this.state.user.UserId).get()
     TechnicianList.forEach(element3 => {
 
-      if (element3.data().services !== undefined && element3.data().services.length > 0) {
-        for (let i = 0; i < element3.data().services.length; i++) {
-          ServicesList.forEach(element => {
-            element.SubList.forEach(element2 => {
-              if (element2.id === element3.data().services[i]) {
-                List.push(element2);
-              }
-            });
-          });
-        }
-        this.setState({ services: List })
+      if (element3.data().Subservices !== undefined && element3.data().Subservices.length > 0) {
+       
+        this.setState({ services: element3.data().Subservices })
+      } else {
+        this.setState({ services: [] })
       }
     });
-
-
   }
 
   async loadUser() {
@@ -108,66 +103,76 @@ class MyServices extends Component {
     _this = this;
   }
 
-
+  uniqueID() {
+    function chr4() {
+        return Math.random().toString(16).slice(-4);
+    }
+    return chr4() + chr4() +
+        '-' + chr4() +
+        '-' + chr4() +
+        '-' + chr4() +
+        '-' + chr4() + chr4() + chr4();
+}
 
   addService = async () => {
-    newService = {}
-    newService.id = new Date().getTime()
-    newService.service_name = this.state.s_name
-    newService.service_price = this.state.s_price
-    newService.service_duration = this.state.s_duration
-    newService.service_description = this.state.s_description
-    newService.service_category = this.state.s_category
-    this.state.user.services.push(this.state.s_name)
-    this.state.services.push(newService)
-    tmp = this.state.services
-    this.state.user.service_details = JSON.stringify(tmp)
-    console.log(tmp);
-    console.log(this.state.user);
+    let TempObj = {};
+    TempObj.id= this.uniqueID();
+    TempObj.Name= this.state.NewName;
+    TempObj.Cost= this.state.NewCost;
+    TempObj.Code= this.state.NewCode;
+    TempObj.Duration= this.state.NewDuration;
+    TempObj.Descraption= this.state.NewDescraption;
+    TempObj.ServiceId= this.state.NewCid;
+    TempObj.SubServiceId= this.state.NewSCid;
 
+
+    let NewList= this.state.services;
+    NewList.push(TempObj);
+    this.state.user.Subservices = NewList;
     this.loader.show()
     let rs = await updateDocument('Technician', this.state.user.id, this.state.user);
     await AsyncStorage.setItem('user', JSON.stringify(this.state.user));
     this.setState({ isModalVisible: !this.state.isModalVisible });
+    this.loadServicesList();
     this.loader.hide()
   }
 
   updateService = async () => {
-    console.log(this.state.idToUpdtate)
-    console.log(this.state.services);
     index = this.state.idToUpdtate
-    this.state.services[index].service_name = this.state.e_name
-    this.state.services[index].service_category = this.state.e_category
-    this.state.services[index].service_description = this.state.e_description
-    this.state.services[index].service_duration = this.state.e_duration
-    this.state.services[index].service_price = this.state.e_price
-    tmp_service = this.state.user.services
-    tmp_service.push(this.state.e_name)
-    this.state.user.services = tmp_service
-    console.log(tmp_service);
-
-    tmp = this.state.services
-    this.state.user.service_details = JSON.stringify(tmp)
+    let List= this.state.user.Subservices;
+    List[index].Name= this.state.EditName;
+    List[index].Cost = this.state.EditCost
+    List[index].Code = this.state.EditCode
+    List[index].Duration = this.state.EditDuration
+    List[index].Descraption = this.state.EditDescraption
+    List[index].ServiceId = this.state.EditCid
+    List[index].SubServiceId = this.state.EditSCid
+    
+    let Obj = this.state.user
+    Obj.Subservices=List;
+    
     this.loader.show()
-    await updateDocument('Technician', this.state.user.id, this.state.user).then(success => {
-      AsyncStorage.setItem('user', JSON.stringify(this.state.user))
+    await updateDocument('Technician', this.state.user.id,Obj).then(success => {
+     
     })
 
     this.setState({
       isModalVisibleEdite: !this.state.isModalVisibleEdite
     });
+    this.loadServicesList();
     this.loader.hide()
   }
 
   deleteService = async (i) => {
-    this.state.services.splice(i, 1)
-    tmp = this.state.services
-    this.state.user.service_details = JSON.stringify(tmp)
+    this.state.user.Subservices.splice(i, 1)
+    
     this.loader.show()
     await updateDocument('Technician', this.state.user.id, this.state.user).then(success => {
-      AsyncStorage.setItem('user', JSON.stringify(this.state.user))
+     
     })
+    this.loadServicesList();
     this.setState(this.state)
+    
     this.loader.hide()
   }
 
@@ -182,18 +187,20 @@ class MyServices extends Component {
     }
     else {
       this.setState({
-        e_name: service.service_name,
-        e_price: service.service_price,
-        e_duration: service.service_duration,
-        e_category: service.service_categoryy,
-        e_description: service.service_description,
+        EditName: service.Name,
+        EditCost: service.Cost,
+        EditCode: service.Code,
+        EditDuration: service.Duration,
+        EditDescraption: service.Descraption,
+        EditCid: service.ServiceId,
+        EditCid: service.SubServiceId,
         isModalVisibleEdite: !this.state.isModalVisibleEdite
       });
     }
   }
 
   static navigationOptions = {
-    title: 'My Services',
+    title: 'My Sub Services',
     headerRight: (
       <TouchableOpacity onPress={() => _this._toggleModal()} style={{ backgroundColor: colors.SPA_redColor, borderRadius: 5, marginHorizontal: 5 }} >
         <View style={{ flexDirection: 'row', marginVertical: 5, marginHorizontal: 5, alignItems: 'center', justifyContent: 'center' }}>
@@ -264,13 +271,19 @@ class MyServices extends Component {
           onBackdropPress={this._toggleModal}>
           <View >
             <View style={styles.popUpTop}>
-              <Text style={styles.popUpTopTxt}>Create Service</Text>
+              <Text style={styles.popUpTopTxt}>Create Sub Service</Text>
               <View style={{ width: width(25) }}></View>
               <TouchableOpacity onPress={this._toggleModal} style={{ marginRight: width(1) }} >
                 <Icon name="close" size={totalSize(4)} color="white" />
               </TouchableOpacity>
             </View>
-
+            {/* TempObj.Name= this.state.NewName;
+    TempObj.Cost= this.state.NewCost;
+    TempObj.Code= this.state.NewCode;
+    TempObj.Duration= this.state.NewDuration;
+    TempObj.Descraption= this.state.NewDescraption;
+    TempObj.ServiceId= this.state.NewCid;
+    TempObj.SubServiceId= this.state.NewSCid; */}
 
 
             <View style={styles.popUpContainerService}>
@@ -280,10 +293,10 @@ class MyServices extends Component {
                 <View style={{ marginTop: height(1), alignItems: 'center', justifyContent: 'center', width: width(80), height: height(6), borderRadius: 5, elevation: 5, backgroundColor: 'white', }}>
                   <Picker
                     mode='dropdown'
-                    selectedValue={this.state.s_category}
+                    selectedValue={this.state.NewCid}
                     style={styles.PickerStyle}
                     onValueChange={(itemValue, itemIndex) =>
-                      this.setState({ s_category: itemValue, Cindex: itemIndex })
+                      this.setState({ NewCid: itemValue, Cindex: itemIndex })
                     }>
                     <Picker.Item label="Select category" value='' />
                     {
@@ -308,10 +321,10 @@ class MyServices extends Component {
                   <View style={{ marginTop: height(1), alignItems: 'center', justifyContent: 'center', width: width(80), height: height(6), borderRadius: 5, elevation: 5, backgroundColor: 'white', }}>
                     <Picker
                       mode='dropdown'
-                      selectedValue={this.state.ss_category}
+                      selectedValue={this.state.NewSCid}
                       style={styles.PickerStyle}
                       onValueChange={(itemValue, itemIndex) =>
-                        this.setState({ ss_category: itemValue })
+                        this.setState({ NewSCid: itemValue })
                       }>
                       <Picker.Item label="Select Sub category" value='' />
                       {
@@ -339,7 +352,7 @@ class MyServices extends Component {
                   placeholderTextColor='rgb(217,217,217)'
                   style={styles.popUpInput}
                   onChangeText={(value) => {
-                    this.setState({ s_name: value })
+                    this.setState({ NewName: value })
                   }}
                 />
               </View>
@@ -361,7 +374,7 @@ class MyServices extends Component {
                   placeholderTextColor='rgb(217,217,217)'
                   style={styles.popUpInput}
                   onChangeText={(value) => {
-                    this.setState({ s_price: value })
+                    this.setState({ NewCost: value })
                   }}
                 />
               </View>
@@ -374,7 +387,7 @@ class MyServices extends Component {
                   keyboardType='numeric'
                   style={styles.popUpInput}
                   onChangeText={(value) => {
-                    this.setState({ s_duration: value })
+                    this.setState({ NewDuration: value })
                   }}
                 />
               </View>
@@ -386,7 +399,18 @@ class MyServices extends Component {
                   placeholderTextColor='rgb(217,217,217)'
                   style={styles.popUpInput}
                   onChangeText={(value) => {
-                    this.setState({ s_description: value })
+                    this.setState({ NewDescraption: value })
+                  }}
+                />
+              </View>
+              <View style={styles.inputTxtContainer}>
+                <Text style={styles.popUpText}>Code</Text>
+                <TextInput
+                  placeholder='Service Code Service'
+                  placeholderTextColor='rgb(217,217,217)'
+                  style={styles.popUpInput}
+                  onChangeText={(value) => {
+                    this.setState({ NewCode: value })
                   }}
                 />
               </View>
@@ -417,6 +441,7 @@ class MyServices extends Component {
 
         </Modal>
 
+
         <Modal
           isVisible={this.state.isModalVisibleEdite}
           animationIn='slideInUp'
@@ -425,39 +450,119 @@ class MyServices extends Component {
           animationInTiming={250}
           animationOutTiming={250}
           backdropOpacity={0.50}
-          onBackdropPress={this._toggleModalEdite}>
+          onBackdropPress={this._toggleModal}>
           <View >
             <View style={styles.popUpTop}>
-              <Text style={styles.popUpTopTxt}>Edit Service</Text>
+              <Text style={styles.popUpTopTxt}>Edit Sub Service</Text>
               <View style={{ width: width(25) }}></View>
-              <TouchableOpacity onPress={this._toggleModalEdite} style={{ marginRight: width(1) }} >
+              <TouchableOpacity onPress={this._toggleModal} style={{ marginRight: width(1) }} >
                 <Icon name="close" size={totalSize(4)} color="white" />
               </TouchableOpacity>
             </View>
+            {/* TempObj.Name= this.state.NewName;
+    TempObj.Cost= this.state.NewCost;
+    TempObj.Code= this.state.NewCode;
+    TempObj.Duration= this.state.NewDuration;
+    TempObj.Descraption= this.state.NewDescraption;
+    TempObj.ServiceId= this.state.NewCid;
+    TempObj.SubServiceId= this.state.NewSCid; */}
 
+{/* EditName: service.Name,
+        EditCost: service.Cost,
+        EditCode: service.Code,
+        EditDuration: service.Duration,
+        EditDescraption: service.Descraption,
+        EditCid: service.ServiceId,
+        EditSCid: service.SubServiceId, */}
             <View style={styles.popUpContainerService}>
+
+              <View style={styles.inputTxtContainer} >
+                <Text style={styles.popUpText}>Category</Text>
+                <View style={{ marginTop: height(1), alignItems: 'center', justifyContent: 'center', width: width(80), height: height(6), borderRadius: 5, elevation: 5, backgroundColor: 'white', }}>
+                  <Picker
+                    mode='dropdown'
+                    selectedValue={this.state.EditCid}
+                    style={styles.PickerStyle}
+                    onValueChange={(itemValue, itemIndex) =>
+                      this.setState({ EditCid: itemValue, Cindex: itemIndex })
+                    }>
+                    <Picker.Item label="Select category" value='' />
+                    {
+                      this.state.Categories_list.map((item, key) => {
+                        return (
+                          <Picker.Item key={key} label={item.Name} value={item.id} />
+                        )
+                      })
+
+                    }
+                  </Picker>
+                </View>
+              </View>
+              {this.state.Cindex !== "" ?
+                // <View>
+                //   <Text>
+                //     {this.state.Cindex}
+                //   </Text>
+                // </View> 
+                <View style={styles.inputTxtContainer} >
+                  <Text style={styles.popUpText}>Sub Category</Text>
+                  <View style={{ marginTop: height(1), alignItems: 'center', justifyContent: 'center', width: width(80), height: height(6), borderRadius: 5, elevation: 5, backgroundColor: 'white', }}>
+                    <Picker
+                      mode='dropdown'
+                      selectedValue={this.state.EditSCid}
+                      style={styles.PickerStyle}
+                      onValueChange={(itemValue, itemIndex) =>
+                        this.setState({ EditSCid: itemValue })
+                      }>
+                      <Picker.Item label="Select Sub category" value='' />
+                      {
+                        this.state.Categories_list[this.state.Cindex - 1].SubList !== undefined &&
+                          this.state.Categories_list[this.state.Cindex - 1].SubList.length > 0 ?
+                          this.state.Categories_list[this.state.Cindex - 1].SubList.map((item, key) => {
+                            return (
+                              <Picker.Item key={key} label={item.Name} value={item.id} />
+                            )
+                          })
+                          :
+                          null
+                      }
+                    </Picker>
+                  </View>
+                </View>
+                :
+                null
+              }
+
               <View style={styles.inputTxtContainer}>
                 <Text style={styles.popUpText}>Service name</Text>
                 <TextInput
-                  //placeholder={this.state.e_name}
-                  value={this.state.e_name}
+                  placeholder={this.state.EditName}
                   placeholderTextColor='rgb(217,217,217)'
                   style={styles.popUpInput}
-                  onChangeText={(value => {
-                    this.setState({ e_name: value })
-                  })}
+                  onChangeText={(value) => {
+                    this.setState({ EditName: value })
+                  }}
                 />
               </View>
+
+              {/* <View style={styles.inputTxtContainer}>
+                <Text style={styles.popUpText}>Service Code</Text>
+                <TextInput
+                  placeholder='125547845'
+                  placeholderTextColor='rgb(217,217,217)'
+                  style={styles.popUpInput}
+                />
+              </View> */}
 
               <View style={styles.inputTxtContainer}>
                 <Text style={styles.popUpText}>Service Price</Text>
                 <TextInput
-                  value={this.state.e_price}
+                  placeholder={this.state.EditCost}
+                  keyboardType='numeric'
                   placeholderTextColor='rgb(217,217,217)'
                   style={styles.popUpInput}
-                  keyboardType="numeric"
                   onChangeText={(value) => {
-                    this.setState({ e_price: value })
+                    this.setState({ EditCost: value })
                   }}
                 />
               </View>
@@ -465,12 +570,12 @@ class MyServices extends Component {
               <View style={styles.inputTxtContainer}>
                 <Text style={styles.popUpText}>Service Duration</Text>
                 <TextInput
-                  value={this.state.e_duration}
+                  placeholder={this.state.EditDuration}
                   placeholderTextColor='rgb(217,217,217)'
-                  keyboardType="numeric"
+                  keyboardType='numeric'
                   style={styles.popUpInput}
                   onChangeText={(value) => {
-                    this.setState({ e_duration: value })
+                    this.setState({ EditDuration: value })
                   }}
                 />
               </View>
@@ -478,15 +583,25 @@ class MyServices extends Component {
               <View style={styles.inputTxtContainer}>
                 <Text style={styles.popUpText}>Description</Text>
                 <TextInput
-                  value={this.state.e_description}
+                  placeholder={this.state.EditDescraption}
                   placeholderTextColor='rgb(217,217,217)'
                   style={styles.popUpInput}
                   onChangeText={(value) => {
-                    this.setState({ e_description: value })
+                    this.setState({ EditDescraption: value })
                   }}
                 />
               </View>
-
+              <View style={styles.inputTxtContainer}>
+                <Text style={styles.popUpText}>Code</Text>
+                <TextInput
+                  placeholder={this.state.EditCode}
+                  placeholderTextColor='rgb(217,217,217)'
+                  style={styles.popUpInput}
+                  onChangeText={(value) => {
+                    this.setState({ EditCode: value })
+                  }}
+                />
+              </View>
               {/* <View style={styles.uploadContainer}>
                 <TouchableOpacity style={styles.btnUpload} onPress={this.imagePicker}>
                   <Text style={styles.btnUploadTxt}>Upload Image</Text>
@@ -513,12 +628,14 @@ class MyServices extends Component {
           </View>
 
         </Modal>
+
+        
       </View>
     );
   }
 }
 
-export default MyServices;
+export default mySuperServices;
 
 const styles = StyleSheet.create({
   Container: {

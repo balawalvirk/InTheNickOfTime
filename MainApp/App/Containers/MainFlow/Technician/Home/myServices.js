@@ -91,6 +91,8 @@ class MyServices extends Component {
           });
         }
         this.setState({ services: List })
+      } else {
+        this.setState({ services: [] })
       }
     });
   }

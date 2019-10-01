@@ -128,6 +128,7 @@ class TechniciansList extends Component {
                                                 <TouchableOpacity key={key} style={styles.shopContainer} onPress={() => this.props.navigation.navigate('technicianDetailTab', {
                                                     services_details: this.state.SList,
                                                     location_details: this.state.LList,
+                                                    ServiceId:this.props.navigation.getParam('ServiceID2', "Nothing"),
                                                     technician: items
                                                 })}>
                                                     <View style={styles.shopImageContainer}>
