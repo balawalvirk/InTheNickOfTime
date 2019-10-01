@@ -2,7 +2,7 @@ import firebase from 'firebase';
 import firestore from 'firebase/firestore';
 import { Alert, Platform } from 'react-native';
 import { insertDocument, saveData, updateDocument, getDocument, getDocuments } from './utility';
-import RNFetchBlob from 'react-native-fetch-blob';
+
 import AsyncStorage from '@react-native-community/async-storage';
 
 

@@ -2,7 +2,6 @@ import firebase from 'firebase';
 import firestore from 'firebase/firestore';
 import { _storeData } from '../../backend/AsyncFuncs';
 import GlobalConst from '../../config/GlobalConst';
-import RNFetchBlob from 'react-native-fetch-blob';
 import { Platform, AsyncStorage } from 'react-native';
 import uuid from 'uuid';
 import MyPortfolio from '../../Containers/MainFlow/Technician/Home/myPortfolio';
