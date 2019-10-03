@@ -2,8 +2,38 @@ import firebase from 'firebase';
 import firestore from 'firebase/firestore';
 import { Alert, Platform } from 'react-native';
 import { insertDocument, saveData, updateDocument, getDocument, getDocuments } from './utility';
-
+import GlobalConst from "../../config/GlobalConst";
 import AsyncStorage from '@react-native-community/async-storage';
+
+
+
+export async function signUp2(user_profile) {
+  
+  return new Promise((resolve, reject) => {
+
+      let profile = {
+        displayName: user_profile.name,
+        phoneNumber: user_profile.phoneNumber,
+        photoURL: user_profile.photo,
+      };
+      let image = user_profile.avatarSource;
+
+      delete user_profile.avatarSource;
+      
+
+      
+     
+        collection = 'Technician';
+        insertDocument('Technician', user_profile);
+        saveData(collection, user_profile.id, user_profile )
+        if (image != null)
+          uploadAsFile(image, { collection: collection, uid: user_profile.id });
+
+        
+        resolve(profile);
+  });
+}
+
 
 
 export async function signUp(user_profile) {
@@ -105,7 +135,7 @@ export async function signIn(email, password, userType) {
           resolve(false);
         }
       } else {
-        let data = await getDocuments('Technician', { key: 'UserId', value: profile.user_id });
+        let data = await getDocuments('Technician', { key: 'UserId2', value: profile.user_id });
         if (data.length > 0) {
           profile['data'] = data[0];
         } else {
@@ -407,7 +437,57 @@ export async function uploadAsFile(image, collectionInfo, progressCallback) {
     );
   });
 }
+export async function uploadAsFile2(image, collectionInfo, progressCallback) {
 
+  console.log("uploadAsFile", image)
+  const response = await fetch(image.uri);
+  const blob = await response.blob();
+
+  var metadata = {
+    contentType: image.type,
+  };
+
+  // let name = new Date().getTime() + "-" + image.fileName;
+  let name = collectionInfo.uid + "-" + image.name;
+  const ref = firebase
+    .storage()
+    .ref()
+    .child('assets/' + name)
+
+  const task = ref.put(blob, metadata);
+
+  return new Promise((resolve, reject) => {
+    task.on(
+      'state_changed',
+      (snapshot) => {
+        // progressCallback && progressCallback(snapshot.bytesTransferred / snapshot.totalBytes)
+
+        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload is ' + progress + '% done');
+      },
+      (error) => reject(error), /* this is where you would put an error callback! */
+      async () => {
+        // let downloadURL = task.snapshot.downloadURL;
+        let downloadURL = await ref.getDownloadURL();
+        console.log("_uploadAsByteArray ", downloadURL);
+        GlobalConst.Signatue= downloadURL;
+        let success = await updateDocument(collectionInfo.collection, collectionInfo.uid, { agerement: downloadURL })
+        resolve(success);
+
+        // save a reference to the image for listing purposes
+        // let refAssets = firebase.database().ref('assets');
+        // refAssets.push({
+        //   'URL': downloadURL,
+        //   //'thumb': _imageData['thumb'],
+        //   'name': name,
+        //   //'coords': _imageData['coords'],
+        //   'owner': firebase.auth().currentUser && firebase.auth().currentUser.uid,
+        //   'when': new Date().getTime()
+        // }).then(r => resolve(r), e => reject(e))
+      }
+    );
+  });
+}
 export async function editProfilePic(image, collectionInfo, progressCallback) {
   console.log("uploadAsFile", image)
   const response = await fetch(image.uri);

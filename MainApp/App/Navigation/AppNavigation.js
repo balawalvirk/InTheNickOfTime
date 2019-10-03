@@ -4,7 +4,7 @@ import { createStackNavigator, createAppContainer } from 'react-navigation'
 import Splash from '../Containers/splash';
 import Login from '../Containers/LoginFlow/login';
 import SignUp from '../Containers/LoginFlow/signup';
-import SignUpTechnician from '../Containers/LoginFlow/signupTechnician';
+// import SignUpTechnician from '../Containers/LoginFlow/signupTechnician';
 import ClientTab from '../Containers/ApplicationTabs/ClientTab';
 import Notification from '../Containers/MainFlow/Client/Notification/notification';
 import TechnicianTab from '../Containers/ApplicationTabs/TechnicianTab';
@@ -22,7 +22,7 @@ import Payment from '../Containers/MainFlow/Client/Home/TechnicianDetail/payment
 import WebViewOpensLink from './../Containers/MainFlow/Client/Settings/WebViewOpensLink';
 import CardData from './../Containers/MainFlow/Client/Home/TechnicianDetail/CardData'
 import { Card } from 'react-native-elements';
-
+import RegisterPages from "../Containers/LoginFlow/RegisterPages";
 const AppNavigator = createStackNavigator({
     splash: {
         screen: Splash
@@ -33,8 +33,11 @@ const AppNavigator = createStackNavigator({
     signupClient: {
         screen: SignUp
     },
-    signUpTechnician: {
-        screen: SignUpTechnician
+    registerPages: {
+        screen: RegisterPages,
+        navigationOptions: {
+            header: null
+        }
     },
     notificationClient: {
         screen: Notification

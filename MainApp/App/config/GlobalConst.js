@@ -14,4 +14,6 @@ export default {
     phoneNum: 'phoneNum',
     email: 'email'
   },
+  UserId: "",
+  Signatue: "",
 };

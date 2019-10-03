@@ -1,4 +1,8 @@
 rootProject.name = 'InTheNickOfTimeSpa'
+include ':react-native-fs'
+project(':react-native-fs').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-fs/android')
+include ':@terrylinla_react-native-sketch-canvas'
+project(':@terrylinla_react-native-sketch-canvas').projectDir = new File(rootProject.projectDir, '../node_modules/@terrylinla/react-native-sketch-canvas/android')
 include ':react-native-share'
 project(':react-native-share').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-share/android')
 include ':@react-native-community_async-storage'

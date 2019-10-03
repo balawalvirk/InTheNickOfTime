@@ -161,7 +161,7 @@ class ProfileTechnician extends Component {
 
     let TechnicianList = await firebase.firestore().collection("Technician").where("UserId", "==", element.UserId).get()
     TechnicianList.forEach(element3 => {
-      if (element3.data().weekly_availability !== undefined) {
+      if (element3.data().weekly_availability !== undefined && element3.data().weekly_availability.length>0 ) {
         this.setState({ days: element3.data().weekly_availability })
       }
     });

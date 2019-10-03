@@ -149,6 +149,8 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-fs')
+    implementation project(':@terrylinla_react-native-sketch-canvas')
     implementation project(':react-native-share')
     implementation project(':@react-native-community_async-storage')
    

@@ -3,6 +3,8 @@ package com.inthenickoftimespa;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.rnfs.RNFSPackage;
+import com.terrylinla.rnsketchcanvas.SketchCanvasPackage;
 import cl.json.RNSharePackage;
 import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
 
@@ -29,6 +31,8 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new RNFSPackage(),
+            new SketchCanvasPackage(),
             new RNSharePackage(),
             new AsyncStoragePackage(),
            

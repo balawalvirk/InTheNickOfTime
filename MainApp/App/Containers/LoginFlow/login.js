@@ -57,7 +57,7 @@ class Login extends Component {
         this._toggleModalSelectSignUp()
     }
     goto_signup_Technician = () => {
-        this.props.navigation.navigate('signUpTechnician')
+        this.props.navigation.navigate('registerPages',{location : "Temp"})
         this._toggleModalSelectSignUp()
     }
 
