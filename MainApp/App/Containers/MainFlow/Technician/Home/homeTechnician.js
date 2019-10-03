@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Platform, View, Text, ActivityIndicator, TouchableOpacity, Image, StyleSheet, Dimensions, Picker, AsyncStorage } from 'react-native';
+import { Platform, View, Text, ActivityIndicator, TouchableOpacity, Image, StyleSheet, Dimensions, Picker } from 'react-native';
 import images from '../../../../Themes/Images';
 import colors from '../../../../Themes/Colors'
 import { Icon } from 'react-native-elements';
@@ -8,7 +8,8 @@ import Loader from '../../../../Components/Loader';
 import { height, width, totalSize } from 'react-native-dimension';
 import { withNavigationFocus } from 'react-navigation';
 import firebase from 'firebase';
-
+import AsyncStorage from '@react-native-community/async-storage';
+import {saveData} from "../../../../backend/firebase/utility";
 class HomeTechnician extends Component {
     constructor(props) {
         super(props);
@@ -93,6 +94,15 @@ class HomeTechnician extends Component {
             element.rating = 0;
         }
         this.setState({ user: element })
+
+        let fcmToken = await AsyncStorage.getItem('fcmToken');
+        // alert("before fcmToken: "+ fcmToken);
+        let jsonObject = {
+          Token: fcmToken,
+        }
+        await saveData("Technician", element.UserId, jsonObject)
+
+
         //     }
         // }
     }

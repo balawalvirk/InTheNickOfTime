@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "154243893765",
+    "firebase_url": "https://inthenameoftimespa-f27fa.firebaseio.com",
+    "project_id": "inthenameoftimespa-f27fa",
+    "storage_bucket": "inthenameoftimespa-f27fa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:154243893765:android:4d7fbf1a2dd06dcc16aa6c",
+        "android_client_info": {
+          "package_name": "com.inthenickoftimespa"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "154243893765-olm2o7gi1qavo53ejnd21eu2pjdbk4j3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjLQ9SFWY6CCnta7jrLPQsss7vxlJGe0c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "154243893765-olm2o7gi1qavo53ejnd21eu2pjdbk4j3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

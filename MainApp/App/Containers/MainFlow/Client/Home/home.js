@@ -7,6 +7,7 @@ import store from '../../../../Stores/orderStore';
 import images from '../../../../Themes/Images';
 import colors from '../../../../Themes/Colors';
 import AsyncStorage from '@react-native-community/async-storage';
+import {saveData} from "../../../../backend/firebase/utility";
 //import Modal from 'react-native-modal';
 //import api from '../../lib/api'
 class Home extends Component {
@@ -40,7 +41,14 @@ class Home extends Component {
                 user = JSON.parse(data);
                 this.state.user = user
             }
+           
         })
+        let fcmToken = await AsyncStorage.getItem('fcmToken');
+        // alert("before fcmToken: "+ fcmToken);
+        let jsonObject = {
+          Token: fcmToken,
+        }
+        await saveData("Users", this.state.user.UserId, jsonObject)
     }
     componentDidMount() {
         //console.warn('Email is===>',store.RESPONSE)
