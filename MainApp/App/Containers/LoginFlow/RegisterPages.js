@@ -191,13 +191,13 @@ export default class App extends Component {
             customStyles={secondIndicatorStyles}
             currentPosition={this.state.currentPage}
             labels={[
-              "Our      Intro",
-              "Our      Story",
-              "App      Idea",
-              "How      Work",
-              "Your      Info",
-              "Your      Services",
-              "Your      Agreement",
+              "Intro",
+              "Story",
+              "Idea",
+              "Working",
+              "Info",
+              "Services",
+              "Agreement",
               "Finish",
 
 
