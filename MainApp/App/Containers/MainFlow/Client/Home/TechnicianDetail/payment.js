@@ -87,6 +87,7 @@ class Payment extends Component {
                     Booking.userName = res.name
                     Booking.Email= res.email
                     Booking.phoneNumber= res.phoneNumber
+                    Booking.UToken= res.Token
                 }
                 for (i = 0; i < this.props.navigation.getParam('services', 0).length; i++) {
                     Booking.servicesList = Booking.servicesList + " " + this.props.navigation.getParam('services', '')[i].service_name
@@ -102,9 +103,12 @@ class Payment extends Component {
                 Booking.address = this.props.navigation.getParam('address')
                 Booking.card = this.props.navigation.getParam('card')
                 Booking.id= this.props.navigation.getParam('technician', '').id
+                Booking.TToken= this.props.navigation.getParam('technician', '').Token
+                
                 this.setState({ amount: Booking.amount })
                 Booking.comments = this.props.navigation.getParam("comments", '')
-                await createData("Bookings", Booking);
+               // await createData("Bookings", Booking);
+                await saveData("Bookings", Booking.id, Booking);
                 tmp = this.props.navigation.getParam('technician', '').notification
                 txt = Booking.userName + " has requested for an appointment."
                 tmp.push(txt)

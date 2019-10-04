@@ -100,7 +100,8 @@ class HomeTechnician extends Component {
         let jsonObject = {
           Token: fcmToken,
         }
-        await saveData("Technician", element.UserId, jsonObject)
+      //  alert("Save Token");
+        await saveData("Technician", element.id, jsonObject)
 
 
         //     }

@@ -33,6 +33,7 @@ class Home extends Component {
     }
 
     async componentWillMount() {
+        let UserObj={};
         await AsyncStorage.getItem('user', (error, data) => {
             console.log("Splash", error)
             console.log("Splash", data);
@@ -40,6 +41,7 @@ class Home extends Component {
             if (data) {
                 user = JSON.parse(data);
                 this.state.user = user
+                UserObj=user;
             }
            
         })
@@ -48,7 +50,7 @@ class Home extends Component {
         let jsonObject = {
           Token: fcmToken,
         }
-        await saveData("Users", this.state.user.UserId, jsonObject)
+        await saveData("Users", UserObj.id, jsonObject)
     }
     componentDidMount() {
         //console.warn('Email is===>',store.RESPONSE)

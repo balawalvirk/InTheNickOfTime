@@ -42,6 +42,7 @@ class SignUp extends Component {
         try {
 
             jsonObect = {
+                id: this.uniqueID(),
                 first_name: this.state.first_name,
                 last_name: this.state.last_name,
                 name: this.state.first_name + ' ' + this.state.last_name,
@@ -84,7 +85,16 @@ class SignUp extends Component {
         }
 
     }
-
+    uniqueID() {
+        function chr4() {
+            return Math.random().toString(16).slice(-4);
+        }
+        return chr4() + chr4() +
+            '-' + chr4() +
+            '-' + chr4() +
+            '-' + chr4() +
+            '-' + chr4() + chr4() + chr4();
+    }
     image_picker = () => {
         const options = {
             title: 'Select Avatar',

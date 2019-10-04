@@ -199,7 +199,7 @@ class Data extends Component {
                                 <Icon name='phone' color='rgb(66,67,69)' size={totalSize(3)} />
                                 <TextInput
                                     onChangeText={(value) => this.setState({ phoneNumber: value })}
-                                    placeholder={this.state.phoneNumber}
+                                    placeholder="Phone Number"
                                     placeholderTextColor='rgb(217,217,217)'
                                     underlineColorAndroid='transparent'
                                     style={styles.TxtInput}

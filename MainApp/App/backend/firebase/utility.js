@@ -221,7 +221,7 @@ export async function getDocuments(collection, where) {
 
 export async function createData(collection, data) {
 
-  await firebase.firestore().collection(collection).add(data)
+  saveData(collection, data.id, data );
 
 }
 

@@ -24,7 +24,7 @@ export async function signUp2(user_profile) {
       
      
         collection = 'Technician';
-        insertDocument('Technician', user_profile);
+       // insertDocument('Technician', user_profile);
         saveData(collection, user_profile.id, user_profile )
         if (image != null)
           uploadAsFile(image, { collection: collection, uid: user_profile.id });
@@ -69,7 +69,8 @@ export async function signUp(user_profile) {
         //   user.updateProfile(profile),
         //   saveData('Users', user.uid, user_profile)
         // ]
-        actions.push(insertDocument('Users', user_profile));
+        // actions.push(insertDocument('Users', user_profile));
+        saveData(collection, user_profile.id, user_profile )
         // actions[actions.length] = saveData('Users', user.uid, user_profile);
       } else if (user_profile.userType == "technician") {
         collection = 'Technician';
@@ -78,7 +79,8 @@ export async function signUp(user_profile) {
         //   user.updateProfile(profile),
         //   saveData('Technician', user.uid, technician)
         // ]
-        actions.push(insertDocument('Technician', user_profile));
+        // actions.push(insertDocument('Technician', user_profile));
+        
         // actions[actions.length] = saveData('Technician', user.uid, technician);
       }
 
