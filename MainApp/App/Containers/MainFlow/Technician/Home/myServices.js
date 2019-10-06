@@ -325,7 +325,43 @@ class MyServices extends Component {
                 :
                 null
               }
+ <View style={styles.inputTxtContainer}>
+                <Text style={styles.popUpText}>Service Price</Text>
+                <TextInput
+                  placeholder='100'
+                  keyboardType='numeric'
+                  placeholderTextColor='rgb(217,217,217)'
+                  style={styles.popUpInput}
+                  onChangeText={(value) => {
+                    this.setState({ NewCost: value })
+                  }}
+                />
+              </View>
 
+              <View style={styles.inputTxtContainer}>
+                <Text style={styles.popUpText}>Service Duration</Text>
+                <TextInput
+                  placeholder='In minutes'
+                  placeholderTextColor='rgb(217,217,217)'
+                  keyboardType='numeric'
+                  style={styles.popUpInput}
+                  onChangeText={(value) => {
+                    this.setState({ NewDuration: value })
+                  }}
+                />
+              </View>
+
+              <View style={styles.inputTxtContainer}>
+                <Text style={styles.popUpText}>Description</Text>
+                <TextInput
+                  placeholder='About Your Service'
+                  placeholderTextColor='rgb(217,217,217)'
+                  style={styles.popUpInput}
+                  onChangeText={(value) => {
+                    this.setState({ NewDescraption: value })
+                  }}
+                />
+              </View>
               <TouchableOpacity style={styles.btnFinish} onPress={() => {
                 this.addService()
               }}>
@@ -349,12 +385,12 @@ class MyServices extends Component {
           animationInTiming={250}
           animationOutTiming={250}
           backdropOpacity={0.50}
-          onBackdropPress={this._toggleModal}>
+          onBackdropPress={this._toggleModalEdite}>
           <View >
             <View style={styles.popUpTop}>
               <Text style={styles.popUpTopTxt}>Update Service</Text>
               <View style={{ width: width(25) }}></View>
-              <TouchableOpacity onPress={this._toggleModal} style={{ marginRight: width(1) }} >
+              <TouchableOpacity onPress={this._toggleModalEdite} style={{ marginRight: width(1) }} >
                 <Icon name="close" size={totalSize(4)} color="white" />
               </TouchableOpacity>
             </View>

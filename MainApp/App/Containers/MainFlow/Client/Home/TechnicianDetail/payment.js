@@ -95,6 +95,7 @@ class Payment extends Component {
                 Booking.services_cost = parseFloat(this.props.navigation.getParam('services_cost', 0.00))
                 Booking.travel_cost = parseFloat(this.props.navigation.getParam('travel_cost', 0.00))
                 Booking.date_time = this.props.navigation.getParam('date_time', '')
+                Booking.time= this.props.navigation.getParam('time_time', '')
                 Booking.location = this.props.navigation.getParam('location', '')[0].Name
                 Booking.services = this.props.navigation.getParam('services', '')
                 Booking.technicianId = this.props.navigation.getParam('technician', '').UserId
@@ -102,7 +103,7 @@ class Payment extends Component {
                 Booking.amount = Booking.services_cost + Booking.travel_cost
                 Booking.address = this.props.navigation.getParam('address')
                 Booking.card = this.props.navigation.getParam('card')
-                Booking.id= this.props.navigation.getParam('technician', '').id
+                Booking.id= this.uniqueID()
                 Booking.TToken= this.props.navigation.getParam('technician', '').Token
                 
                 this.setState({ amount: Booking.amount })

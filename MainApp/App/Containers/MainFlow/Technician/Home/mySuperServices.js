@@ -119,7 +119,7 @@ class mySuperServices extends Component {
     TempObj.id= this.uniqueID();
     TempObj.Name= this.state.NewName;
     TempObj.Cost= this.state.NewCost;
-    TempObj.Code= this.state.NewCode;
+    
     TempObj.Duration= this.state.NewDuration;
     TempObj.Descraption= this.state.NewDescraption;
     TempObj.ServiceId= this.state.NewCid;
@@ -142,7 +142,7 @@ class mySuperServices extends Component {
     let List= this.state.user.Subservices;
     List[index].Name= this.state.EditName;
     List[index].Cost = this.state.EditCost
-    List[index].Code = this.state.EditCode
+    
     List[index].Duration = this.state.EditDuration
     List[index].Descraption = this.state.EditDescraption
     List[index].ServiceId = this.state.EditCid
@@ -189,7 +189,7 @@ class mySuperServices extends Component {
       this.setState({
         EditName: service.Name,
         EditCost: service.Cost,
-        EditCode: service.Code,
+        
         EditDuration: service.Duration,
         EditDescraption: service.Descraption,
         EditCid: service.ServiceId,
@@ -403,17 +403,7 @@ class mySuperServices extends Component {
                   }}
                 />
               </View>
-              <View style={styles.inputTxtContainer}>
-                <Text style={styles.popUpText}>Code</Text>
-                <TextInput
-                  placeholder='Service Code Service'
-                  placeholderTextColor='rgb(217,217,217)'
-                  style={styles.popUpInput}
-                  onChangeText={(value) => {
-                    this.setState({ NewCode: value })
-                  }}
-                />
-              </View>
+              
               {/* <View style={styles.uploadContainer}>
                 <TouchableOpacity style={styles.btnUpload} onPress={this.imagePicker}>
                   <Text style={styles.btnUploadTxt}>Upload Image</Text>
@@ -591,17 +581,7 @@ class mySuperServices extends Component {
                   }}
                 />
               </View>
-              <View style={styles.inputTxtContainer}>
-                <Text style={styles.popUpText}>Code</Text>
-                <TextInput
-                  placeholder={this.state.EditCode}
-                  placeholderTextColor='rgb(217,217,217)'
-                  style={styles.popUpInput}
-                  onChangeText={(value) => {
-                    this.setState({ EditCode: value })
-                  }}
-                />
-              </View>
+              
               {/* <View style={styles.uploadContainer}>
                 <TouchableOpacity style={styles.btnUpload} onPress={this.imagePicker}>
                   <Text style={styles.btnUploadTxt}>Upload Image</Text>

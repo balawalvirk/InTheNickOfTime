@@ -20,11 +20,11 @@ import Finish from "./Finish";
 const secondIndicatorStyles = {
   stepIndicatorSize: 30,
   currentStepIndicatorSize: 40,
-  separatorStrokeWidth: 1,
+  separatorStrokeWidth: 0.5,
   currentStepStrokeWidth: 1,
   stepStrokeCurrentColor: colors.SPA_redColor,
-  stepStrokeWidth: 1,
-  separatorStrokeFinishedWidth: 1,
+  stepStrokeWidth: 0.5,
+  separatorStrokeFinishedWidth: 0.5,
   stepStrokeFinishedColor: colors.SPA_redColor,
   stepStrokeUnFinishedColor: "#aaaaaa",
   separatorFinishedColor: colors.SPA_redColor,
@@ -32,13 +32,13 @@ const secondIndicatorStyles = {
   stepIndicatorFinishedColor: colors.SPA_redColor,
   stepIndicatorUnFinishedColor: "#ffffff",
   stepIndicatorCurrentColor: "#ffffff",
-  stepIndicatorLabelFontSize: 5,
+  stepIndicatorLabelFontSize: 1,
   currentStepIndicatorLabelFontSize: 13,
   stepIndicatorLabelCurrentColor:  colors.SPA_redColor,
   stepIndicatorLabelFinishedColor: "#ffffff",
   stepIndicatorLabelUnFinishedColor: "#aaaaaa",
   labelColor: "#999999",
-  labelSize: 13,
+  labelSize: 10,
   currentStepLabelColor:  colors.SPA_redColor
 };
 
@@ -197,10 +197,8 @@ export default class App extends Component {
               "Working",
               "Info",
               "Services",
-              "Agreement",
+              "Contract",
               "Finish",
-
-
             ]}
           />
         </View>

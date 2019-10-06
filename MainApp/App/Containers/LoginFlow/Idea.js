@@ -36,7 +36,7 @@ class Idea extends Component {
 
     async MoveNext() {
         this.props.selectedData();
-       // this.props.selectedData();
+        // this.props.selectedData();
     }
 
     render() {
@@ -60,17 +60,17 @@ class Idea extends Component {
                                 <Text style={[styles.welcome2, { fontSize: totalSize(2.3), fontWeight: "bold" }]}>
                                     There are great benefits of working with us:
                                 </Text>
-                                <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>Able To Use The Products & Supplies Of Your Choosing</Text>
-                                    <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>No Required Hours/ Set Your Own Schedule</Text>
-    <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>Option: Featured On Mobile App</Text>
-    <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>Screened Clients</Text>
-    <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>Charge Clients For Travel</Text>
-    <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>Cash Tips</Text>
-    <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>Work With A Reputable Company With Great Clients!</Text>
-    <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>Get Paid Direct Deposit (Invoices paid twice a month for induvial clients and 1-3 business days post event for events. Invoices required for all jobs)</Text>
-    <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>Receive New Clients Via E-mail & App</Text>
-    <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>Ability To Decline Clients Or Change The Appointment Time</Text>
-    <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>Option: Participate In Events & Party Jobs</Text>
+                                <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>- Able To Use The Products & Supplies Of Your Choosing</Text>
+                                <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>- No Required Hours/ Set Your Own Schedule</Text>
+                                <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>- Option: Featured On Mobile App</Text>
+                                <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>- Screened Clients</Text>
+                                <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>- Charge Clients For Travel</Text>
+                                <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>- Cash Tips</Text>
+                                <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>- Work With A Reputable Company With Great Clients!</Text>
+                                <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>- Get Paid Direct Deposit (Invoices paid twice a month for induvial clients and 1-3 business days post event for events. Invoices required for all jobs)</Text>
+                                <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>- Receive New Clients Via E-mail & App</Text>
+                                <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>- Ability To Decline Clients Or Change The Appointment Time</Text>
+                                <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>- Option: Participate In Events & Party Jobs</Text>
                                 <Text style={[styles.welcome2, { fontSize: totalSize(2.3), fontWeight: "bold" }]}>
                                     Requirements
                                 </Text>
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     welcome: {
         fontSize: totalSize(5),
         textAlign: "left",
-        
+
         color: 'rgb(66,67,69)',
 
         //opacity: 0.6

@@ -136,7 +136,7 @@ class Services extends Component {
                                 </Text>
                                 <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>By proceed you acknowledge that you understand  the requirements to work with In the Nick of Time Inc. ​​</Text>
                                 <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: "bold" }]}>
-                                    Check all that apply:
+                                What services do you provide? Check all that apply: Hair Care etc
                                 </Text>
                             </View>
                             {

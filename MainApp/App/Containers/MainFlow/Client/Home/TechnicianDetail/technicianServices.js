@@ -9,10 +9,13 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import Modal from 'react-native-modal'
 //import DateTimePicker from "react-native-modal-datetime-picker"
 import DateTimePicker from 'react-native-datepicker'
+// import DateTimePicker from '@react-native-community/datetimepicker';
 import styles from '../../../../Styles/technicianDetailStyles'
 import SimpleToast from 'react-native-simple-toast';
 import { isGenericTypeAnnotation } from '@babel/types';
 import firebase from 'firebase';
+import moment from "moment";
+
 export default class TechnicianServices extends Component {
     constructor(props) {
         super(props);
@@ -44,7 +47,8 @@ export default class TechnicianServices extends Component {
             loadingUnSelectedServices: false,
             servicesTotalCost: 0.00,
             totalCost: 0.00,
-            date_time: null,
+            date_time: new Date(),
+            time_time: new Date().toTimeString(),
             isDateTimePickerVisible: false,
             isModalVisibleMessage: false,
             comment: null,
@@ -75,6 +79,7 @@ export default class TechnicianServices extends Component {
             location: this.state.travel_locations,
             travel_cost: this.state.travel_cost,
             date_time: this.state.date_time,
+            time_time: this.state.time_time,
             services_cost: this.state.servicesTotalCost,
             technician: this.state.technician,
             comments: this.state.comment,
@@ -96,9 +101,6 @@ export default class TechnicianServices extends Component {
 
 
         });
-
-
-
     }
 
 
@@ -114,15 +116,15 @@ export default class TechnicianServices extends Component {
 
             if (element3.data().Subservices !== undefined && element3.data().Subservices.length > 0) {
                 element3.data().Subservices.forEach(element => {
-                    if(element.ServiceId === this.props.navigation.getParam('ServiceId', "Nothing")) {
+                    if (element.ServiceId === this.props.navigation.getParam('ServiceId', "Nothing")) {
                         List.push(element);
                     }
-                    
+
                 });
 
             }
         });
-        this.state.Services_list= List;
+        this.state.Services_list = List;
     }
 
     _toggelModalMessage = async () => {
@@ -131,26 +133,45 @@ export default class TechnicianServices extends Component {
         // tmp1 = tmp2 = tmp
         // tmp1 = tmp1.slice(0, 3)
         // tmp2 = tmp2.slice(4)
+
+        // alert(this.state.date_time + " : ");
         let day = new Date(this.state.date_time)
         let day2 = day.getDay()
-
         // console.log(day, "-", this.getDayNumber(tmp1), "-", this.getDayNumber(tmp2));
         // console.log(this.getDayNumber(tmp1) <= this.state.date_time);
         // console.log(this.state.date_time <= this.getDayNumber(tmp2));
-        // alert(this.state.date_time+ " : " + day);
+
         if (tmp !== undefined && tmp[day2].isAvailable) {
 
 
 
+            // alert(this.state.date_time);
+            final = new Date(this.state.date_time).toDateString();
+            // time = timefinal.getHours()
+            // console.log(tmp.time_from, '==', tmp.time_to, '==', time);
+            if (tmp[day2].time_from !== "" && tmp[day2].time_to !== "" && this.state.time_time !== "") {
 
-            time = new Date(this.state.date_time)
-            time = time.getHours()
-            console.log(tmp.time_from, '==', tmp.time_to, '==', time);
-            if (tmp.time_from !== "" && tmp.time_to !== "") {
-                if (tmp.time_from <= time && time <= tmp.time_to) {
+
+
+                // alert(tmp[day2].time_from+ " : " + this.state.time_time + " : " + tmp[day2].time_to);
+
+                // moment(final+ " "+time, "YYYY-MM-DD hh:mm a").format("YYYY-MM-DDTHH:mm:ss")
+
+                var BookingTime = moment(this.state.time_time, "HH:mm a");    // e.g. 11:00 pm
+                var TimeFrom = moment(tmp[day2].time_from, "HH:mm a");
+                var TimeTo = moment(tmp[day2].time_to, "HH:mm a");
+                // TimeFrom= new Date('2019-01-01T' + tmp[day2].time_from + 'Z').toDateString();
+                // BookingTime= new Date('2019-01-01T' + this.state.time_time + 'Z');
+                // TimeTo= new Date('2019-01-01T' + tmp[day2].time_to + 'Z');
+
+              //  alert(TimeFrom + " : " + BookingTime + " : " + TimeTo);
+                if (TimeFrom <= BookingTime && BookingTime <= TimeTo) {
 
                     console.log('IF');
 
+                } else {
+                    alert("Technician Not Available at specified time.")
+                    return
                 }
             } else {
                 alert("Technician Not Available at specified time.")
@@ -160,7 +181,7 @@ export default class TechnicianServices extends Component {
 
 
         } else {
-            alert("Technician Not Available at specified time.")
+            alert("Technician Not Available at specified date.")
             return
         }
 
@@ -324,11 +345,12 @@ export default class TechnicianServices extends Component {
                                         style={{ width: width(75) }}
                                         date={this.state.date_time}
                                         mode="date"
+                                        // is24Hour={false}
                                         placeholder="Select Date"
                                         showIcon={false}
                                         androidMode='spinner'
                                         placeholderTextColor={'rgb(217,217,217)'}
-                                        //  format="MM-DD-YYYY h:mm a"
+                                        //   format="MM-DD-YYYY h:mm a"
                                         format="YYYY-MM-DD"
                                         //minDate="2018-05-01"
                                         //maxDate="2020-06-01"
@@ -340,7 +362,32 @@ export default class TechnicianServices extends Component {
                                         <Icon name='calendar-clock' color='gray' size={totalSize(3)} type='material-community' />
                                     </View>
                                 </TouchableOpacity>
+                                <View style={[styles.txtContainer, {}]}>
+                                    <Text style={[styles.txtLarg, { fontSize: totalSize(2) }]}>Select Time</Text>
+                                </View>
+                                <TouchableOpacity style={styles.schoolInputContainer}>
 
+                                    <DateTimePicker
+                                        style={{ width: width(75) }}
+                                        date={this.state.time_time}
+                                        mode="time"
+                                        // is24Hour={false}
+                                        placeholder="Select Time"
+                                        showIcon={false}
+                                        androidMode='spinner'
+                                        placeholderTextColor={'rgb(217,217,217)'}
+                                        format="h:mm a"
+                                        // format=""
+                                        //minDate="2018-05-01"
+                                        //maxDate="2020-06-01"
+                                        confirmBtnText="Confirm"
+                                        cancelBtnText="Cancel"
+                                        onDateChange={(time) => { this.setState({ time_time: time }) }}
+                                    />
+                                    <View style={{ marginHorizontal: 10 }}>
+                                        <Icon name='calendar-clock' color='gray' size={totalSize(3)} type='material-community' />
+                                    </View>
+                                </TouchableOpacity>
                             </View>
                             <View style={{ backgroundColor: 'transparent', justifyContent: 'flex-start', alignItems: 'center' }}>
                                 <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal' }]}>Technician Availability:   </Text>

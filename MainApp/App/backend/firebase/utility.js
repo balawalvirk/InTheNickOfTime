@@ -460,7 +460,7 @@ export async function getUserBookings(collection) {
   console.log(user);
   
 
-  let querySnapshot = await firebase.firestore().collection(collection).where("userId", "==", user.UserId).get()
+  let querySnapshot = await firebase.firestore().collection(collection).where("userId", "==", user.id).get()
   //console.log(res);
 
   // res.forEach((arr) => {
