@@ -107,13 +107,23 @@ export default class TechnicianServices extends Component {
 
 
     async getList() {
-        let List = this.state.Services_list;
+        let List = [];
+        let List2 = [];
         let TechnicianList = await firebase.firestore().collection("Technician").where("UserId", "==", this.state.technician.UserId).get()
         TechnicianList.forEach(element3 => {
             if (element3.data().weekly_availability !== undefined) {
                 this.state.technician.weekly_availability = element3.data().weekly_availability;
             }
 
+            if (element3.data().servicesList !== undefined && element3.data().servicesList.length > 0) {
+                element3.data().servicesList.forEach(element => {
+                    if (element.ServiceId === this.props.navigation.getParam('ServiceId', "Nothing")) {
+                        List.push(element);
+                    }
+
+                });
+
+            }
             if (element3.data().Subservices !== undefined && element3.data().Subservices.length > 0) {
                 element3.data().Subservices.forEach(element => {
                     if (element.ServiceId === this.props.navigation.getParam('ServiceId', "Nothing")) {
@@ -123,8 +133,17 @@ export default class TechnicianServices extends Component {
                 });
 
             }
+            if (element3.data().locationList !== undefined && element3.data().locationList.length > 0) {
+                element3.data().locationList.forEach(element => {
+                    element.Name= this.state.travel_locations[0].Name;
+                    List2.push(element);
+                });
+
+            }
         });
+        // this.setState({Services_list: List, travel_locations:element3.data().locationList })
         this.state.Services_list = List;
+        this.setState({travel_locations: List2});
     }
 
     _toggelModalMessage = async () => {

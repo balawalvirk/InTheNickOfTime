@@ -81,6 +81,7 @@ class bookingTechnician extends Component {
           not.push("Booking request has been accepted by " + booking.technicianName)
         }
         booking.status = 'accepted'
+        this.onCollect(booking.payment_id);
         let result = await updateDocument('Bookings', booking.id, booking);
         result = await updateDocument('Users', booking.userId, { notification: not });
         console.log('result', result);
@@ -105,6 +106,7 @@ class bookingTechnician extends Component {
         delete booking.photo;
       }
       booking.status = 'canceled'
+      this.onReject(booking.payment_id);
       let result = await updateDocument('Bookings', booking.id, booking);
       console.log(result);
       this.state.pending.splice(index, 1)
@@ -112,6 +114,57 @@ class bookingTechnician extends Component {
     } catch (err) {
       console.log("Error", err);
     }
+  }
+
+
+  async onCollect(id){
+    fetch('https://api.stripe.com/v1/charges/'+id+'/capture', {
+
+          headers: {
+  
+            Accept: 'application/json',
+    
+            'Content-Type': 'application/x-www-form-urlencoded',
+          
+            Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
+            // Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
+          },
+          // Use a proper HTTP method
+          method: 'post',
+          // Format the credit card data to a string of key-value pairs
+          // divided by &
+          
+      }).then(response => {alert('amount collected');console.log(response)}).catch(err => {
+        alert(err.error.message)
+      })
+  }
+
+  async onReject(id){
+
+    const body = {};
+    body['charge'] = id,
+    fetch('https://api.stripe.com/v1/refunds', {
+
+          headers: {
+  
+            Accept: 'application/json',
+    
+            'Content-Type': 'application/x-www-form-urlencoded',
+          
+            Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
+            // Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
+          },
+          // Use a proper HTTP method
+          method: 'post',
+          // Format the credit card data to a string of key-value pairs
+          // divided by &
+          body: Object.keys(body)
+          .map(key => key + '=' + body[key])
+          .join('&')
+          
+      }).then(response => {alert('amount refunded');console.log(response)}).catch(err => {
+        alert(err.error.message)
+      })
   }
   render() {
     return (

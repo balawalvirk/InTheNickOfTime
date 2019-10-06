@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, ActivityIndicator, Image, TouchableOpacity, TextInput, ImageBackground, StyleSheet, Dimensions, Alert, Linking } from 'react-native';
+import { View, Text, ActivityIndicator, Image, TouchableOpacity, TextInput, ImageBackground, StyleSheet, Dimensions, Alert } from 'react-native';
 const { width: WIDTH } = Dimensions.get('window')
 import ImagePicker from 'react-native-image-picker';
 import Toast from 'react-native-simple-toast'
@@ -7,10 +7,11 @@ import { Icon } from 'react-native-elements'
 import colors from '../../../../../Themes/Colors';
 import { totalSize, width, height } from 'react-native-dimension';
 import images from '../../../../../Themes/Images';
-import { saveData, createData, updateDocument } from '../../../../../backend/firebase/utility'
+import { saveData, createData } from '../../../../../backend/firebase/utility'
 import firebase from 'firebase';
 import AsyncStorage from '@react-native-community/async-storage';
-import { CreditCardInput } from 'react-native-credit-card-input'
+import { CreditCardInput } from 'react-native-credit-card-input';
+import Stripe from 'react-native-stripe-api';
 
 class Payment extends Component {
 
@@ -29,32 +30,188 @@ class Payment extends Component {
     };
 
 
-    getCreditCardToken = (creditCardData) => {
-        const card = {
-            'card[number]': creditCardData.values.number.replace(/ /g, ''),
-            'card[exp_month]': creditCardData.values.expiry.split('/')[0],
-            'card[exp_year]': creditCardData.values.expiry.split('/')[1],
-            'card[cvc]': creditCardData.values.cvc
-        };
+    // getCreditCardToken = (creditCardData) => {
+    //     const card = {
+    //         'card[number]': creditCardData.values.number.replace(/ /g, ''),
+    //         'card[exp_month]': creditCardData.values.expiry.split('/')[0],
+    //         'card[exp_year]': creditCardData.values.expiry.split('/')[1],
+    //         'card[cvc]': creditCardData.values.cvc
+    //     };
 
-        return fetch('https://api.stripe.com/v1/tokens', {
+    //     return fetch('https://api.stripe.com/v1/tokens', {
+    //         headers: {
+    //             // Use the correct MIME type for your server
+    //             Accept: 'application/json',
+    //             // Use the correct Content Type to send data in request body
+    //             'Content-Type': 'application/x-www-form-urlencoded',
+    //             // Use the Stripe publishable key as Bearer
+    //             Authorization: `Bearer ${STRIPE_PUBLISHABLE_KEY}`
+    //         },
+    //         // Use a proper HTTP method
+    //         method: 'post',
+    //         // Format the credit card data to a string of key-value pairs
+    //         // divided by &
+    //         body: Object.keys(card)
+    //             .map(key => key + '=' + card[key])
+    //             .join('&')
+    //     }).then(response => response.json());
+    // };
+
+    async onSubmit(creditCardData) {
+        // const apiKey = 'pk_test_SsuRgFFnyuyzaLc8DoYx3nnU00SVBSqUIk';
+        // alert(this.props.navigation.getParam('card_number', ''))
+        this.setState({ loader: true });
+        const apiKey = 'pk_test_SsuRgFFnyuyzaLc8DoYx3nnU00SVBSqUIk';
+        const client = new Stripe(apiKey);
+        const token = await client.createToken({
+            number: this.props.navigation.getParam('card_number', ''),
+            exp_month: this.props.navigation.getParam('card_exp_month', ''),
+            exp_year: this.props.navigation.getParam('card_exp_year', ''),
+            cvc: this.props.navigation.getParam('card_cvc', ''),
+            address_zip: '12345'
+        }).then(i => {
+            if (i.error) {
+                alert(i.error.message)
+            } else {
+                console.log(i)
+                this.charge(i);
+
+
+            }
+
+
+        }).catch(err => {
+            alert(err.error.message)
+        })
+
+    }
+    async charge(i) {
+        let C1 = parseFloat(this.props.navigation.getParam('services_cost', 0.00))
+        let C2 = parseFloat(this.props.navigation.getParam('travel_cost', 0.00))
+        const body = {};
+        body['amount'] = C1+C2,
+            body['currency'] = 'usd',
+            body['source'] = i.id
+        body['capture'] = false;
+
+        let data = await fetch('https://api.stripe.com/v1/charges', {
+
+            //   const card = {
+            //       'card[number]': creditCardData.values.number.replace(/ /g, ''),
+            //       'card[exp_month]': creditCardData.values.expiry.split('/')[0],
+            //       'card[exp_year]': creditCardData.values.expiry.split('/')[1],
+            //       'card[cvc]': creditCardData.values.cvc
+            //     };
             headers: {
                 // Use the correct MIME type for your server
                 Accept: 'application/json',
                 // Use the correct Content Type to send data in request body
                 'Content-Type': 'application/x-www-form-urlencoded',
                 // Use the Stripe publishable key as Bearer
-                Authorization: `Bearer ${STRIPE_PUBLISHABLE_KEY}`
+                Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
+                // Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
             },
             // Use a proper HTTP method
             method: 'post',
             // Format the credit card data to a string of key-value pairs
             // divided by &
-            body: Object.keys(card)
-                .map(key => key + '=' + card[key])
+            body: Object.keys(body)
+                .map(key => key + '=' + body[key])
                 .join('&')
-        }).then(response => response.json());
-    };
+        })
+
+        let commits = await data.json()
+            .then(response => {
+
+                try {
+
+                    let Booking = {
+                        userId: '',
+                        userName: '',
+                        amount: 0,
+                        status: 'pending',
+                        comments: '',
+                        date_time: '',
+                        location: '',
+                        services: {},
+                        services_cost: 0,
+                        travel_cost: 0,
+                        technicianId: '',
+                        technicianName: '',
+                        servicesList: '',
+                        address: '',
+                        payment_id: response.id,
+
+
+                    }
+
+                    user = AsyncStorage.getItem('user', async (error, data) => {
+                        console.log("USER", data)
+                        if (data) {
+                            res = JSON.parse(data)
+                            console.log(res);
+                            Booking.userId = res.id
+                            Booking.userName = res.name
+                            Booking.Email = res.email
+                            Booking.phoneNumber = res.phoneNumber
+                            Booking.UToken = res.Token
+                        }
+                        for (i = 0; i < this.props.navigation.getParam('services', 0).length; i++) {
+                            Booking.servicesList = Booking.servicesList + " " + this.props.navigation.getParam('services', '')[i].service_name
+                        }
+                        Booking.services_cost = parseFloat(this.props.navigation.getParam('services_cost', 0.00))
+                        Booking.travel_cost = parseFloat(this.props.navigation.getParam('travel_cost', 0.00))
+                        Booking.date_time = this.props.navigation.getParam('date_time', '')
+                        Booking.time = this.props.navigation.getParam('time_time', '')
+                        Booking.location = this.props.navigation.getParam('location', '')[0].Name
+                        Booking.services = this.props.navigation.getParam('services', '')
+                        Booking.technicianId = this.props.navigation.getParam('technician', '').UserId
+                        Booking.technicianName = this.props.navigation.getParam('technician', '').name
+                        Booking.amount = Booking.services_cost + Booking.travel_cost
+                        Booking.address = this.props.navigation.getParam('address')
+                        // Booking.card = this.props.navigation.getParam('card')
+                        Booking.id = this.uniqueID()
+                        Booking.TToken = this.props.navigation.getParam('technician', '').Token
+
+                        this.setState({ amount: Booking.amount })
+                        Booking.comments = this.props.navigation.getParam("comments", '')
+                        // await createData("Bookings", Booking);
+                        await saveData("Bookings", Booking.id, Booking);
+                        tmp = this.props.navigation.getParam('technician', '').notification
+                        txt = Booking.userName + " has requested for an appointment."
+                        tmp.push(txt)
+                        kk = this.props.navigation.getParam('technician', '').id
+
+                        result = await saveData("Technician", kk, { notification: tmp })
+                        console.log(result);
+
+
+                        this.setState({ loader: false });
+                        console.log("Normal Booking", Booking);
+                        let msg = 'Your request has been sent! Please wait while the technician confirms your appointment. You will be notified via app and e-mail. Your card is not charged until the technician confirms your appointment.';
+                        Alert.alert('Success', msg, [{ text: 'OK', onPress: () => { this.props.navigation.navigate('clientTab'); } }], { cancelable: false });
+                    });
+
+                } catch (e) {
+                    console.log(e);
+                    Alert.alert('Failure', 'Failed to checkout. Please try again.', [{ text: 'OK', onPress: () => { } }]);
+                } finally {
+                    // this.loader.hide();
+                    this.setState({ loader: false });
+                }
+
+
+
+
+
+            }).catch(err => {
+                alert(err.error.message)
+            })
+
+
+
+    }
+
 
     checkOut = async () => {
         try {
@@ -85,9 +242,9 @@ class Payment extends Component {
                     console.log(res);
                     Booking.userId = res.id
                     Booking.userName = res.name
-                    Booking.Email= res.email
-                    Booking.phoneNumber= res.phoneNumber
-                    Booking.UToken= res.Token
+                    Booking.Email = res.email
+                    Booking.phoneNumber = res.phoneNumber
+                    Booking.UToken = res.Token
                 }
                 for (i = 0; i < this.props.navigation.getParam('services', 0).length; i++) {
                     Booking.servicesList = Booking.servicesList + " " + this.props.navigation.getParam('services', '')[i].service_name
@@ -95,7 +252,7 @@ class Payment extends Component {
                 Booking.services_cost = parseFloat(this.props.navigation.getParam('services_cost', 0.00))
                 Booking.travel_cost = parseFloat(this.props.navigation.getParam('travel_cost', 0.00))
                 Booking.date_time = this.props.navigation.getParam('date_time', '')
-                Booking.time= this.props.navigation.getParam('time_time', '')
+                Booking.time = this.props.navigation.getParam('time_time', '')
                 Booking.location = this.props.navigation.getParam('location', '')[0].Name
                 Booking.services = this.props.navigation.getParam('services', '')
                 Booking.technicianId = this.props.navigation.getParam('technician', '').UserId
@@ -103,22 +260,22 @@ class Payment extends Component {
                 Booking.amount = Booking.services_cost + Booking.travel_cost
                 Booking.address = this.props.navigation.getParam('address')
                 Booking.card = this.props.navigation.getParam('card')
-                Booking.id= this.uniqueID()
-                Booking.TToken= this.props.navigation.getParam('technician', '').Token
-                
+                Booking.id = this.uniqueID()
+                Booking.TToken = this.props.navigation.getParam('technician', '').Token
+
                 this.setState({ amount: Booking.amount })
                 Booking.comments = this.props.navigation.getParam("comments", '')
-               // await createData("Bookings", Booking);
+                // await createData("Bookings", Booking);
                 await saveData("Bookings", Booking.id, Booking);
                 tmp = this.props.navigation.getParam('technician', '').notification
                 txt = Booking.userName + " has requested for an appointment."
                 tmp.push(txt)
                 kk = this.props.navigation.getParam('technician', '').id
-                
-                result = await updateDocument("Technician",kk,{notification:tmp})
+
+                result = await updateDocument("Technician", kk, { notification: tmp })
                 console.log(result);
-                
-                
+
+
                 this.setState({ loader: false });
                 console.log("Normal Booking", Booking);
                 let msg = 'Your request has been sent! Please wait while the technician confirms your appointment. You will be notified via app and e-mail. Your card is not charged until the technician confirms your appointment.';
@@ -137,14 +294,14 @@ class Payment extends Component {
 
     uniqueID() {
         function chr4() {
-          return Math.random().toString(16).slice(-4);
+            return Math.random().toString(16).slice(-4);
         }
         return chr4() + chr4() +
-          '-' + chr4() +
-          '-' + chr4() +
-          '-' + chr4() +
-          '-' + chr4() + chr4() + chr4();
-      }
+            '-' + chr4() +
+            '-' + chr4() +
+            '-' + chr4() +
+            '-' + chr4() + chr4() + chr4();
+    }
 
     render() {
         return (
@@ -152,14 +309,14 @@ class Payment extends Component {
                 {/* <CreditCardInput requiresName onChange={(cardData) => this.setState({ cardData })} /> */}
                 <View style={{ width: width(90), marginTop: height(2), }}>
                     <Text style={[styles.formTxt2, { textAlign: 'justify' }]}>{this.state.instruction}</Text>
-                    <Text style={{color:'blue', alignSelf:'center', margin:15}}onPress={() => { Linking.openURL('https://inthenickoftimespa.com/policies/') }}>Terms And Conditions</Text>
+                    <Text style={{ color: 'blue', alignSelf: 'center', margin: 15 }} onPress={() => { Linking.openURL('https://inthenickoftimespa.com/policies/') }}>Terms And Conditions</Text>
                 </View>
 
 
 
 
                 <View style={styles.btnContainer}>
-                    <TouchableOpacity style={styles.btn} onPress={() => { this.checkOut() }} >
+                    <TouchableOpacity style={styles.btn} onPress={() => { this.onSubmit() }} >
                         {
                             this.state.loading === true ?
                                 <ActivityIndicator size='small' color='white' />

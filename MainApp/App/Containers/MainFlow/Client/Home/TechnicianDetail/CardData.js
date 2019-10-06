@@ -1,3 +1,5 @@
+
+  
 import React, { Component } from 'react';
 import { View, Text, ActivityIndicator, Image, TouchableOpacity, TextInput, ImageBackground, StyleSheet, Dimensions, Alert } from 'react-native';
 const { width: WIDTH } = Dimensions.get('window')
@@ -18,6 +20,7 @@ class CardData extends Component {
         super(props);
         this.state = {
             loader: false,
+            details : null
         };
     }
 
@@ -26,56 +29,36 @@ class CardData extends Component {
 
     };
 
-    confirmCard() {
-
+    confirmCard(creditCardData){
+        
         this.props.navigation.navigate('payment', {
             services: this.props.navigation.getParam('services'),
             location: this.props.navigation.getParam('location'),
             travel_cost: this.props.navigation.getParam('travel_cost'),
             date_time: this.props.navigation.getParam('date_time'),
+            time_time: this.props.navigation.getParam('time_time'),
             services_cost: this.props.navigation.getParam('services_cost'),
             technician: this.props.navigation.getParam('technician'),
             comments: this.props.navigation.getParam('comments'),
             address: this.props.navigation.getParam('address'),
-            card: this.state.cardData
+            card_number: creditCardData.values.number.replace(/ /g, '') ,
+            card_exp_month: creditCardData.values.expiry.split('/')[0], 
+            card_exp_year: creditCardData.values.expiry.split('/')[1], 
+            card_cvc: creditCardData.values.cvc,
         })
-
+        
     }
 
-    getCreditCardToken = (creditCardData) => {
-        const card = {
-            'card[number]': creditCardData.values.number.replace(/ /g, ''),
-            'card[exp_month]': creditCardData.values.expiry.split('/')[0],
-            'card[exp_year]': creditCardData.values.expiry.split('/')[1],
-            'card[cvc]': creditCardData.values.cvc
-        };
 
-        return fetch('https://api.stripe.com/v1/tokens', {
-            headers: {
-                // Use the correct MIME type for your server
-                Accept: 'application/json',
-                // Use the correct Content Type to send data in request body
-                'Content-Type': 'application/x-www-form-urlencoded',
-                // Use the Stripe publishable key as Bearer
-                Authorization: `Bearer ${STRIPE_PUBLISHABLE_KEY}`
-            },
-            // Use a proper HTTP method
-            method: 'post',
-            // Format the credit card data to a string of key-value pairs
-            // divided by &
-            body: Object.keys(card)
-                .map(key => key + '=' + card[key])
-                .join('&')
-        }).then(response => response.json());
-    };
+
 
     render() {
         return (
             <View>
                 <View>
-                    <CreditCardInput style={{ flex: 1, height: 400 }} requiresName onChange={(cardData) => this.setState({ cardData: cardData })} />
+                    <CreditCardInput style={{flex:1,height:400}} requiresName onChange={(cardData) => this.setState({ details : cardData })} />
                 </View>
-                <TouchableOpacity style={styles.btnTxtContainer} onPress={() => { this.confirmCard() }}>
+                <TouchableOpacity style={styles.btnTxtContainer} onPress={()=>{this.confirmCard(this.state.details)}}>
                     <Text style={styles.btnTxt}>Next</Text>
                 </TouchableOpacity>
             </View>
@@ -108,3 +91,4 @@ const styles = StyleSheet.create({
 
     },
 })
+

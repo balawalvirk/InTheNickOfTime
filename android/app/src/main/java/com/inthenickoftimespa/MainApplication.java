@@ -3,6 +3,7 @@ package com.inthenickoftimespa;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.reactcommunity.rndatetimepicker.RNDateTimePickerPackage;
 import io.invertase.firebase.RNFirebasePackage;
 import com.rnfs.RNFSPackage;
 import com.terrylinla.rnsketchcanvas.SketchCanvasPackage;
@@ -33,6 +34,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new RNDateTimePickerPackage(),
             
             new RNFSPackage(),
             new SketchCanvasPackage(),

@@ -161,7 +161,7 @@ class ProfileTechnician extends Component {
 
     let TechnicianList = await firebase.firestore().collection("Technician").where("UserId", "==", element.UserId).get()
     TechnicianList.forEach(element3 => {
-      if (element3.data().weekly_availability !== undefined && element3.data().weekly_availability.length>0 ) {
+      if (element3.data().weekly_availability !== undefined && element3.data().weekly_availability.length > 0) {
         this.setState({ days: element3.data().weekly_availability })
       }
     });
@@ -196,9 +196,15 @@ class ProfileTechnician extends Component {
       let TempList = Obj.travel_locations;
 
       if (!TempList.includes(this.state.ss_category)) {
-        TempList[0]= this.state.ss_category;
+        TempList[0] = this.state.ss_category;
       }
+      let TempObj = {};
+      TempObj.Cost = this.state.NewCost;
+      TempObj.id = this.state.ss_category;
 
+      let TempList2=[];
+      TempList2.push(TempObj);
+      Obj.locationList = TempList2;
       Obj.travel_locations = TempList;
       // alert(this.state.user.id);
       saveData("Technician", this.state.user.id, Obj)
@@ -510,7 +516,18 @@ class ProfileTechnician extends Component {
                 :
                 null
               }
-
+              <View style={styles.inputTxtContainer}>
+                <Text style={styles.popUpText}>Travel Cost</Text>
+                <TextInput
+                  placeholder='100'
+                  keyboardType='numeric'
+                  placeholderTextColor='rgb(217,217,217)'
+                  style={styles.popUpInput}
+                  onChangeText={(value) => {
+                    this.setState({ NewCost: value })
+                  }}
+                />
+              </View>
               <TouchableOpacity style={styles.btnFinish} onPress={() => {
                 this.addLocation()
               }}>
