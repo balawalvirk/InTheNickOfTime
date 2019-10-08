@@ -15,6 +15,7 @@ import ZoomImage from 'react-native-zoom-image';
 import HTML from 'react-native-render-html';
 import SignatureComponent from "../../Components/SignatureComponent";
 import GlobalConst from "../../config/GlobalConst";
+import firebase from 'firebase';
 class Agreement extends Component {
     constructor(props) {
         super(props);

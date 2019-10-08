@@ -58,9 +58,37 @@ class CardData extends Component {
                 <View>
                     <CreditCardInput style={{flex:1,height:400}} requiresName onChange={(cardData) => this.setState({ details : cardData })} />
                 </View>
-                <TouchableOpacity style={styles.btnTxtContainer} onPress={()=>{this.confirmCard(this.state.details)}}>
-                    <Text style={styles.btnTxt}>Next</Text>
-                </TouchableOpacity>
+                <View style={styles.btnContainer}>
+                    <TouchableOpacity style={styles.btn} onPress={()=>{
+                        
+                        if (this.state.details == undefined ||
+                             this.state.details.values.number == null ||
+                             this.state.details.values.number == "" ||
+                              this.state.details.values.expiry == null ||
+                              this.state.details.values.expiry == "" ||
+                              this.state.details.values.cvc == null || 
+                              this.state.details.values.cvc == "" || 
+                              this.state.details.values.name == null ||
+                              this.state.details.values.name == ""
+                               ) {
+                           alert("Please Enter Card Details")
+
+                            return
+                        }
+                        console.log("all ok");
+                        this.confirmCard(this.state.details)}
+                        
+                        
+                        }>
+                        {
+                            this.state.loading === true ?
+                                <ActivityIndicator size='small' color='white' />
+                                :
+                                <Text style={styles.btnTxt}>Next</Text>
+                        }
+                    </TouchableOpacity>
+                </View>
+                
             </View>
 
         )
@@ -89,6 +117,22 @@ const styles = StyleSheet.create({
         fontSize: totalSize(2.5),
         color: 'white',
 
+    },
+    btn: {
+        width: width(80),
+        height: height(6),
+        backgroundColor: colors.SPA_redColor,
+        borderRadius: 5,
+        alignItems: 'center',
+        justifyContent: 'center',
+        elevation: 1
+    },
+    btnContainer: {
+        //width: width(80),
+        alignItems: 'center',
+        marginVertical: height(10),
+        justifyContent: 'center',
+        //backgroundColor:'green'
     },
 })
 

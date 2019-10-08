@@ -59,7 +59,7 @@ Technicians are independent contractors and are required to sustain liability
                                 </Text>
                             </View>
                             
-                                <ZoomImage source={images.HomeBG} 
+                                <ZoomImage source={images.Screen2Pic} 
                                     imgStyle={styles.pic2}
                                     duration={200}
                        

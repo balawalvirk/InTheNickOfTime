@@ -189,18 +189,18 @@ export default class TechnicianServices extends Component {
                     console.log('IF');
 
                 } else {
-                    alert("Technician Not Available at specified time.")
+                    alert("The technician is not available at the selected time. Please have a look at their availability.")
                     return
                 }
             } else {
-                alert("Technician Not Available at specified time.")
+                alert("The technician is not available at the selected time. Please have a look at their availability.")
                 return
             }
 
 
 
         } else {
-            alert("Technician Not Available at specified date.")
+            alert("The technician is not available at the selected time. Please have a look at their availability.")
             return
         }
 
@@ -324,11 +324,11 @@ export default class TechnicianServices extends Component {
 
                                     <Picker
                                         mode='dropdown'
-                                        selectedValue={this.state.travel_cost}
+                                        selectedValue={this.state.showValue}
                                         style={styles.PickerStyle}
                                         onValueChange={(itemValue, itemIndex) => {
                                             kk = parseInt(itemValue)
-                                            this.setState({ travel_cost: kk })
+                                            this.setState({ travel_cost: kk, showValue: itemValue })
                                         }
 
                                         }>

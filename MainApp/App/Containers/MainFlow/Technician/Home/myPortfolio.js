@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
-import { View, Text, ImageBackground, TouchableOpacity, FlatList, StyleSheet, Image } from 'react-native';
+import { View, Text, ImageBackground, TouchableOpacity, ActivityIndicator, FlatList, StyleSheet, Image } from 'react-native';
 import { Icon } from 'react-native-elements'
 import colors from '../../../../Themes/Colors'
 import { totalSize, height, width } from 'react-native-dimension'
 import images from '../../../../Themes/Images';
 import ImagePicker from 'react-native-image-picker';
 import AsyncStorage from '@react-native-community/async-storage';
-import { uploadPortfolio } from '../../../../backend/firebase/utility';
+import { uploadPortfolio, getData } from '../../../../backend/firebase/utility';
 import Loader from "../../../../Components/Loader"
 
 
@@ -17,8 +17,8 @@ const portfolio_images_list = [
 const numColums = 3
 
 const formatData = (data, numColumns) => {
-  
-  if (!data) 
+
+  if (!data)
     data = [];
 
   const numberOfFullRows = Math.floor(data.length / numColumns);
@@ -35,7 +35,7 @@ class MyPortfolio extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      portfolio_array:[],
+      portfolio_array: [],
       images_list: [
         { id: 1, image: require('../../../../Images/DarkBgPortrait.jpg') },
         { id: 2, image: require('../../../../Images/BG01.jpg') },
@@ -48,27 +48,41 @@ class MyPortfolio extends Component {
         { id: 9, image: require('../../../../Images/DarkBgPortrait.jpg') },
       ],
       avatarSource: '',
-      camera:''
+      camera: ''
     };
 
 
-    
+
   }
 
-  async componentDidMount(){
-    
+  async componentDidMount() {
+    this.props.navigation.addListener("willFocus", async () => {
+      data = await AsyncStorage.getItem('user')
+      data = JSON.parse(data)
+      imgs = data.portfolio
+      await this.fetchImages();
+      //imgs = JSON.parse(imgs)
+      console.log(imgs);
+      this.setState({ user: data })
+    });
+
+  }
+
+  async fetchImages() {
+    await this.setState({ isDataLoded: false });
     data = await AsyncStorage.getItem('user')
     data = JSON.parse(data)
-    imgs = data.portfolio
-    //imgs = JSON.parse(imgs)
-    console.log(imgs);
-    this.setState({portfolio_array:imgs})
-    
-    
+    let TempUser = await getData("Technician", data.id);
+    if (TempUser.portfolio !== undefined) {
+      this.setState({ portfolio_array: TempUser.portfolio });
+    }
+    await this.setState({ isDataLoded: true });
+    // alert(TempUser.portfolio.length);
   }
+
   static navigationOptions = {
     title: 'My Portfolio',
-    
+
     headerRight: (
       <TouchableOpacity onPress={() => {
         const options = {
@@ -90,26 +104,26 @@ class MyPortfolio extends Component {
           } else {
             const source = { uri: response.uri };
             console.log(response);
-            
+
             // await this.setState({ image: source })
             // You can also display the image using data:
             //const image = { uri: response.uri, width: response.width, height: response.height }
             //const avatar = { uri: response.uri, type: response.type, name: response.fileName }
             //this.state.Images.push(image);
             //this.state.simpleImages.push(avatar);
-            
-            
-              avatarSource=  { uri: response.uri, type: response.type, name: response.fileName }
-              id = await AsyncStorage.getItem('user')
-              
-              id = JSON.parse(id)
-              console.log(id.id);
-              
-              
-             
-            
-            uploadPortfolio(avatarSource,{collection:'Technician',uid:id.id})
-            
+
+
+            avatarSource = { uri: response.uri, type: response.type, name: response.fileName }
+            id = await AsyncStorage.getItem('user')
+
+            id = JSON.parse(id)
+            console.log(id.id);
+
+
+
+
+            await uploadPortfolio(avatarSource, { collection: 'Technician', uid: id.id })
+            await this.fetchImages();
 
           }
         });
@@ -124,25 +138,56 @@ class MyPortfolio extends Component {
   };
 
 
-  renderItem = ({ item, key }) => {
-    if (item.empty === true) {
-      return <View style={[styles.itemContainer, styles.itemInvisible]} />;
-    }
+  // renderItem = ({ item, key }) => {
+  //   if (item.empty === true) {
+  //     return <View style={[styles.itemContainer, styles.itemInvisible]} />;
+  //   }
+  //   return (
+  //     <TouchableOpacity style={styles.itemContainer}>
+  //       <Image source={{ uri: item }} style={styles.itemImage} />
+  //     </TouchableOpacity>
+  //   )
+  // }
+
+  renderItem(item) {
     return (
-      <TouchableOpacity style={styles.itemContainer}>
-        <Image source={{uri:item}} style={styles.itemImage} />
-      </TouchableOpacity>
+      <View style={{
+        width: width(32),
+        height:width(32),
+        justifyContent: 'center'
+      }}>
+        <Image style={{ width: '70%', height: '70%', alignSelf: 'center' }} resizeMode='contain' source={{ uri: item }}></Image>
+
+      </View>
     )
   }
 
   render() {
     return (
-      <FlatList
-        data={formatData(this.state.portfolio_array, numColums)}
-        style={styles.container}
-        renderItem={this.renderItem}
-        numColumns={numColums}
-      />
+      <View style={styles.container}>
+        {this.state.isDataLoded ?
+
+          this.state.portfolio_array.length > 0 ?
+
+            <FlatList
+              numColumns={3}
+              data={this.state.portfolio_array}
+              renderItem={({ item }) => this.renderItem(item)}
+            />
+
+            :
+            <View style={{ flex: 1, alignItems: "center", justifyContent: "center", }}>
+              <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2), left: width(0), marginTop: "50%" }]}>No Image</Text>
+
+            </View>
+
+          :
+          <View style={{ flex: 1, alignItems: "center", justifyContent: "center", }}>
+            <ActivityIndicator style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2), left: width(0), marginTop: "50%" }]} />
+          </View>
+        }
+      </View>
+
     );
   }
 }
@@ -169,13 +214,13 @@ const styles = StyleSheet.create({
     height: height(20),
     width: width(32),
     borderWidth: 1,
-    borderColor: 'white'
-    //flex: 1,
-    //alignItems:'center',
-    //justifyContent:'center',
-    //borderWidth: 1,
-    //backgroundColor:'red',
-    //borderColor: 'white',
+    borderColor: 'white',
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    backgroundColor: 'red',
+    borderColor: 'white',
     //height:width(90)/numColums
   },
   txt: {

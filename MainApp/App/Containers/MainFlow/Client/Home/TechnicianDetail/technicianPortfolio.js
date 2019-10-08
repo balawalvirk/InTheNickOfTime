@@ -1,17 +1,18 @@
 import React, { Component } from 'react';
-import { View, Text, ImageBackground, TouchableOpacity, FlatList, StyleSheet, Image } from 'react-native';
+import { View, Text, ImageBackground, TouchableOpacity, ActivityIndicator, FlatList, StyleSheet, Image } from 'react-native';
 import { Icon } from 'react-native-elements'
 import colors from '../../../../../Themes/Colors'
 import { totalSize, height, width } from 'react-native-dimension'
 import images from '../../../../../Themes/Images';
+import firebase from 'firebase';
 
-const portfolio_images_list = [
-    { key: 'A' }, { key: 'B' }, { key: 'C' }, { key: 'D' }, { key: 'E' }, { key: 'F' }, { key: 'G' }, { key: 'H' }
-];
-
-const numColums = 3
+const numColums = 2
 
 const formatData = (data, numColumns) => {
+
+    if (!data)
+        data = [];
+
     const numberOfFullRows = Math.floor(data.length / numColumns);
 
     let numberOfElementsLastRow = data.length - (numberOfFullRows * numColumns);
@@ -22,46 +23,83 @@ const formatData = (data, numColumns) => {
 
     return data;
 };
+
+
 class TechnicianPortfolio extends Component {
     constructor(props) {
         super(props);
         let url = "https://firebasestorage.googleapis.com/v0/b/inthenameoftimespa-f27fa.appspot.com/o/assets%2Fgh6mjc6vdJ5AQOnjMw3P-97351638.png?alt=media&token=26b70620-4833-4044-b105-5e8de3128861"
         this.state = {
             images_list: [
-                { id: 1, image: url },
-                { id: 2, image: url },
-                { id: 3, image: url },
-                { id: 4, image: url },
-                { id: 5, image: url },
-                { id: 6, image: url },
-                { id: 7, image: url },
-                { id: 8, image: url },
-                { id: 9, image: url },
+
             ]
         };
 
 
     }
-    renderItem = ({ item, key }) => {
-        if (item.empty === true) {
-            return <View style={[styles.itemContainer, styles.itemInvisible]} />;
-        }
+
+    componentDidMount() {
+        this.props.navigation.addListener("willFocus", () => {
+            this.fetchOrder();
+        });
+    }
+    async fetchOrder() {
+        await this.setState({ isDataLoded: false });
+        let TechnicianList = await firebase.firestore().collection("Technician").where("UserId", "==", this.props.navigation.getParam('technician', '').UserId).get()
+        TechnicianList.forEach(element3 => {
+            if (element3.data().portfolio !== undefined) {
+                this.setState({ portfolio_array: element3.data().portfolio });
+                // alert(element3.data().portfolio.length);
+            }
+        });
+        await this.setState({ isDataLoded: true });
+
+    }
+
+
+
+    renderItem(item) {
         return (
-            <TouchableOpacity style={styles.itemContainer}>
-                <Image source={{ uri: item.image }} style={styles.itemImage} />
-            </TouchableOpacity>
+            <View style={{
+                width: width(32),
+                height: width(32),
+                justifyContent: 'center'
+            }}>
+                <Image style={{ width: '100%', height: '100%', alignSelf: 'center' }} resizeMode='contain' source={{ uri: item }}></Image>
+
+            </View>
         )
     }
+
     render() {
         return (
-            <FlatList
-                data={formatData(this.state.images_list, numColums)}
-                style={styles.container}
-                renderItem={this.renderItem}
-                numColumns={numColums}
-            />
+            <View style={styles.container}>
+                {this.state.isDataLoded ?
+
+                    this.state.portfolio_array.length > 0 ?
+
+                        <FlatList
+                            numColumns={3}
+                            data={this.state.portfolio_array}
+                            renderItem={({ item }) => this.renderItem(item)}
+                        />
+
+                        :
+                        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", }}>
+                            <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2), left: width(0), marginTop: "50%" }]}>No Image</Text>
+
+                        </View>
+
+                    :
+                    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", }}>
+                        <ActivityIndicator style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2), left: width(0), marginTop: "50%" }]} />
+                    </View>
+                }
+            </View>
+
         );
     }
+
 }
 
 export default TechnicianPortfolio;
@@ -69,6 +107,12 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         marginVertical: height(1)
+    },
+    shopName: {
+
+        fontSize: totalSize(2),
+        fontWeight: '500',
+
     },
     itemContainer: {
         flex: 1,
@@ -86,13 +130,13 @@ const styles = StyleSheet.create({
         height: height(20),
         width: width(32),
         borderWidth: 1,
-        borderColor: 'white'
-        //flex: 1,
-        //alignItems:'center',
-        //justifyContent:'center',
-        //borderWidth: 1,
-        //backgroundColor:'red',
-        //borderColor: 'white',
+        borderColor: 'white',
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        backgroundColor: 'red',
+        borderColor: 'white',
         //height:width(90)/numColums
     },
     txt: {

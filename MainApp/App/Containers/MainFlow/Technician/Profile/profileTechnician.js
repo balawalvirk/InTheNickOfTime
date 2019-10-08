@@ -303,9 +303,9 @@ class ProfileTechnician extends Component {
                 mode='time'
                 placeholder={this.state.time_from}
                 showIcon={false}
-                androidMode='spinner'
+                 androidMode='spinner'
                 placeholderTextColor={'rgb(217,217,217)'}
-                format="H:mm a"
+                format="HH:mm"
                 //minDate="2018-05-01"
                 //maxDate="2020-06-01"
                 confirmBtnText="Confirm"
@@ -328,9 +328,9 @@ class ProfileTechnician extends Component {
                 mode='time'
                 placeholder={this.state.time_to}
                 showIcon={false}
-                androidMode='spinner'
+                 androidMode='spinner'
                 placeholderTextColor={'rgb(217,217,217)'}
-                format="H:mm a"
+                format="HH:mm"
                 //minDate="2018-05-01"
                 //maxDate="2020-06-01"
                 confirmBtnText="Confirm"

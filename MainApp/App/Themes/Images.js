@@ -8,6 +8,7 @@ const images = {
     AMEXlogo:require('../Images/AMEXname2.png'),
     story_pic:require('../Images/storyPicN.jpg'),
     story_pic2:require('../Images/storyPicN1.jpg'),
+    Screen2Pic:require('../Images/2nsPic.jpg'),
 }
 
 export default images;

@@ -18,7 +18,7 @@ export default class TechnicianBio extends Component {
 
         this.state = {
             name: this.props.navigation.getParam('technician', '').name,
-            aboutMe: this.props.navigation.getParam('technician', '').description,
+            aboutMe: this.props.navigation.getParam('technician', '').Description,
 
             photo: this.props.navigation.getParam('technician', '').photo
         };
@@ -52,23 +52,26 @@ export default class TechnicianBio extends Component {
                         </View>
                         <View style={{ flex: 3, backgroundColor: 'transparent', justifyContent: 'center', alignItems: "center" }}>
                             <Text style={styles.txtLarg}> {this.state.name} </Text>
-                            <View style={{ backgroundColor: 'transparent', justifyContent: 'flex-start', alignItems: 'center' }}>
-                                <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal' }]}>Technician Availability:   </Text>
-                                {this.state.timings != "" && this.state.timings != null && typeof this.state.timings != 'string' ?
-                                    this.state.timings.map(i => {
-                                        return <View style={{ width: width(90), flexDirection: 'row' }}>
-                                            <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal', marginVertical: 5, marginHorizontal: 5 }]}>{i.item}</Text>
-                                            <View style={{ flex: 1, alignItems: 'flex-end', justifyContent: 'center' }}><Text style={{ textAlign: 'left' }}>{i.time_from} - {i.time_to}</Text></View>
-                                        </View>
-                                    })
-                                    :
-                                    <Text></Text>}
-                            </View>
+
+                        </View>
+                        <View style={{ flex: 4, marginHorizontal: 20, marginVertical: 20, backgroundColor: 'transparent', flexWrap: 'wrap' }}>
+                        <Text style={{ marginHorizontal: 0, fontSize: 20, fontWeight: "bold" }}>Bio</Text>
+                            <Text style={{ marginHorizontal: 0 }}>{this.state.aboutMe}</Text>
+                        </View>
+                        <View style={{ backgroundColor: 'transparent', justifyContent: 'flex-start', alignItems: 'center' }}>
+                            <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal' }]}>Technician Availability:   </Text>
+                            {this.state.timings != "" && this.state.timings != null && typeof this.state.timings != 'string' ?
+                                this.state.timings.map(i => {
+                                    return <View style={{ width: width(90), flexDirection: 'row' }}>
+                                        <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal', marginVertical: 5, marginHorizontal: 5 }]}>{i.item}</Text>
+                                        <View style={{ flex: 1, alignItems: 'flex-end', justifyContent: 'center' }}><Text style={{ textAlign: 'left' }}>{i.time_from} - {i.time_to}</Text></View>
+                                    </View>
+                                })
+                                :
+                                <Text></Text>}
                         </View>
                     </View>
-                    <View style={{ flex: 4, backgroundColor: 'transparent', flexWrap: 'wrap' }}>
-                        <Text style={{ marginHorizontal: 20 }}>{this.state.aboutMe}</Text>
-                    </View>
+
                 </ScrollView>
             </View>
         );

@@ -89,7 +89,7 @@ class Payment extends Component {
         let C1 = parseFloat(this.props.navigation.getParam('services_cost', 0.00))
         let C2 = parseFloat(this.props.navigation.getParam('travel_cost', 0.00))
         const body = {};
-        body['amount'] = C1+C2,
+        body['amount'] = C1 + C2,
             body['currency'] = 'usd',
             body['source'] = i.id
         body['capture'] = false;
@@ -316,14 +316,22 @@ class Payment extends Component {
 
 
                 <View style={styles.btnContainer}>
-                    <TouchableOpacity style={styles.btn} onPress={() => { this.onSubmit() }} >
-                        {
-                            this.state.loading === true ?
-                                <ActivityIndicator size='small' color='white' />
-                                :
+                    {
+                        this.state.loading === true ?
+                            <ActivityIndicator size="large" color='red' />
+                            :
+                            <TouchableOpacity style={styles.btn} onPress={() => {
+
+                                if (!this.state.loading) {
+                                    this.setState({ loading: true });
+                                }
+                                this.onSubmit()
+                            }} >
+
                                 <Text style={styles.btnTxt}>Pay ${this.state.amount}</Text>
-                        }
-                    </TouchableOpacity>
+                            </TouchableOpacity>
+                    }
+
                 </View>
 
 

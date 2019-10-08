@@ -142,7 +142,7 @@ class myServices extends Component {
     this.state.user.servicesList = NewList;
 
     let ServiceTempList= this.state.user.services;
-    if (!ServiceTempList.includes(this.state.NewSCid)) {
+    if (ServiceTempList !== undefined  && !ServiceTempList.includes(this.state.NewSCid)) {
       ServiceTempList.push(this.state.NewSCid);
     }
     this.state.user.services= ServiceTempList;

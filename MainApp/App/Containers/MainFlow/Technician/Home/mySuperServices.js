@@ -129,6 +129,15 @@ class mySuperServices extends Component {
     let NewList= this.state.services;
     NewList.push(TempObj);
     this.state.user.Subservices = NewList;
+
+
+    let ServiceTempList= this.state.user.services;
+    if (ServiceTempList !== undefined && ServiceTempList.length>0 && !ServiceTempList.includes(this.state.NewSCid)) {
+      ServiceTempList.push(this.state.NewSCid);
+    }
+    this.state.user.services= ServiceTempList;
+
+
     this.loader.show()
     let rs = await updateDocument('Technician', this.state.user.id, this.state.user);
     await AsyncStorage.setItem('user', JSON.stringify(this.state.user));
@@ -151,6 +160,14 @@ class mySuperServices extends Component {
     let Obj = this.state.user
     Obj.Subservices=List;
     
+    let ServiceTempList= Obj.services;
+    if (!ServiceTempList.includes(this.state.EditSCid)) {
+      ServiceTempList.push(this.state.EditSCid);
+    }
+    Obj.services= ServiceTempList;
+
+
+
     this.loader.show()
     await updateDocument('Technician', this.state.user.id,Obj).then(success => {
      
@@ -193,7 +210,7 @@ class mySuperServices extends Component {
         EditDuration: service.Duration,
         EditDescraption: service.Descraption,
         EditCid: service.ServiceId,
-        EditCid: service.SubServiceId,
+        EditSCid: service.SubServiceId,
         isModalVisibleEdite: !this.state.isModalVisibleEdite
       });
     }

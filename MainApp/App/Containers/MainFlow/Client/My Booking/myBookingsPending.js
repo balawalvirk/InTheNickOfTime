@@ -91,7 +91,7 @@ class myBookingsPending extends Component {
                         </View>
                         <View style={styles.shopTxtContainer}>
                           <Text style={styles.shopName}>{items.technicianName}</Text>
-                          <Text style={styles.shopDetail}>At {items.servicesList}</Text>
+                          <Text style={styles.shopDetail}>At {items.time}</Text>
                           <Text style={styles.shopDetail}>At {items.date_time}</Text>
                           <Text style={styles.shopDetail}>{items.location}</Text>
                         </View>

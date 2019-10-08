@@ -4,7 +4,7 @@ import RNSketchCanvas from '@terrylinla/react-native-sketch-canvas';
 import RNFS from 'react-native-fs';
 import { uploadAsFile2,} from "../backend/firebase/auth_new";
 import { updateDocument,} from "../backend/firebase/utility";
-
+import firebase from 'firebase';
 import GlobalConst from "../config/GlobalConst";
 export default class SignatureComponent extends React.Component {
   constructor(props) {
@@ -75,7 +75,7 @@ export default class SignatureComponent extends React.Component {
             defaultStrokeIndex={0}
             defaultStrokeWidth={5}
 
-            undoComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Undo</Text></View>}
+           
             clearComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Clear</Text></View>}
             saveComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Save</Text></View>}
             savePreference={() => {
