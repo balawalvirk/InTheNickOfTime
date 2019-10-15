@@ -143,12 +143,12 @@ class TechniciansList extends Component {
                                                         {/* <Text style={styles.shopDetail}>At {items.dateTime}</Text> */}
                                                         {/* <Text style={styles.shopDetail}>{items.Address}</Text> */}
                                                         <View style={{ flexDirection: 'row' }}>
-
+                                                        <Text style={{ ...styles.shopDetail, fontWeight: 'bold' }}>Service: </Text>
                                                             <Text key={key} style={styles.shopDetail}>{this.state.service.Name} </Text>
 
                                                         </View>
                                                         <View style={{ flexDirection: 'column' }}>
-                                                            <Text style={{ ...styles.shopDetail, fontWeight: 'bold' }}>Availability: different</Text>
+                                                            <Text style={{ ...styles.shopDetail, fontWeight: 'bold' }}>Bio: {items.Description}</Text>
                                                         </View>
                                                     </View>
                                                     <View style={[styles.shopIconContainer, { backgroundColor: 'transparent', flexDirection: 'row' }]}>
@@ -166,18 +166,9 @@ class TechniciansList extends Component {
 
                                         })
                                         :
-                                        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", }}>
-                                            <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2), left: width(0), marginTop: "50%" }]}>No Technician</Text>
-                                            {/* <TouchableOpacity style={styles.button} onPress={() => this.AddCategory()}>
-                                                            <View style={styles.btnTxtContainer}>
-                                                                {
-                                                                    this.state.loading === true ?
-                                                                        <ActivityIndicator size={'small'} color='white' />
-                                                                        :
-                                                                        <Text style={styles.btnTxt}>+ Category</Text>
-                                                                }
-                                                            </View>
-                                                        </TouchableOpacity> */}
+                                        <View style={{  alignItems: "center", justifyContent: "center",flex: 1, flexWrap: "wrap", }}>
+                                            <Text style={[styles.shopName, { color: colors.SPA_graycolor,marginHorizontal: 20,textAlign: "center", fontSize: totalSize(2), marginTop: "50%" }]}>Sorry, there are no technicians that provide the service you are seeking in your selected location at this time. Please check back soon!</Text>
+                                            
                                         </View>
                                 }
                             </ScrollView>

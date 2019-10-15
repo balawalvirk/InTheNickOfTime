@@ -32,7 +32,7 @@ export default createMaterialTopTabNavigator({
             tabBarIcon: ({ tintColor }) => (<Icon name='note' size={totalSize(2)} type='material-icon' color={tintColor} />)
         }
     },
-    Canceled: {
+    Cancelled: {
         screen: CanceledBooking,
         navigationOptions: {
             header: null,

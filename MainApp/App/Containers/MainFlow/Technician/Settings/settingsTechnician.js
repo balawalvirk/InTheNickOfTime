@@ -87,14 +87,14 @@ class SettingTechnician extends Component {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.mainBtn} onPress={() => { Linking.openURL('https://inthenickoftimespa.com/events-parties-form/') }} >
+        <TouchableOpacity style={styles.mainBtn} onPress={() => { Linking.openURL('https://inthenickoftimespa.com/submit-invoice/') }} >
           <View style={styles.btnIconContainer}>
             <View style={styles.IconContainer}>
               <Icon name="ios-calendar" size={totalSize(2)} color='white' />
             </View>
           </View>
           <View style={styles.btnTxtContainer}>
-            <Text style={styles.btnTxt1}>Events</Text>
+            <Text style={styles.btnTxt1}>Submit Invoice</Text>
           </View>
           <View style={styles.arrowContainer}>
             <Icon name="ios-arrow-forward" size={totalSize(2)} color='rgb(217,217,217)' />
@@ -116,7 +116,7 @@ class SettingTechnician extends Component {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.mainBtn} onPress={() => { this.props.navigation.navigate('WebViewOpensLink', { uri: 'https://play.google.com/store/apps/details?id=com.whatsapp' }) }}>
+        {/* <TouchableOpacity style={styles.mainBtn} onPress={() => { this.props.navigation.navigate('WebViewOpensLink', { uri: 'https://play.google.com/store/apps/details?id=com.whatsapp' }) }}>
           <View style={styles.btnIconContainer}>
             <View style={styles.IconContainer}>
               <Icon name="ios-star" size={totalSize(2)} color='white' />
@@ -124,12 +124,12 @@ class SettingTechnician extends Component {
           </View>
           <View style={styles.btnTxtContainer}>
             <Text style={styles.btnTxt1}>Rate Us</Text>
-            {/* <Text style={styles.btnTxt2}>See FEEDBACK</Text> */}
+          
           </View>
           <View style={styles.arrowContainer}>
             <Icon name="ios-arrow-forward" size={totalSize(2)} color='rgb(217,217,217)' />
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <TouchableOpacity style={styles.mainBtn} onPress={() => this._toggleModalLogout()}>
           <View style={styles.btnIconContainer}>

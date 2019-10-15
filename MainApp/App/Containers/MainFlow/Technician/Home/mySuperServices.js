@@ -98,7 +98,8 @@ class mySuperServices extends Component {
     // } catch (err) {
     //   sv = []
     // }
-    this.setState({ user: user })
+    let Updateduser= await getData('Technician', user.id);
+    this.setState({ user: Updateduser })
     console.log(this.state.services);
     _this = this;
   }
@@ -141,6 +142,7 @@ class mySuperServices extends Component {
     this.loader.show()
     let rs = await updateDocument('Technician', this.state.user.id, this.state.user);
     await AsyncStorage.setItem('user', JSON.stringify(this.state.user));
+    await this.loadUser();
     this.setState({ isModalVisible: !this.state.isModalVisible });
     this.loadServicesList();
     this.loader.hide()
@@ -172,7 +174,7 @@ class mySuperServices extends Component {
     await updateDocument('Technician', this.state.user.id,Obj).then(success => {
      
     })
-
+    await this.loadUser();
     this.setState({
       isModalVisibleEdite: !this.state.isModalVisibleEdite
     });
@@ -187,6 +189,7 @@ class mySuperServices extends Component {
     await updateDocument('Technician', this.state.user.id, this.state.user).then(success => {
      
     })
+    await this.loadUser();
     this.loadServicesList();
     this.setState(this.state)
     
@@ -457,12 +460,12 @@ class mySuperServices extends Component {
           animationInTiming={250}
           animationOutTiming={250}
           backdropOpacity={0.50}
-          onBackdropPress={this._toggleModal}>
+          onBackdropPress={this._toggleModalEdite}>
           <View >
             <View style={styles.popUpTop}>
               <Text style={styles.popUpTopTxt}>Edit Sub Service</Text>
               <View style={{ width: width(25) }}></View>
-              <TouchableOpacity onPress={this._toggleModal} style={{ marginRight: width(1) }} >
+              <TouchableOpacity onPress={this._toggleModalEdite} style={{ marginRight: width(1) }} >
                 <Icon name="close" size={totalSize(4)} color="white" />
               </TouchableOpacity>
             </View>

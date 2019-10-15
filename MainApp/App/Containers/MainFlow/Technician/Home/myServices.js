@@ -5,7 +5,7 @@ import { Icon } from 'react-native-elements'
 import images from '../../../../Themes/Images';
 import Modal from 'react-native-modal'
 import colors from '../../../../Themes/Colors';
-import { getData, updateDocument, getAllOfCollection } from '../../../../backend/firebase/utility';
+import { getData, updateDocument, getAllOfCollection, saveData } from '../../../../backend/firebase/utility';
 import AsyncStorage from '@react-native-community/async-storage';
 import { throwStatement } from '@babel/types';
 import Loader from "../../../../Components/Loader"
@@ -109,7 +109,8 @@ class myServices extends Component {
     // } catch (err) {
     //   sv = []
     // }
-    this.setState({ user: user })
+    let Updateduser= await getData('Technician', user.id);
+    this.setState({ user: Updateduser })
     console.log(this.state.services);
     _this = this;
   }
@@ -147,9 +148,10 @@ class myServices extends Component {
     }
     this.state.user.services= ServiceTempList;
     this.loader.show()
-    let rs = await updateDocument('Technician', this.state.user.id, this.state.user);
+    let rs = await saveData('Technician', this.state.user.id, this.state.user);
     await AsyncStorage.setItem('user', JSON.stringify(this.state.user));
     this.setState({ isModalVisible: !this.state.isModalVisible });
+    await this.loadUser();
     this.loadServicesList();
     this.loader.hide()
   }
@@ -182,7 +184,7 @@ class myServices extends Component {
     await updateDocument('Technician', this.state.user.id,Obj).then(success => {
      
     })
-
+    await this.loadUser();
     this.setState({
       isModalVisibleEdite: !this.state.isModalVisibleEdite
     });
@@ -191,12 +193,14 @@ class myServices extends Component {
   }
 
   deleteService = async (i) => {
+
     this.state.user.servicesList.splice(i, 1)
     
     this.loader.show()
     await updateDocument('Technician', this.state.user.id, this.state.user).then(success => {
      
     })
+    await this.loadUser();
     this.loadServicesList();
     this.setState(this.state)
     
@@ -553,7 +557,7 @@ class myServices extends Component {
               <View style={styles.inputTxtContainer}>
                 <Text style={styles.popUpText}>Service Price</Text>
                 <TextInput
-                  placeholder='Service Fee'
+                  placeholder={this.state.EditCost}
                   keyboardType='numeric'
                   placeholderTextColor='rgb(217,217,217)'
                   style={styles.popUpInput}
@@ -566,7 +570,7 @@ class myServices extends Component {
               <View style={styles.inputTxtContainer}>
                 <Text style={styles.popUpText}>Service Duration</Text>
                 <TextInput
-                  placeholder='In minutes'
+                  placeholder={this.state.EditDuration}
                   placeholderTextColor='rgb(217,217,217)'
                   keyboardType='numeric'
                   style={styles.popUpInput}
@@ -579,7 +583,7 @@ class myServices extends Component {
               <View style={styles.inputTxtContainer}>
                 <Text style={styles.popUpText}>Description</Text>
                 <TextInput
-                  placeholder='About Your Service'
+                  placeholder={this.state.EditDescraption}
                   placeholderTextColor='rgb(217,217,217)'
                   style={styles.popUpInput}
                   onChangeText={(value) => {
