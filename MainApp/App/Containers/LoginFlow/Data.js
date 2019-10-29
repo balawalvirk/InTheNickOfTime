@@ -270,9 +270,10 @@ class Data extends Component {
                                 <Icon name='person' color='rgb(66,67,69)' size={totalSize(3)} />
                                 <TextInput
                                     //onChangeText={(value) => this.getSchool_predictions(value)}
-                                    placeholder='Something Unique About You'
+                                    placeholder='Type your bio to let clients know your experience and talents'
                                     placeholderTextColor='rgb(217,217,217)'
                                     underlineColorAndroid='transparent'
+                                    multiline={true}
                                     style={styles.TxtInput}
                                     value={this.state.Description}
                                     onChangeText={(text) => this.setState({ Description: text })}

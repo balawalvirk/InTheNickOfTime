@@ -68,38 +68,91 @@ class TechniciansList extends Component {
                 } else {
                     element.rating = 0;
                 }
+
+
+                let List = [];
+                let NewList = [];
+
+                if (element.servicesList !== undefined && element.servicesList.length > 0) {
+                    element.servicesList.forEach(element2 => {
+                        // if (element.ServiceId === this.props.navigation.getParam('ServiceId', "Nothing")) {
+                        List.push(element2);
+                        // }
+
+                    });
+
+                }
+                if (element.Subservices !== undefined && element.Subservices.length > 0) {
+                    element.Subservices.forEach(element2 => {
+                        // if (element.ServiceId === this.props.navigation.getParam('ServiceId', "Nothing")) {
+                        List.push(element2);
+                        // }
+
+                    });
+
+                }
+                if (List.length > 0) {
+                    Services_List = [];
+                    let SList2 = [];
+                    SList2 = await getAllOfCollection("Category");
+
+                    SList2.forEach(element => {
+                        if (element.SubList !== undefined) {
+                            Services_List.push(element);
+                        }
+                    });
+                    List.forEach(service => {
+                        let CategoryList = Services_List;
+                        for (let i = 0; i < CategoryList.length; i++) {
+                            for (let m = 0; m < CategoryList[i].SubList.length; m++) {
+                                if (CategoryList[i].SubList[m].id === service.SubServiceId) {
+                                    service.Name = CategoryList[i].SubList[m].Name;
+                                    NewList.push(service);
+                                }
+                            }
+                        }
+                    });
+                }
+
+                element.AllServices_List = NewList;
+                List = [];
+                NewList = [];
+                SList2 = [];
                 let TempList = this.state.Booking_list;
                 TempList.push(element)
                 this.setState({ Booking_list: TempList });
+                TempList = [];
             }
         }
     }
     async GetServices() {
 
         let ServiceObj = await getData("Category", this.props.navigation.getParam('ServiceID2', "Nothing"));
-        this.setState({SList: ServiceObj.SubList});
-       
-        ServiceObj.SubList.forEach(element2 => {
-                if (element2.id === this.props.navigation.getParam('ServiceID', "Nothing")) {
-                    this.setState({ service: element2 });
-                }
 
-            });
-       
+
+        this.setState({ SList: ServiceObj.SubList });
+
+        ServiceObj.SubList.forEach(element2 => {
+            if (element2.id === this.props.navigation.getParam('ServiceID', "Nothing")) {
+                this.setState({ service: element2 });
+            }
+
+        });
+
 
 
     }
     async getLocations() {
         let LocationObj = await getData("Location", this.props.navigation.getParam('LocationID2', "Nothing"));
-        this.setState({LList: LocationObj.SubList});
-       
-        LocationObj.SubList.forEach(element2 => {
-                if (element2.id === this.props.navigation.getParam('LocationID', "Nothing")) {
-                    this.setState({ locations: element2 });
-                }
+        this.setState({ LList: LocationObj.SubList });
 
-            });
-       
+        LocationObj.SubList.forEach(element2 => {
+            if (element2.id === this.props.navigation.getParam('LocationID', "Nothing")) {
+                this.setState({ locations: element2 });
+            }
+
+        });
+
     }
     render() {
         return (
@@ -128,7 +181,7 @@ class TechniciansList extends Component {
                                                 <TouchableOpacity key={key} style={styles.shopContainer} onPress={() => this.props.navigation.navigate('technicianDetailTab', {
                                                     services_details: this.state.SList,
                                                     location_details: this.state.LList,
-                                                    ServiceId:this.props.navigation.getParam('ServiceID2', "Nothing"),
+                                                    ServiceId: this.props.navigation.getParam('ServiceID2', "Nothing"),
                                                     technician: items
                                                 })}>
                                                     <View style={styles.shopImageContainer}>
@@ -142,12 +195,21 @@ class TechniciansList extends Component {
                                                         <Text style={styles.shopName}>{items.name}</Text>
                                                         {/* <Text style={styles.shopDetail}>At {items.dateTime}</Text> */}
                                                         {/* <Text style={styles.shopDetail}>{items.Address}</Text> */}
-                                                        <View style={{ flexDirection: 'row' }}>
-                                                        <Text style={{ ...styles.shopDetail, fontWeight: 'bold' }}>Service: </Text>
-                                                            <Text key={key} style={styles.shopDetail}>{this.state.service.Name} </Text>
+                                                        <View style={{ flexDirection: 'row' , flex: 2, flexWrap: "wrap" }}>
+                                                            <Text style={{ ...styles.shopDetail, fontWeight: 'bold' }}>Service: </Text>
+                                                            {
+                                                                items.AllServices_List.map((u, i) => {
+                                                                    return (
+                                                                        <View key={i} >
+                                                                            <Text key={key} style={styles.shopDetail}>{u.Name} </Text>
+                                                                        </View>
+                                                                    )
+                                                                })
+                                                            }
+
 
                                                         </View>
-                                                        <View style={{ flexDirection: 'column' }}>
+                                                        <View style={{ flexDirection: 'column', flex : 1 }}>
                                                             <Text style={{ ...styles.shopDetail, fontWeight: 'bold' }}>Bio: {items.Description}</Text>
                                                         </View>
                                                     </View>
@@ -166,9 +228,9 @@ class TechniciansList extends Component {
 
                                         })
                                         :
-                                        <View style={{  alignItems: "center", justifyContent: "center",flex: 1, flexWrap: "wrap", }}>
-                                            <Text style={[styles.shopName, { color: colors.SPA_graycolor,marginHorizontal: 20,textAlign: "center", fontSize: totalSize(2), marginTop: "50%" }]}>Sorry, there are no technicians that provide the service you are seeking in your selected location at this time. Please check back soon!</Text>
-                                            
+                                        <View style={{ alignItems: "center", justifyContent: "center", flex: 1, flexWrap: "wrap", }}>
+                                            <Text style={[styles.shopName, { color: colors.SPA_graycolor, marginHorizontal: 20, textAlign: "center", fontSize: totalSize(2), marginTop: "50%" }]}>Sorry, there are no technicians that provide the service you are seeking in your selected location at this time. Please check back soon!</Text>
+
                                         </View>
                                 }
                             </ScrollView>

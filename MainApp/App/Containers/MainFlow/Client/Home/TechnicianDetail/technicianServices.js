@@ -15,7 +15,7 @@ import SimpleToast from 'react-native-simple-toast';
 import { isGenericTypeAnnotation } from '@babel/types';
 import firebase from 'firebase';
 import moment from "moment";
-
+import { getAllOfCollection } from "../../../../../backend/firebase/utility";
 export default class TechnicianServices extends Component {
     constructor(props) {
         super(props);
@@ -40,12 +40,12 @@ export default class TechnicianServices extends Component {
             // ],
 
             technician: this.props.navigation.getParam('technician', ''),
-            travel_cost: 0.00,
+            travel_cost: 0,
             showServicesList: false,
             loadingSelectedService: false,
             selected_Services: [],
             loadingUnSelectedServices: false,
-            servicesTotalCost: 0.00,
+            servicesTotalCost: 0,
             totalCost: 0.00,
             date_time: new Date(),
             time_time: new Date().toTimeString(),
@@ -97,18 +97,40 @@ export default class TechnicianServices extends Component {
         this.props.navigation.addListener("willFocus", async () => {
 
 
-            await this.getList()
+            await this.loadServices()
 
 
         });
     }
 
+    async loadServices() {
+        let ServicesList = [];
+        let SList = await getAllOfCollection("Category");
+    
+        SList.forEach(element => {
+          if (element.SubList !== undefined) {
+            ServicesList.push(element);
+          }
+        });
 
+        let ServicesList2 = [];
+        let SList2 = await getAllOfCollection("Location");
+    
+        SList2.forEach(element => {
+          if (element.SubList !== undefined) {
+            ServicesList2.push(element);
+          }
+        });
+    
+        this.setState({ Categories_list: ServicesList, Location_List: ServicesList2 });
+        await this.getList();
+      }
 
 
     async getList() {
         let List = [];
         let List2 = [];
+        let NewList=[];
         let TechnicianList = await firebase.firestore().collection("Technician").where("UserId", "==", this.state.technician.UserId).get()
         TechnicianList.forEach(element3 => {
             if (element3.data().weekly_availability !== undefined) {
@@ -117,44 +139,73 @@ export default class TechnicianServices extends Component {
 
             if (element3.data().servicesList !== undefined && element3.data().servicesList.length > 0) {
                 element3.data().servicesList.forEach(element => {
-                    if (element.ServiceId === this.props.navigation.getParam('ServiceId', "Nothing")) {
+                    // if (element.ServiceId === this.props.navigation.getParam('ServiceId', "Nothing")) {
                         List.push(element);
-                    }
+                    // }
 
                 });
 
             }
             if (element3.data().Subservices !== undefined && element3.data().Subservices.length > 0) {
                 element3.data().Subservices.forEach(element => {
-                    if (element.ServiceId === this.props.navigation.getParam('ServiceId', "Nothing")) {
+                    // if (element.ServiceId === this.props.navigation.getParam('ServiceId', "Nothing")) {
                         List.push(element);
-                    }
+                    // }
 
                 });
 
             }
+
+            if(List.length>0) {
+                
+                List.forEach(service => {
+                    let CategoryList=this.state.Categories_list;
+                    for(let i=0; i< CategoryList.length;i++) {
+                      for(let m=0; m<CategoryList[i].SubList.length; m++) {
+                          if(CategoryList[i].SubList[m].id === service.SubServiceId) {
+                            service.Name=CategoryList[i].SubList[m].Name;
+                            NewList.push(service);
+                          }
+                      }
+                    }
+                  });
+            }
+
+
             if (element3.data().locationList !== undefined && element3.data().locationList.length > 0) {
                 element3.data().locationList.forEach(element => {
-                    element.Name= this.state.travel_locations[0].Name;
-                    List2.push(element);
+                    let CategoryList=this.state.Location_List;
+                    for(let i=0; i< CategoryList.length;i++) {
+                      for(let m=0; m<CategoryList[i].SubList.length; m++) {
+                          if(CategoryList[i].SubList[m].id === element.id) {
+                            element.Name=CategoryList[i].SubList[m].Name;
+                            // NewList.push(service);
+                            List2.push(element);
+                          }
+                      }
+                    }
+
+                    
                 });
 
             }
         });
         // this.setState({Services_list: List, travel_locations:element3.data().locationList })
-        this.state.Services_list = List;
-        this.setState({travel_locations: List2});
+        this.state.Services_list = NewList;
+        this.setState({ travel_locations: List2 });
     }
 
     _toggelModalMessage = async () => {
 
+        if(this.state.technician.weekly_availability !== undefined && this.state.technician.weekly_availability.length>0) {
         tmp = this.state.technician.weekly_availability
         // tmp1 = tmp2 = tmp
         // tmp1 = tmp1.slice(0, 3)
         // tmp2 = tmp2.slice(4)
 
         // alert(this.state.date_time + " : ");
-        let day = new Date(this.state.date_time)
+        // let day = new Date(this.state.date_time)
+        let day = new Date(moment(this.state.date_time, "MM-DD-YYYY"))
         let day2 = day.getDay()
         // console.log(day, "-", this.getDayNumber(tmp1), "-", this.getDayNumber(tmp2));
         // console.log(this.getDayNumber(tmp1) <= this.state.date_time);
@@ -183,7 +234,7 @@ export default class TechnicianServices extends Component {
                 // BookingTime= new Date('2019-01-01T' + this.state.time_time + 'Z');
                 // TimeTo= new Date('2019-01-01T' + tmp[day2].time_to + 'Z');
 
-              //  alert(TimeFrom + " : " + BookingTime + " : " + TimeTo);
+                //  alert(TimeFrom + " : " + BookingTime + " : " + TimeTo);
                 if (TimeFrom <= BookingTime && BookingTime <= TimeTo) {
 
                     console.log('IF');
@@ -203,6 +254,11 @@ export default class TechnicianServices extends Component {
             alert("The technician is not available at the selected time. Please have a look at their availability.")
             return
         }
+
+    } else {
+        alert("The technician is not available at the selected time. Please have a look at their availability.")
+        return
+    }
 
 
         this.state.day_from = this.state
@@ -267,7 +323,7 @@ export default class TechnicianServices extends Component {
                                                                 <Text style={{ fontSize: totalSize(2), color: 'black', marginVertical: 3, fontWeight: 'bold' }}>{item.Name}</Text>
                                                                 <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Price: ${item.Cost}</Text>
                                                                 <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Duration: {item.Duration} min</Text>
-                                                                <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Description: {item.Description}</Text>
+                                                                <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Description: {item.Descraption}</Text>
                                                             </View>
                                                         </TouchableOpacity>
                                                     )
@@ -370,7 +426,7 @@ export default class TechnicianServices extends Component {
                                         androidMode='spinner'
                                         placeholderTextColor={'rgb(217,217,217)'}
                                         //   format="MM-DD-YYYY h:mm a"
-                                        format="YYYY-MM-DD"
+                                        format="MM-DD-YYYY"
                                         //minDate="2018-05-01"
                                         //maxDate="2020-06-01"
                                         confirmBtnText="Confirm"
@@ -421,12 +477,12 @@ export default class TechnicianServices extends Component {
                             </View>
                             <View style={[styles.txtContainer, { flexDirection: 'row', backgroundColor: 'transparent', justifyContent: 'flex-start', alignItems: 'center' }]}>
                                 <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal' }]}>Travel Fee:   </Text>
-                                <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal', marginVertical: 5, marginHorizontal: 5 }]}>${this.state.travel_cost}</Text>
+                                <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: 'normal', marginVertical: 5, marginHorizontal: 5 }]}>${!isNaN(this.state.travel_cost) ? this.state.travel_cost : 0}</Text>
                             </View>
                             <View style={[styles.txtContainer, { flexDirection: 'row', backgroundColor: 'transparent', justifyContent: 'flex-start', alignItems: 'center' }]}>
                                 <Text style={[styles.welcome, { fontSize: totalSize(3), fontWeight: 'normal', color: colors.SPA_graycolor }]}>Total:  </Text>
                                 <View style={{ borderColor: colors.SPA_redColor, borderWidth: 1, borderRadius: 5 }}>
-                                    <Text style={[styles.welcome, { fontSize: totalSize(3), fontWeight: 'normal', marginVertical: 5, marginHorizontal: 5 }]}>${this.state.servicesTotalCost + this.state.travel_cost}</Text>
+                                    <Text style={[styles.welcome, { fontSize: totalSize(3), fontWeight: 'normal', marginVertical: 5, marginHorizontal: 5 }]}>${(!isNaN(this.state.servicesTotalCost)  ? this.state.servicesTotalCost : 0) + (!isNaN(this.state.travel_cost) ? this.state.travel_cost : 0)}</Text>
                                 </View>
                             </View>
 
@@ -435,7 +491,7 @@ export default class TechnicianServices extends Component {
                                 <TouchableOpacity onPress={() => {
                                     console.log(this.state.locations);
 
-                                    if (this.state.servicesTotalCost == 0 || this.state.travel_cost == null || this.state.date_time == null) {
+                                    if (this.state.servicesTotalCost == 0 || isNaN(this.state.travel_cost) || this.state.date_time == null || this.state.address == null || this.state.time_time == null) {
                                         SimpleToast.show("Some fields are empty", SimpleToast.SHORT)
                                         console.log("in if");
 

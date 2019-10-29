@@ -134,7 +134,7 @@ class Services extends Component {
                                 <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: "bold" }]}>
                                     Only offer services you are experienced in and are authorized to provide as by your license/certification. You must also have or be willing to purchase all supplies and equipment to provide the services you offer.
                                 </Text>
-                                <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>By proceed you acknowledge that you understand  the requirements to work with In the Nick of Time Inc. ​​</Text>
+                                <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>By proceeding you acknowledge that you understand  the requirements to work with In the Nick of Time Inc. ​​</Text>
                                 <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: "bold" }]}>
                                 What services are you licensed/certified to provide:
                                 </Text>

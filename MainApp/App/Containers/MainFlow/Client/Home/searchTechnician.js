@@ -128,7 +128,7 @@ class SearchTechnician extends Component {
                     <View style={styles.lowerContainer}>
                         <View style={{ flex: 1, width: width(95), alignItems: 'center', }}>
                             <View style={styles.txtContainer}>
-                                <Text style={[styles.welcome, { fontSize: totalSize(3), fontWeight: 'normal' }]}>I'm looking for a Technician</Text>
+                                <Text style={[styles.welcome, { fontSize: totalSize(3), fontWeight: 'normal' }]}>I'm looking for a technician</Text>
                                 <Text style={[styles.welcome, { fontSize: totalSize(3), fontWeight: 'normal' }]}>for</Text>
                             </View>
                             <View style={styles.schoolInputContainer}>

@@ -22,6 +22,7 @@ import { updateDocument, getAllOfCollection, saveData } from '../../../../backen
 import Toast from 'react-native-simple-toast';
 import Loader from "../../../../Components/Loader"
 import firebase from 'firebase';
+// import { withNavigationFocus } from 'react-navigation';
 class ProfileTechnician extends Component {
   constructor(props) {
     super(props);
@@ -73,6 +74,18 @@ class ProfileTechnician extends Component {
       fontSize: totalSize(2),
       //textAlign: 'center'
     }
+  }
+
+
+  async AvailableFn() {
+    this.state.days[this.state.index].isAvailable = true;
+    this.setState({days: this.state.days });
+    alert("Your Status is Changed to Available!")
+  }
+  async NotAvailableFn() {
+    this.state.days[this.state.index].isAvailable = false;
+    this.setState({days: this.state.days });
+    alert("Your Status is Changed to Not Available!")
   }
 
   async updateLocationCosts() {
@@ -202,7 +215,7 @@ class ProfileTechnician extends Component {
       TempObj.Cost = this.state.NewCost;
       TempObj.id = this.state.ss_category;
 
-      let TempList2=[];
+      let TempList2 = [];
       TempList2.push(TempObj);
       Obj.locationList = TempList2;
       Obj.travel_locations = TempList;
@@ -259,9 +272,7 @@ class ProfileTechnician extends Component {
           </TouchableOpacity> */}
           <TouchableOpacity
             style={styles.button2}
-            onPress={() => {
-              this._toggleModalLocation()
-            }} >
+            onPress={() => {this.props.navigation.navigate('myLocations')}} >
             <View style={styles.iconContainer}>
               <Icon name='location' color='white' size={totalSize(3)} type='entypo' />
             </View>
@@ -303,9 +314,9 @@ class ProfileTechnician extends Component {
                 mode='time'
                 placeholder={this.state.time_from}
                 showIcon={false}
-                 androidMode='spinner'
+                androidMode='spinner'
                 placeholderTextColor={'rgb(217,217,217)'}
-                format="HH:mm"
+                format="h:mm a"
                 //minDate="2018-05-01"
                 //maxDate="2020-06-01"
                 confirmBtnText="Confirm"
@@ -315,7 +326,7 @@ class ProfileTechnician extends Component {
                   if (this.state.time_to != '-' && this.state.time_to != date) {
                     this.state.days[this.state.index].time_from = date;
                     this.state.days[this.state.index].time_to = this.state.time_to
-                    this.state.days[this.state.index].isAvailable = true
+                    // this.state.days[this.state.index].isAvailable = true
 
                   }
                 }}
@@ -328,9 +339,9 @@ class ProfileTechnician extends Component {
                 mode='time'
                 placeholder={this.state.time_to}
                 showIcon={false}
-                 androidMode='spinner'
+                androidMode='spinner'
                 placeholderTextColor={'rgb(217,217,217)'}
-                format="HH:mm"
+                format="h:mm a"
                 //minDate="2018-05-01"
                 //maxDate="2020-06-01"
                 confirmBtnText="Confirm"
@@ -340,10 +351,23 @@ class ProfileTechnician extends Component {
                   if (this.state.time_from != '-' && this.state.time_from != date) {
                     this.state.days[this.state.index].time_from = this.state.time_from;
                     this.state.days[this.state.index].time_to = date
-                    this.state.days[this.state.index].isAvailable = true
+
                   }
                 }}
               />
+            </View>
+
+            <View style={styles.schoolInputContainer} >
+              {
+                this.state.days[this.state.index].isAvailable === true ?
+                  <TouchableOpacity onPress={() => this.NotAvailableFn()} style={styles.btnRed}>
+                    <Text style={styles.btnTxtNew}>Not Available</Text>
+                  </TouchableOpacity>
+                  :
+                  <TouchableOpacity onPress={() => this.AvailableFn()} style={styles.btnRed}>
+                    <Text style={styles.btnTxtNew}>Available</Text>
+                  </TouchableOpacity>
+              }
             </View>
 
             <Text style={{ fontSize: totalSize(2.5), color: 'gray', flexDirection: 'row', alignSelf: 'center', margin: 15 }}>Weekly Availability</Text>
@@ -577,6 +601,24 @@ const styles = StyleSheet.create({
     width: width(80),
     marginVertical: height(1),
     //backgroundColor:'blue'
+  },
+  btnRed: {
+    shadowColor: 'gray',
+    shadowOpacity: 0.3,
+    width: width(40),
+    height: height(6),
+    backgroundColor: 'rgb(218,21,30)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 5,
+    borderRadius: 3,
+    marginRight: width(2),
+    marginBottom: 15
+  },
+  btnTxtNew: {
+    color: 'white',
+    fontSize: totalSize(2),
+    fontWeight: '300'
   },
   popUpTop: {
     borderTopRightRadius: 5,

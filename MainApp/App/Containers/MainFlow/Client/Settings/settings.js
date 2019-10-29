@@ -68,7 +68,7 @@ class Settings extends Component {
             </View>
           </View>
           <View style={styles.btnTxtContainer}>
-            <Text style={styles.btnTxt1}>How it works</Text>
+            <Text style={styles.btnTxt1}>How It Works</Text>
           </View>
           <View style={styles.arrowContainer}>
             <Icon name="ios-arrow-forward" size={totalSize(2)} color='rgb(217,217,217)' />

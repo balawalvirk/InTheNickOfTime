@@ -76,7 +76,7 @@ class TechnicianPortfolio extends Component {
             <View style={styles.container}>
                 {this.state.isDataLoded ?
 
-                    this.state.portfolio_array.length > 0 ?
+                    this.state.portfolio_array !== undefined && this.state.portfolio_array.length > 0  ?
 
                         <FlatList
                             numColumns={3}

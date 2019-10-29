@@ -11,6 +11,7 @@ import TechnicianTab from '../Containers/ApplicationTabs/TechnicianTab';
 import MyPortfolio from '../Containers/MainFlow/Technician/Home/myPortfolio';
 import MyServices from '../Containers/MainFlow/Technician/Home/myServices';
 import MySuperServices from '../Containers/MainFlow/Technician/Home/mySuperServices';
+import MyLocations from '../Containers/MainFlow/Technician/Home/myLocations';
 import NotificationTechnician from '../Containers/MainFlow/Technician/Notification/notificationTechnician';
 import EditProfileTechnician from '../Containers/MainFlow/Technician/Profile/editProfileTechnician';
 import EditProfileClient from '../Containers/MainFlow/Client/Profile/editProfileClient';
@@ -80,6 +81,9 @@ const AppNavigator = createStackNavigator({
     },
     myServices: {
         screen: MyServices
+    },
+    myLocations: {
+        screen: MyLocations
     },
     mySuperServices: {
         screen: MySuperServices
