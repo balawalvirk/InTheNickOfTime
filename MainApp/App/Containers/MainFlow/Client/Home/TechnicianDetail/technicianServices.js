@@ -48,6 +48,8 @@ export default class TechnicianServices extends Component {
             servicesTotalCost: 0,
             totalCost: 0.00,
             date_time: new Date(),
+            isDateChange: false,
+            isTimeChange: false,
             time_time: new Date().toTimeString(),
             isDateTimePickerVisible: false,
             isModalVisibleMessage: false,
@@ -76,8 +78,8 @@ export default class TechnicianServices extends Component {
         this._toggelModalMessage()
         this.props.navigation.navigate('cardData', {
             services: this.state.selected_Services,
-            location: this.state.travel_locations,
-            travel_cost: this.state.travel_cost,
+            location: this.state.travel_locations[this.state.LocationIndex].Name,
+            travel_cost: this.state.travel_cost, 
             date_time: this.state.date_time,
             time_time: this.state.time_time,
             services_cost: this.state.servicesTotalCost,
@@ -106,31 +108,31 @@ export default class TechnicianServices extends Component {
     async loadServices() {
         let ServicesList = [];
         let SList = await getAllOfCollection("Category");
-    
+
         SList.forEach(element => {
-          if (element.SubList !== undefined) {
-            ServicesList.push(element);
-          }
+            if (element.SubList !== undefined) {
+                ServicesList.push(element);
+            }
         });
 
         let ServicesList2 = [];
         let SList2 = await getAllOfCollection("Location");
-    
+
         SList2.forEach(element => {
-          if (element.SubList !== undefined) {
-            ServicesList2.push(element);
-          }
+            if (element.SubList !== undefined) {
+                ServicesList2.push(element);
+            }
         });
-    
+
         this.setState({ Categories_list: ServicesList, Location_List: ServicesList2 });
         await this.getList();
-      }
+    }
 
 
     async getList() {
         let List = [];
         let List2 = [];
-        let NewList=[];
+        let NewList = [];
         let TechnicianList = await firebase.firestore().collection("Technician").where("UserId", "==", this.state.technician.UserId).get()
         TechnicianList.forEach(element3 => {
             if (element3.data().weekly_availability !== undefined) {
@@ -140,7 +142,7 @@ export default class TechnicianServices extends Component {
             if (element3.data().servicesList !== undefined && element3.data().servicesList.length > 0) {
                 element3.data().servicesList.forEach(element => {
                     // if (element.ServiceId === this.props.navigation.getParam('ServiceId', "Nothing")) {
-                        List.push(element);
+                    List.push(element);
                     // }
 
                 });
@@ -149,43 +151,43 @@ export default class TechnicianServices extends Component {
             if (element3.data().Subservices !== undefined && element3.data().Subservices.length > 0) {
                 element3.data().Subservices.forEach(element => {
                     // if (element.ServiceId === this.props.navigation.getParam('ServiceId', "Nothing")) {
-                        List.push(element);
+                    List.push(element);
                     // }
 
                 });
 
             }
 
-            if(List.length>0) {
-                
+            if (List.length > 0) {
+
                 List.forEach(service => {
-                    let CategoryList=this.state.Categories_list;
-                    for(let i=0; i< CategoryList.length;i++) {
-                      for(let m=0; m<CategoryList[i].SubList.length; m++) {
-                          if(CategoryList[i].SubList[m].id === service.SubServiceId) {
-                            service.Name=CategoryList[i].SubList[m].Name;
-                            NewList.push(service);
-                          }
-                      }
+                    let CategoryList = this.state.Categories_list;
+                    for (let i = 0; i < CategoryList.length; i++) {
+                        for (let m = 0; m < CategoryList[i].SubList.length; m++) {
+                            if (CategoryList[i].SubList[m].id === service.SubServiceId) {
+                                service.Name = CategoryList[i].SubList[m].Name;
+                                NewList.push(service);
+                            }
+                        }
                     }
-                  });
+                });
             }
 
 
             if (element3.data().locationList !== undefined && element3.data().locationList.length > 0) {
                 element3.data().locationList.forEach(element => {
-                    let CategoryList=this.state.Location_List;
-                    for(let i=0; i< CategoryList.length;i++) {
-                      for(let m=0; m<CategoryList[i].SubList.length; m++) {
-                          if(CategoryList[i].SubList[m].id === element.id) {
-                            element.Name=CategoryList[i].SubList[m].Name;
-                            // NewList.push(service);
-                            List2.push(element);
-                          }
-                      }
+                    let CategoryList = this.state.Location_List;
+                    for (let i = 0; i < CategoryList.length; i++) {
+                        for (let m = 0; m < CategoryList[i].SubList.length; m++) {
+                            if (CategoryList[i].SubList[m].id === element.id) {
+                                element.Name = CategoryList[i].SubList[m].Name;
+                                // NewList.push(service);
+                                List2.push(element);
+                            }
+                        }
                     }
 
-                    
+
                 });
 
             }
@@ -197,68 +199,68 @@ export default class TechnicianServices extends Component {
 
     _toggelModalMessage = async () => {
 
-        if(this.state.technician.weekly_availability !== undefined && this.state.technician.weekly_availability.length>0) {
-        tmp = this.state.technician.weekly_availability
-        // tmp1 = tmp2 = tmp
-        // tmp1 = tmp1.slice(0, 3)
-        // tmp2 = tmp2.slice(4)
+        if (this.state.technician.weekly_availability !== undefined && this.state.technician.weekly_availability.length > 0) {
+            tmp = this.state.technician.weekly_availability
+            // tmp1 = tmp2 = tmp
+            // tmp1 = tmp1.slice(0, 3)
+            // tmp2 = tmp2.slice(4)
 
-        // alert(this.state.date_time + " : ");
-        // let day = new Date(this.state.date_time)
-        let day = new Date(moment(this.state.date_time, "MM-DD-YYYY"))
-        let day2 = day.getDay()
-        // console.log(day, "-", this.getDayNumber(tmp1), "-", this.getDayNumber(tmp2));
-        // console.log(this.getDayNumber(tmp1) <= this.state.date_time);
-        // console.log(this.state.date_time <= this.getDayNumber(tmp2));
+            // alert(this.state.date_time + " : ");
+            // let day = new Date(this.state.date_time)
+            let day = new Date(moment(this.state.date_time, "MM-DD-YYYY"))
+            let day2 = day.getDay()
+            // console.log(day, "-", this.getDayNumber(tmp1), "-", this.getDayNumber(tmp2));
+            // console.log(this.getDayNumber(tmp1) <= this.state.date_time);
+            // console.log(this.state.date_time <= this.getDayNumber(tmp2));
 
-        if (tmp !== undefined && tmp[day2].isAvailable) {
-
-
-
-            // alert(this.state.date_time);
-            final = new Date(this.state.date_time).toDateString();
-            // time = timefinal.getHours()
-            // console.log(tmp.time_from, '==', tmp.time_to, '==', time);
-            if (tmp[day2].time_from !== "" && tmp[day2].time_to !== "" && this.state.time_time !== "") {
+            if (tmp !== undefined && tmp[day2].isAvailable) {
 
 
 
-                // alert(tmp[day2].time_from+ " : " + this.state.time_time + " : " + tmp[day2].time_to);
+                // alert(this.state.date_time);
+                final = new Date(this.state.date_time).toDateString();
+                // time = timefinal.getHours()
+                // console.log(tmp.time_from, '==', tmp.time_to, '==', time);
+                if (tmp[day2].time_from !== "" && tmp[day2].time_to !== "" && this.state.time_time !== "") {
 
-                // moment(final+ " "+time, "YYYY-MM-DD hh:mm a").format("YYYY-MM-DDTHH:mm:ss")
 
-                var BookingTime = moment(this.state.time_time, "HH:mm a");    // e.g. 11:00 pm
-                var TimeFrom = moment(tmp[day2].time_from, "HH:mm a");
-                var TimeTo = moment(tmp[day2].time_to, "HH:mm a");
-                // TimeFrom= new Date('2019-01-01T' + tmp[day2].time_from + 'Z').toDateString();
-                // BookingTime= new Date('2019-01-01T' + this.state.time_time + 'Z');
-                // TimeTo= new Date('2019-01-01T' + tmp[day2].time_to + 'Z');
 
-                //  alert(TimeFrom + " : " + BookingTime + " : " + TimeTo);
-                if (TimeFrom <= BookingTime && BookingTime <= TimeTo) {
+                    // alert(tmp[day2].time_from+ " : " + this.state.time_time + " : " + tmp[day2].time_to);
 
-                    console.log('IF');
+                    // moment(final+ " "+time, "YYYY-MM-DD hh:mm a").format("YYYY-MM-DDTHH:mm:ss")
 
+                    var BookingTime = moment(this.state.time_time, "HH:mm a");    // e.g. 11:00 pm
+                    var TimeFrom = moment(tmp[day2].time_from, "HH:mm a");
+                    var TimeTo = moment(tmp[day2].time_to, "HH:mm a");
+                    // TimeFrom= new Date('2019-01-01T' + tmp[day2].time_from + 'Z').toDateString();
+                    // BookingTime= new Date('2019-01-01T' + this.state.time_time + 'Z');
+                    // TimeTo= new Date('2019-01-01T' + tmp[day2].time_to + 'Z');
+
+                    //  alert(TimeFrom + " : " + BookingTime + " : " + TimeTo);
+                    if (TimeFrom <= BookingTime && BookingTime <= TimeTo) {
+
+                        console.log('IF');
+
+                    } else {
+                        alert("The technician is not available at the selected time. Please have a look at their availability.")
+                        return
+                    }
                 } else {
                     alert("The technician is not available at the selected time. Please have a look at their availability.")
                     return
                 }
+
+
+
             } else {
                 alert("The technician is not available at the selected time. Please have a look at their availability.")
                 return
             }
 
-
-
         } else {
             alert("The technician is not available at the selected time. Please have a look at their availability.")
             return
         }
-
-    } else {
-        alert("The technician is not available at the selected time. Please have a look at their availability.")
-        return
-    }
 
 
         this.state.day_from = this.state
@@ -384,7 +386,7 @@ export default class TechnicianServices extends Component {
                                         style={styles.PickerStyle}
                                         onValueChange={(itemValue, itemIndex) => {
                                             kk = parseInt(itemValue)
-                                            this.setState({ travel_cost: kk, showValue: itemValue })
+                                            this.setState({ travel_cost: kk, showValue: itemValue, LocationIndex: itemIndex })
                                         }
 
                                         }>
@@ -408,6 +410,7 @@ export default class TechnicianServices extends Component {
                                         placeholder={'Enter Full Address'}
                                         placeholderTextColor='rgb(217,217,217)'
                                         underlineColorAndroid='transparent'
+                                        multiline={true}
                                     // style={styles.TxtInput}
                                     />
                                 </View>
@@ -431,7 +434,7 @@ export default class TechnicianServices extends Component {
                                         //maxDate="2020-06-01"
                                         confirmBtnText="Confirm"
                                         cancelBtnText="Cancel"
-                                        onDateChange={(date) => { this.setState({ date_time: date }) }}
+                                        onDateChange={(date) => { this.setState({ date_time: date, isDateChange: true }) }}
                                     />
                                     <View style={{ marginHorizontal: 10 }}>
                                         <Icon name='calendar-clock' color='gray' size={totalSize(3)} type='material-community' />
@@ -457,7 +460,7 @@ export default class TechnicianServices extends Component {
                                         //maxDate="2020-06-01"
                                         confirmBtnText="Confirm"
                                         cancelBtnText="Cancel"
-                                        onDateChange={(time) => { this.setState({ time_time: time }) }}
+                                        onDateChange={(time) => { this.setState({ time_time: time, isTimeChange: true }) }}
                                     />
                                     <View style={{ marginHorizontal: 10 }}>
                                         <Icon name='calendar-clock' color='gray' size={totalSize(3)} type='material-community' />
@@ -482,7 +485,7 @@ export default class TechnicianServices extends Component {
                             <View style={[styles.txtContainer, { flexDirection: 'row', backgroundColor: 'transparent', justifyContent: 'flex-start', alignItems: 'center' }]}>
                                 <Text style={[styles.welcome, { fontSize: totalSize(3), fontWeight: 'normal', color: colors.SPA_graycolor }]}>Total:  </Text>
                                 <View style={{ borderColor: colors.SPA_redColor, borderWidth: 1, borderRadius: 5 }}>
-                                    <Text style={[styles.welcome, { fontSize: totalSize(3), fontWeight: 'normal', marginVertical: 5, marginHorizontal: 5 }]}>${(!isNaN(this.state.servicesTotalCost)  ? this.state.servicesTotalCost : 0) + (!isNaN(this.state.travel_cost) ? this.state.travel_cost : 0)}</Text>
+                                    <Text style={[styles.welcome, { fontSize: totalSize(3), fontWeight: 'normal', marginVertical: 5, marginHorizontal: 5 }]}>${(!isNaN(this.state.servicesTotalCost) ? this.state.servicesTotalCost : 0) + (!isNaN(this.state.travel_cost) ? this.state.travel_cost : 0)}</Text>
                                 </View>
                             </View>
 
@@ -492,7 +495,21 @@ export default class TechnicianServices extends Component {
                                     console.log(this.state.locations);
 
                                     if (this.state.servicesTotalCost == 0 || isNaN(this.state.travel_cost) || this.state.date_time == null || this.state.address == null || this.state.time_time == null) {
+
+
                                         SimpleToast.show("Some fields are empty", SimpleToast.SHORT)
+                                        console.log("in if");
+
+                                        return
+                                    }
+                                    if (!this.state.isDateChange) {
+                                        SimpleToast.show("Select Date First", SimpleToast.SHORT)
+                                        console.log("in if");
+
+                                        return
+                                    }
+                                    if (!this.state.isTimeChange) {
+                                        SimpleToast.show("Select Time First", SimpleToast.SHORT)
                                         console.log("in if");
 
                                         return
@@ -539,6 +556,9 @@ export default class TechnicianServices extends Component {
                                 <Text style={[styles.txtSmall, { fontSize: totalSize(1.5), color: 'gray' }]}>Please list ALL information that we not be able</Text>
                                 <Text style={[styles.txtSmall, { fontSize: totalSize(1.5), color: 'gray' }]}>to ascertain because we are coming to your location</Text>
                                 <Text style={[styles.txtSmall, { fontSize: totalSize(1.5), color: 'gray' }]}>sight unseen.</Text>
+                            </View>
+                            <View style={[styles.txtContainer, { backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', marginHorizontal: 10, marginVertical: 10 }]}>
+                                <Text style={[styles.txtSmall, { fontSize: totalSize(1.5), color: 'gray', flexWrap: "wrap", width: "80%" }]}> If you are requesting nail service, do you have anything on your nails currently, do you have diabetes, mobility difficulty. If you are requesting a chemical hair process, when is the last time you had a chemical treatment, what is the health of your hair etc.? Do you have stairs, pets, parking, any obstacles to entry?</Text>
                             </View>
                             <View style={styles.inputTxtContainer}>
                                 <Text style={[styles.txtSmall, { marginVertical: 3, color: colors.SPA_redColor }]}>Message</Text>

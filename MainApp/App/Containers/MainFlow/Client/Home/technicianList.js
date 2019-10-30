@@ -16,6 +16,7 @@ class TechniciansList extends Component {
             locations: this.props.navigation.getParam('location', "abc"),
             isDataLoded: false,
             Booking_list: [],
+            Services_List: [],
             // [
             // { id: 1, client_name: 'Lina', client_profile_pic: images.profilePic, service_name: 'Hand massage', service_code: '025012', Address: '18002 Sea Island olace, New York, USA', service_price: '50', dateTime: '8:00AM 06-15-19', Categories: ['Care', 'NailCare', 'Facials', 'Hair'] },
             // { id: 2, client_name: 'Salish', client_profile_pic: images.profilePic, service_name: 'Face Cleaning & Facial', Address: '18002 Sea Island olace, New York, USA', service_duration: '30', service_price: '50', dateTime: '8:00AM 06-15-19', Categories: ['Care', 'NailCare', 'Facials', 'Hair'] },
@@ -39,7 +40,7 @@ class TechniciansList extends Component {
         await this.setState({ isDataLoded: false });
         this.setState({ Booking_list: [] });
         this.getLocations();
-        this.GetServices();
+        await this.GetServices();
         let RList = this.props.navigation.getParam('data', "Nothing");
         RList.forEach(element => {
             this.GetRatting(element);
@@ -92,22 +93,18 @@ class TechniciansList extends Component {
 
                 }
                 if (List.length > 0) {
-                    Services_List = [];
-                    let SList2 = [];
-                    SList2 = await getAllOfCollection("Category");
-
-                    SList2.forEach(element => {
-                        if (element.SubList !== undefined) {
-                            Services_List.push(element);
-                        }
-                    });
+                    Services_List = this.state.Services_List;
+                    
                     List.forEach(service => {
                         let CategoryList = Services_List;
                         for (let i = 0; i < CategoryList.length; i++) {
                             for (let m = 0; m < CategoryList[i].SubList.length; m++) {
                                 if (CategoryList[i].SubList[m].id === service.SubServiceId) {
                                     service.Name = CategoryList[i].SubList[m].Name;
-                                    NewList.push(service);
+                                    if(!NewList.includes(CategoryList[i].Name)) {
+                                        NewList.push(CategoryList[i].Name);
+                                    }
+                                    
                                 }
                             }
                         }
@@ -128,9 +125,17 @@ class TechniciansList extends Component {
     async GetServices() {
 
         let ServiceObj = await getData("Category", this.props.navigation.getParam('ServiceID2', "Nothing"));
+        let SList2 = [];
+        let Services_List = [];
+        SList2 = await getAllOfCollection("Category");
 
+        SList2.forEach(element => {
+            if (element.SubList !== undefined) {
+                Services_List.push(element);
+            }
+        });
 
-        this.setState({ SList: ServiceObj.SubList });
+        await this.setState({ SList: ServiceObj.SubList, Services_List: Services_List });
 
         ServiceObj.SubList.forEach(element2 => {
             if (element2.id === this.props.navigation.getParam('ServiceID', "Nothing")) {
@@ -201,7 +206,7 @@ class TechniciansList extends Component {
                                                                 items.AllServices_List.map((u, i) => {
                                                                     return (
                                                                         <View key={i} >
-                                                                            <Text key={key} style={styles.shopDetail}>{u.Name} </Text>
+                                                                            <Text key={key} style={styles.shopDetail}>{u} </Text>
                                                                         </View>
                                                                     )
                                                                 })
@@ -301,7 +306,7 @@ const styles = StyleSheet.create({
     },
     shopContainer: {
         width: width(90),
-        height: height(10),
+        flex: 0,
         borderRadius: 4,
         elevation: 5,
         backgroundColor: 'white',

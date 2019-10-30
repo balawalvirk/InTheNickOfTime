@@ -199,9 +199,9 @@ class HomeTechnician extends Component {
                         <TouchableOpacity onPress={() => this.props.navigation.navigate('myServices')} style={styles.btnRed}>
                             <Text style={styles.btnTxt}>My Services</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => this.props.navigation.navigate('mySuperServices')} style={styles.btnRed}>
+                        {/* <TouchableOpacity onPress={() => this.props.navigation.navigate('mySuperServices')} style={styles.btnRed}>
                             <Text style={styles.btnTxt}>My Sub Services</Text>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                     </View>
 
                 </View>

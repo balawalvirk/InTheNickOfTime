@@ -7,7 +7,7 @@ import colors from '../../../../Themes/Colors';
 import Loader from '../../../../Components/Loader';
 import firebase from 'firebase'
 import { getTechnicianBookings, updateDocument } from '../../../../backend/firebase/utility'
-
+import moment from "moment";
 class bookingTechnician extends Component {
   constructor(props) {
     super(props);
@@ -48,6 +48,10 @@ class bookingTechnician extends Component {
           bookings[i].notification = doc.data().notification
         }
       })
+      
+      
+
+
       if (bookings[i].status === 'pending') {
         pending.push(bookings[i])
       }
@@ -117,52 +121,52 @@ class bookingTechnician extends Component {
   }
 
 
-  async onCollect(id){
-    fetch('https://api.stripe.com/v1/charges/'+id+'/capture', {
+  async onCollect(id) {
+    fetch('https://api.stripe.com/v1/charges/' + id + '/capture', {
 
-          headers: {
-  
-            Accept: 'application/json',
-    
-            'Content-Type': 'application/x-www-form-urlencoded',
-          
-            Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
-            // Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
-          },
-          // Use a proper HTTP method
-          method: 'post',
-          // Format the credit card data to a string of key-value pairs
-          // divided by &
-          
-      }).then(response => {alert('amount collected');console.log(response)}).catch(err => {
-        alert(err.error.message)
-      })
+      headers: {
+
+        Accept: 'application/json',
+
+        'Content-Type': 'application/x-www-form-urlencoded',
+
+        Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
+        // Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
+      },
+      // Use a proper HTTP method
+      method: 'post',
+      // Format the credit card data to a string of key-value pairs
+      // divided by &
+
+    }).then(response => { alert('amount collected'); console.log(response) }).catch(err => {
+      alert(err.error.message)
+    })
   }
 
-  async onReject(id){
+  async onReject(id) {
 
     const body = {};
     body['charge'] = id,
-    fetch('https://api.stripe.com/v1/refunds', {
+      fetch('https://api.stripe.com/v1/refunds', {
 
-          headers: {
-  
-            Accept: 'application/json',
-    
-            'Content-Type': 'application/x-www-form-urlencoded',
-          
-            Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
-            // Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
-          },
-          // Use a proper HTTP method
-          method: 'post',
-          // Format the credit card data to a string of key-value pairs
-          // divided by &
-          body: Object.keys(body)
+        headers: {
+
+          Accept: 'application/json',
+
+          'Content-Type': 'application/x-www-form-urlencoded',
+
+          Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
+          // Authorization: `Bearer sk_test_jbVThMJnytG859dT7o8AvBc500oeMZcOo0`
+        },
+        // Use a proper HTTP method
+        method: 'post',
+        // Format the credit card data to a string of key-value pairs
+        // divided by &
+        body: Object.keys(body)
           .map(key => key + '=' + body[key])
           .join('&')
-          
-      }).then(response => {alert('amount refunded');console.log(response)}).catch(err => {
+
+      }).then(response => { alert('amount refunded'); console.log(response) }).catch(err => {
         alert(err.error.message)
       })
   }
@@ -202,18 +206,33 @@ class bookingTechnician extends Component {
                         <View style={styles.shopTxtContainer}>
                           <Text style={styles.shopName}>{items.userName}</Text>
                           <View style={{ flexDirection: 'row' }}>
-                            <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Services: </Text>
-                            <Text style={styles.shopDetail}>{items.servicesList}</Text>
+                            <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Service: </Text>
+                            {
+                              items.services.map((u, i) => {
+                                return (
+                                  <View key={i}>
+                                    <Text style={styles.shopDetail}>{u.Name},</Text>
+                                  </View>
+                                );
+                              })
+                            }
                           </View>
                           <View style={{ flexDirection: 'row' }}>
                             <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Location: </Text>
+                            <Text style={styles.shopDetail}>{items.address}-</Text>
                             <Text style={styles.shopDetail}>{items.location}</Text>
                           </View>
                           <View style={{ flexDirection: 'row' }}>
                             <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>At: </Text>
-                            <Text style={styles.shopDetail}>{items.date_time}</Text>
+                            <Text style={styles.shopDetail}>{
+                              items.time + "  " + items.date_time
+                            }
+                            </Text>
                           </View>
-                          <Text style={styles.shopDetail}>Demo Description</Text>
+                          <View style={{ flexDirection: "column" }}>
+                            <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Comments: </Text>
+                            <Text style={[styles.shopDetail, { marginLeft: 20 }]}>{items.comments}</Text>
+                          </View>
                         </View>
                         <View style={[styles.shopIconContainer, { backgroundColor: 'transparent', flexDirection: 'row' }]}>
                           <TouchableOpacity onPress={() => { this.updateBooking(items, key) }} style={[styles.iconContainer, { backgroundColor: colors.SPA_redColor }]} >
@@ -262,18 +281,34 @@ class bookingTechnician extends Component {
                         <View style={styles.shopTxtContainer}>
                           <Text style={styles.shopName}>{items.userName}</Text>
                           <View style={{ flexDirection: 'row' }}>
-                            <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Services: </Text>
-                            <Text style={styles.shopDetail}>{items.servicesList}</Text>
+                            <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Service: </Text>
+                            {
+                              items.services.map((u, i) => {
+                                return (
+                                  <View key={i}>
+                                    <Text style={styles.shopDetail}>{u.Name}</Text>
+                                  </View>
+                                );
+                              })
+                            }
                           </View>
                           <View style={{ flexDirection: 'row' }}>
                             <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Location: </Text>
+                            <Text style={styles.shopDetail}>{items.address}-</Text>
                             <Text style={styles.shopDetail}>{items.location}</Text>
                           </View>
                           <View style={{ flexDirection: 'row' }}>
                             <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>At: </Text>
-                            <Text style={styles.shopDetail}>{items.date_time}</Text>
+                            <Text style={styles.shopDetail}>{
+                              items.time + "  " + items.date_time
+                            }
+                            </Text>
                           </View>
-                          <Text style={styles.shopDetail}>Demo Description</Text>
+                          <View style={{ flexDirection: "column" }}>
+                            <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Comments: </Text>
+                            <Text style={[styles.shopDetail, { marginLeft: 20 }]}>{items.comments}</Text>
+                          </View>
+
                         </View>
                         <View style={[styles.shopIconContainer]}>
                           {/* <TouchableOpacity style={styles.iconContainer} >
@@ -355,6 +390,7 @@ const styles = StyleSheet.create({
   shopContainer: {
     width: width(90),
     //height: height(10),
+    flex: 0,
     borderRadius: 4,
     elevation: 5,
     backgroundColor: 'white',

@@ -27,7 +27,7 @@ class myLocations extends Component {
       s_price: '',
       s_category: '',
       NewCost: "",
-      NewDescraption: "",
+      // NewDescraption: "",
       NewSCid: "",
       e_name: '',
       e_duration: '',
@@ -134,11 +134,11 @@ class myLocations extends Component {
 
     if (
       this.state.NewCost !== "" &&
-      this.state.NewDescraption !== "" &&
+    
       this.state.NewSCid !== ""
     ) {
       TempObj.Cost = this.state.NewCost;
-      TempObj.Descraption = this.state.NewDescraption;
+      // TempObj.Descraption = this.state.NewDescraption;
       TempObj.id = this.state.NewSCid;
 
 
@@ -162,11 +162,11 @@ class myLocations extends Component {
 
       if (this.state.NewSCid === "") {
         alert("Please Select Location & Sub Location");
-      } else if (this.state.NewDescraption === "") {
-        alert("Treval Cost field cannot be empty ");
-      } else {
-        alert("Descraption field cannot be empty");
-      }
+      } else if (this.state.NewCost === "") {
+        alert("Travel Cost field cannot be empty");
+
+        
+      } 
 
     }
   }
@@ -178,11 +178,11 @@ class myLocations extends Component {
     // alert (this.state.EditCost + ":" +this.state.EditDescraption + ":" + this.state.EditSCid);
     if (
       this.state.EditCost !== "" &&
-      this.state.EditDescraption !== "" &&
+      // this.state.EditDescraption !== "" &&
       this.state.EditSCid !== ""
     ) {
       List[index].Cost = this.state.EditCost
-      List[index].Descraption = this.state.EditDescraption
+      // List[index].Descraption = this.state.EditDescraption
       List[index].id = this.state.EditSCid
 
 
@@ -212,10 +212,8 @@ class myLocations extends Component {
       if (this.state.EditSCid === "") {
         alert("Please Select Location & Sub Location");
       } else if (this.state.EditCost === "") {
-        alert("Treval Cost field cannot be empty ");
-      } else {
-        alert("Descraption field cannot be empty");
-      }
+        alert("Travel Cost field cannot be empty ");
+      } 
     }
   }
 
@@ -247,7 +245,7 @@ class myLocations extends Component {
       this.setState({
 
         EditCost: service.Cost,
-        EditDescraption: service.Descraption,
+        // EditDescraption: service.Descraption,
         EditSCid: service.id,
         isModalVisibleEdite: !this.state.isModalVisibleEdite
       });
@@ -325,7 +323,7 @@ class myLocations extends Component {
           onBackdropPress={this._toggleModal}>
           <View >
             <View style={styles.popUpTop}>
-              <Text style={styles.popUpTopTxt}>Create Sub Service</Text>
+              <Text style={styles.popUpTopTxt}>Create Location</Text>
               <View style={{ width: width(25) }}></View>
               <TouchableOpacity onPress={this._toggleModal} style={{ marginRight: width(1) }} >
                 <Icon name="close" size={totalSize(4)} color="white" />
@@ -424,7 +422,7 @@ class myLocations extends Component {
 
 
 
-              <View style={styles.inputTxtContainer}>
+              {/* <View style={styles.inputTxtContainer}>
                 <Text style={styles.popUpText}>Description</Text>
                 <TextInput
                   placeholder='About Your Service'
@@ -434,7 +432,7 @@ class myLocations extends Component {
                     this.setState({ NewDescraption: value })
                   }}
                 />
-              </View>
+              </View> */}
 
               {/* <View style={styles.uploadContainer}>
                 <TouchableOpacity style={styles.btnUpload} onPress={this.imagePicker}>
@@ -582,7 +580,7 @@ class myLocations extends Component {
 
 
 
-              <View style={styles.inputTxtContainer}>
+              {/* <View style={styles.inputTxtContainer}>
                 <Text style={styles.popUpText}>Description</Text>
                 <TextInput
                   placeholder={this.state.EditDescraption}
@@ -593,7 +591,7 @@ class myLocations extends Component {
                   }}
                   value= {this.state.EditDescraption}
                 />
-              </View>
+              </View> */}
 
               {/* <View style={styles.uploadContainer}>
                 <TouchableOpacity style={styles.btnUpload} onPress={this.imagePicker}>
