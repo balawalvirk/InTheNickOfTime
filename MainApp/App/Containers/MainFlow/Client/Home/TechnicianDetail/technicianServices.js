@@ -194,7 +194,7 @@ export default class TechnicianServices extends Component {
         });
         // this.setState({Services_list: List, travel_locations:element3.data().locationList })
         this.state.Services_list = NewList;
-        this.setState({ travel_locations: List2 });
+        this.state.travel_locations= List2;
     }
 
     _toggelModalMessage = async () => {
