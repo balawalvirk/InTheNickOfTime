@@ -1,21 +1,19 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, ScrollView,ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import images from '../../../../Themes/Images';
 import { width, height, totalSize } from 'react-native-dimension'
 import { Icon } from 'react-native-elements'
 import colors from '../../../../Themes/Colors';
-import { getUserBookings } from '../../../../backend/firebase/utility'
+import { getUserBookings, getTechnicianBookings } from '../../../../backend/firebase/utility'
 import Loader from '../../../../Components/Loader';
-import firebase from 'firebase';
-// import Loader from '../../../../Components/Loader';
-class myBookingsPending extends Component {
+import firebase from 'firebase'
+class myBookingInCancel extends Component {
   constructor(props) {
     super(props);
 
 
 
     this.state = {
-      loadingServices: true,
       Booking_list: [
         // { id: 1, client_name: 'Lina', client_profile_pic: images.profilePic, service_name: 'Hand massage', service_code: '025012', Address: '18002 Sea Island olace, New York, USA', service_price: '50', dateTime: '8:00AM 06-15-19', status: 'Accepted', Categories: ['Care', 'NailCare', 'Facials', 'Hair'] },
         // { id: 2, client_name: 'Salish', client_profile_pic: images.profilePic, service_name: 'Face Cleaning & Facial', Address: '18002 Sea Island olace, New York, USA', service_duration: '30', service_price: '50', dateTime: '8:00AM 06-15-19', status: 'Declined', Categories: ['Care', 'NailCare', 'Facials', 'Hair'] },
@@ -26,34 +24,33 @@ class myBookingsPending extends Component {
     };
   }
 
-  getNames = async () => {
-
-
-    let TempArry = [];
-    arr = await getUserBookings('Bookings')
-    for (i = 0; i < arr.length; i++) {
-      console.log("arr", arr[i].technicianId);
-      // let qSnapshot = await firebase.firestore().collection('Technician').where('UserId', '==', arr[i].technicianId).get()
-      // qSnapshot.forEach((doc) => {
-      //   if (doc.exists) {
-      //     console.log("Doc", doc.data());
-      //     arr[i].technicianName = doc.data().name
-      //     arr[i].photo = doc.data().photo
-      //   }
-      // })
-      if (arr[i].status !== undefined) {
-        arr[i].status === 'pending' ? TempArry.push(arr[i]) : null
+  async getNames() {
+    await this.setState({ Booking_list: [] })
+    bookings = await getTechnicianBookings("Bookings")
+    pending = []
+    accepted = []
+    for (i = 0; i < bookings.length; i++) {
+      let qSnapshot = await firebase.firestore().collection('Users').where('UserId', '==', bookings[i].userId).get()
+      qSnapshot.forEach((doc) => {
+        if (doc.exists) {
+          console.log("Doc", doc.data());
+          bookings[i].UserName = doc.data().firstName
+          bookings[i].photo = doc.data().photo
+          bookings[i].notification = doc.data().notification
+        }
+      })
+      if (bookings[i].status !== 'completed' && bookings[i].status !== 'pending' && bookings[i].status !== 'accepted' ) {
+        pending.push(bookings[i])
       }
-
+      
+      this.setState({ Booking_list: pending, })
     }
-    this.setState({ Booking_list: TempArry });
-    this.setState({loadingServices: false})
+    console.log("State", this.state);
+    // this.loader.hide()
   }
 
   async fetchOrders() {
-    this.setState({ loadingServices: true })
     this.getNames();
-    // this.setState({ loadingServices: false })
   }
 
   async componentDidMount() {
@@ -68,7 +65,7 @@ class myBookingsPending extends Component {
   render() {
     return (
       <View style={styles.Container}>
-        {/* <Loader ref={r => this.loader = r} /> */}
+        <Loader ref={r => this.loader = r} />
         <View style={{ flex: 1 }}>
 
 
@@ -78,9 +75,10 @@ class myBookingsPending extends Component {
               {
                 this.state.loadingServices === true ?
                   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    {/* <ActivityIndicator size='large' color="rgb(0,41,132)" /> */}
+                    <ActivityIndicator size='large' color="rgb(0,41,132)" />
                   </View>
                   :
+
                   this.state.Booking_list.length > 0 ?
                     this.state.Booking_list.map((items, key) => {
                       let img = null;
@@ -95,7 +93,7 @@ class myBookingsPending extends Component {
                             <Image source={img} style={styles.shopImage} />
                           </View>
                           <View style={styles.shopTxtContainer}>
-                            <Text style={styles.shopName}>{items.technicianName}</Text>
+                            <Text style={styles.shopName}>{items.userName}</Text>
                             <View style={{ flexDirection: 'row' }}>
                               <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Service: </Text>
                               {
@@ -150,20 +148,13 @@ class myBookingsPending extends Component {
             </ScrollView>
           </View>
         </View>
-        {this.state.loadingServices == true ?
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)', position: 'absolute', height: '100%', width: '100%' }}>
-            <ActivityIndicator size="large" color="orange" style={{ backgroundColor: 'rgba(0,0,0,0)' }} />
-            <Text style={{ color: '#fff' }}>Loading Data...</Text>
-          </View>
-          :
-          <View>
-          </View>}
+
       </View>
     );
   }
 }
 
-export default myBookingsPending;
+export default myBookingInCancel;
 
 const styles = StyleSheet.create({
   Container: {
@@ -221,7 +212,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     elevation: 5,
     backgroundColor: 'white',
-    marginVertical: height(1),
+    marginVertical: height(0.5),
     marginHorizontal: width(2),
     flexDirection: 'row',
     //alignItems: 'center',
@@ -243,7 +234,6 @@ const styles = StyleSheet.create({
   shopTxtContainer: {
     flex: 3,
     marginVertical: height(1),
-    // marginHorizontal: width(2),
     //alignItems: 'center',
     justifyContent: 'center',
     //backgroundColor:'red'

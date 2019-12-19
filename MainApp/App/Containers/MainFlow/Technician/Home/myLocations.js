@@ -73,7 +73,7 @@ class myLocations extends Component {
     });
 
     this.setState({ Categories_list: ServicesList });
-    this.loadServicesList();
+   // this.loadServicesList();
   }
 
   async loadServicesList() {
@@ -138,7 +138,7 @@ class myLocations extends Component {
       this.state.NewSCid !== ""
     ) {
       TempObj.Cost = this.state.NewCost;
-      // TempObj.Descraption = this.state.NewDescraption;
+      TempObj.Name = this.state.Categories_list[this.state.Cindex - 1].SubList[this.state.CVIndex - 1].Name;
       TempObj.id = this.state.NewSCid;
 
 
@@ -156,7 +156,7 @@ class myLocations extends Component {
       await AsyncStorage.setItem('user', JSON.stringify(this.state.user));
       this.setState({ isModalVisible: !this.state.isModalVisible });
       await this.loadUser();
-      this.loadServicesList();
+     // this.loadServicesList();
       this.loader.hide()
     } else {
 
@@ -182,7 +182,7 @@ class myLocations extends Component {
       this.state.EditSCid !== ""
     ) {
       List[index].Cost = this.state.EditCost
-      // List[index].Descraption = this.state.EditDescraption
+      List[index].Name = this.state.Categories_list[this.state.Cindex - 1].SubList[this.state.CVIndex - 1].Name;
       List[index].id = this.state.EditSCid
 
 
@@ -226,7 +226,7 @@ class myLocations extends Component {
 
     })
     await this.loadUser();
-    this.loadServicesList();
+   // this.loadServicesList();
     this.setState(this.state)
 
     this.loader.hide()
@@ -376,7 +376,7 @@ class myLocations extends Component {
                       selectedValue={this.state.NewSCid}
                       style={styles.PickerStyle}
                       onValueChange={(itemValue, itemIndex) =>
-                        this.setState({ NewSCid: itemValue })
+                        this.setState({ NewSCid: itemValue, CVIndex: itemIndex })
                       }>
                       <Picker.Item label="Select Sub Location" value='' />
                       {
@@ -532,7 +532,7 @@ class myLocations extends Component {
                       selectedValue={this.state.EditSCid}
                       style={styles.PickerStyle}
                       onValueChange={(itemValue, itemIndex) =>
-                        this.setState({ EditSCid: itemValue })
+                        this.setState({ EditSCid: itemValue, CVIndex: itemIndex })
                       }>
                       <Picker.Item label="Select Sub Location" value='' />
                       {

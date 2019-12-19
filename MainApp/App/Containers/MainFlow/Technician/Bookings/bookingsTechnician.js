@@ -38,7 +38,6 @@ class bookingTechnician extends Component {
     pending = []
     accepted = []
     for (i = 0; i < bookings.length; i++) {
-
       let qSnapshot = await firebase.firestore().collection('Users').where('UserId', '==', bookings[i].userId).get()
       qSnapshot.forEach((doc) => {
         if (doc.exists) {
@@ -48,10 +47,6 @@ class bookingTechnician extends Component {
           bookings[i].notification = doc.data().notification
         }
       })
-      
-      
-
-
       if (bookings[i].status === 'pending') {
         pending.push(bookings[i])
       }
@@ -59,12 +54,9 @@ class bookingTechnician extends Component {
         accepted.push(bookings[i])
       }
       this.setState({ pending: pending, accepted: accepted })
-
     }
     console.log("State", this.state);
-
     this.loader.hide()
-
   }
 
   updateBooking = async (booking, index) => {
@@ -122,7 +114,8 @@ class bookingTechnician extends Component {
 
 
   async onCollect(id) {
-    fetch('https://api.stripe.com/v1/charges/' + id + '/capture', {
+    let nextPart = "charges/" + id + '/capture'
+    fetch('https://api.stripe.com/v1/' + nextPart, {
 
       headers: {
 
@@ -147,7 +140,7 @@ class bookingTechnician extends Component {
 
     const body = {};
     body['charge'] = id,
-      fetch('https://api.stripe.com/v1/refunds', {
+      fetch('https://api.stripe.com/v1/' + 'refunds', {
 
         headers: {
 
@@ -176,7 +169,7 @@ class bookingTechnician extends Component {
         <Loader ref={r => this.loader = r} />
         <View style={{ flex: 1 }}>
           <View style={{ flex: 1, alignItems: 'flex-start', justifyContent: 'flex-end', }}>
-            <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2.5), left: width(5) }]}>Pending Bookings </Text>
+            <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2.5), left: width(5) }]}>Pending Booking </Text>
           </View>
 
           <View style={{ flex: 4, alignItems: 'center' }}>
@@ -259,7 +252,7 @@ class bookingTechnician extends Component {
         </View>
         <View style={{ flex: 1 }}>
           <View style={{ flex: 1, alignItems: 'flex-start', justifyContent: 'flex-end', }}>
-            <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2.5), left: width(5) }]}>Accepted Bookings </Text>
+            <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2.5), left: width(5) }]}>Accepted Booking </Text>
           </View>
 
           <View style={{ flex: 4, alignItems: 'center' }}>

@@ -19,7 +19,7 @@ class Payment extends Component {
         super(props);
         this.state = {
             loader: false,
-            instruction: 'After submitting your request, wait for an app and email notification of the technicians confirmation of your appointment. Your card will be charged only if/when the technician accepts your request. If the technician declines your request, your credit card will not be charged. In this case you may want to try another date, time, or technician. View the status of your request on the booking tab at the bottom of the app. By booking, via website, phone or mobile application and submitting payment you acknowledge that you have reviewed and agreed to all In The Nick of Time Inc. terms, conditions and polices. Do not book service if you are unwilling or unable to be bound by the terms',
+            instruction: 'After submitting your request, wait for an app notification of the technicians confirmation of your appointment. Your card will be charged only if/when the technician accepts your request. If the technician declines your request, your credit card will not be charged. In this case you may want to try another date, time, or technician. View the status of your request on the booking tab at the bottom of the app. By booking, via website, phone or mobile application and submitting payment you acknowledge that you have reviewed and agreed to all In The Nick of Time Inc. terms, conditions and polices. Do not book service if you are unwilling or unable to be bound by the terms',
             amount: parseFloat(this.props.navigation.getParam('services_cost', 0.00)) + parseFloat(this.props.navigation.getParam('travel_cost', 0.00)),
         };
     }
@@ -94,7 +94,7 @@ class Payment extends Component {
             body['source'] = i.id
         body['capture'] = false;
 
-        let data = await fetch('https://api.stripe.com/v1/charges', {
+        let data = await fetch('https://api.stripe.com/v1/'+ "charges", {
 
             //   const card = {
             //       'card[number]': creditCardData.values.number.replace(/ /g, ''),
@@ -122,7 +122,7 @@ class Payment extends Component {
 
         let commits = await data.json()
             .then(response => {
-
+                console.log()
                 try {
 
                     let Booking = {
@@ -171,7 +171,7 @@ class Payment extends Component {
                         Booking.address = this.props.navigation.getParam('address')
                         // Booking.card = this.props.navigation.getParam('card')
                         Booking.id = this.uniqueID()
-                        Booking.TToken = this.props.navigation.getParam('technician', '').Token
+                        Booking.TToken = this.props.navigation.getParam('technician', '').Token ? this.props.navigation.getParam('technician', '').Token : ""
 
                         this.setState({ amount: Booking.amount })
                         Booking.comments = this.props.navigation.getParam("comments", '')
@@ -261,7 +261,7 @@ class Payment extends Component {
                 Booking.address = this.props.navigation.getParam('address')
                 Booking.card = this.props.navigation.getParam('card')
                 Booking.id = this.uniqueID()
-                Booking.TToken = this.props.navigation.getParam('technician', '').Token
+                Booking.TToken = this.props.navigation.getParam('technician', '').Token !== undefined ? this.props.navigation.getParam('technician', '').Token : ""
 
                 this.setState({ amount: Booking.amount })
                 Booking.comments = this.props.navigation.getParam("comments", '')

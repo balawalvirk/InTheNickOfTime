@@ -7,7 +7,7 @@ import bookingTechnician from '../MainFlow/Technician/Bookings/bookingsTechnicia
 import ProfileTechnician from '../MainFlow/Technician/Profile/profileTechnician';
 import SettingTechnician from '../MainFlow/Technician/Settings/settingsTechnician';
 import HomeTechnician from '../MainFlow/Technician/Home/homeTechnician';
-
+import TecBooking from "./TecBooking";
 const tabNavigator = createBottomTabNavigator({
     Home: {
         screen: HomeTechnician,
@@ -19,7 +19,7 @@ const tabNavigator = createBottomTabNavigator({
         }
     },
     Bookings: {
-        screen: bookingTechnician,
+        screen: TecBooking,
         navigationOptions: {
             tabBarLabel: '',
             tabBarIcon: ({ tintColor }) => (

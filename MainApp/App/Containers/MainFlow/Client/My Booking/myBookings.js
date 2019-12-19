@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image,ActivityIndicator } from 'react-native';
 import images from '../../../../Themes/Images';
 import { width, height, totalSize } from 'react-native-dimension'
 import { Icon } from 'react-native-elements'
@@ -14,6 +14,7 @@ class myBookings extends Component {
 
 
     this.state = {
+      loadingServices: true,
       Booking_list: [
         // { id: 1, client_name: 'Lina', client_profile_pic: images.profilePic, service_name: 'Hand massage', service_code: '025012', Address: '18002 Sea Island olace, New York, USA', service_price: '50', dateTime: '8:00AM 06-15-19', status: 'Accepted', Categories: ['Care', 'NailCare', 'Facials', 'Hair'] },
         // { id: 2, client_name: 'Salish', client_profile_pic: images.profilePic, service_name: 'Face Cleaning & Facial', Address: '18002 Sea Island olace, New York, USA', service_duration: '30', service_price: '50', dateTime: '8:00AM 06-15-19', status: 'Declined', Categories: ['Care', 'NailCare', 'Facials', 'Hair'] },
@@ -48,10 +49,13 @@ class myBookings extends Component {
 
     }
     this.setState({ Booking_list: TempArry });
+    this.setState({loadingServices: false})
   }
 
   async fetchOrders() {
+    this.setState({loadingServices: true})
     this.getNames();
+    
   }
 
   async componentDidMount() {
@@ -76,49 +80,62 @@ class myBookings extends Component {
               {
                 this.state.loadingServices === true ?
                   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <ActivityIndicator size='large' color="rgb(0,41,132)" />
+                    {/* <ActivityIndicator size='large' color="rgb(0,41,132)" /> */}
                   </View>
                   :
                   this.state.Booking_list.length > 0 ?
-                  this.state.Booking_list.map((items, key) => {
-                    let img = null;
-                    if (items.photo != null) {
-                      img = { uri: items.photo }
-                    } else {
-                      img = images.profilePic
-                    }
-                    return (
-                      <View key={key} style={styles.shopContainer}>
-                        <View style={styles.shopImageContainer}>
-                          <Image source={img} style={styles.shopImage} />
-                        </View>
-                        <View style={styles.shopTxtContainer}>
+                    this.state.Booking_list.map((items, key) => {
+                      let img = null;
+                      if (items.photo != null) {
+                        img = { uri: items.photo }
+                      } else {
+                        img = images.profilePic
+                      }
+                      return (
+                        <View key={key} style={styles.shopContainer}>
+                          <View style={styles.shopImageContainer}>
+                            <Image source={img} style={styles.shopImage} />
+                          </View>
+                          <View style={styles.shopTxtContainer}>
                           <Text style={styles.shopName}>{items.technicianName}</Text>
-                          <Text style={styles.shopDetail}>At {items.time}</Text>
-                          <Text style={styles.shopDetail}>At {items.date_time}</Text>
-                          <Text style={styles.shopDetail}>{items.location}</Text>
+                          <View style={{ flexDirection: 'row' }}>
+                            <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Service: </Text>
+                            {
+                              items.services.map((u, i) => {
+                                return (
+                                  <View key={i}>
+                                    <Text style={styles.shopDetail}>{u.Name},</Text>
+                                  </View>
+                                );
+                              })
+                            }
+                          </View>
+                          <Text style={styles.shopDetail}>Comments: {items.comments}</Text>
+                          <Text style={styles.shopDetail}>Total Amount : {items.amount} $</Text>
+                          <Text style={styles.shopDetail}>At {items.time} - {items.date_time}</Text>
+                          <Text style={styles.shopDetail}>Location: {items.location}</Text>
                         </View>
-                        <View style={[styles.shopIconContainer]}>
-                          {/* <TouchableOpacity style={styles.iconContainer} >
+                          <View style={[styles.shopIconContainer]}>
+                            {/* <TouchableOpacity style={styles.iconContainer} >
                                <Icon name="pencil" size={totalSize(2)} color="white" type='font-awesome' />
                                </TouchableOpacity> */}
-                          <View style={[styles.statusContainer]} >
+                            <View style={[styles.statusContainer]} >
 
-                            <Text style={[styles.shopName, { fontSize: totalSize(1.5), color: colors.SPA_redColor, fontWeight: 'normal' }]}>{items.status}</Text>
+                              <Text style={[styles.shopName, { fontSize: totalSize(1.5), color: colors.SPA_redColor, fontWeight: 'normal' }]}>{items.status}</Text>
+                            </View>
+                            {
+                              items.status === 'accepted' ?
+                                <Icon name="primitive-dot" size={totalSize(2.5)} color={colors.SPA_Green} type='octicon' />
+                                :
+                                <Icon name="primitive-dot" size={totalSize(2.5)} color={items.status === 'pending' ? colors.SPA_graycolor : colors.error} type='octicon' />
+                            }
                           </View>
-                          {
-                            items.status === 'accepted' ?
-                              <Icon name="primitive-dot" size={totalSize(2.5)} color={colors.SPA_Green} type='octicon' />
-                              :
-                              <Icon name="primitive-dot" size={totalSize(2.5)} color={items.status === 'pending' ? colors.SPA_graycolor : colors.error} type='octicon' />
-                          }
                         </View>
-                      </View>
-                    );
+                      );
 
-                  })
-                  :
-                  <View style={{ flex: 1, alignItems: "center", justifyContent: "center", }}>
+                    })
+                    :
+                    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", }}>
                       <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2), left: width(0), marginTop: "50%" }]}>No Booking</Text>
                       {/* <TouchableOpacity style={styles.button} onPress={() => this.AddCategory()}>
                           <View style={styles.btnTxtContainer}>
@@ -130,12 +147,19 @@ class myBookings extends Component {
                               }
                           </View>
                       </TouchableOpacity> */}
-                  </View>
+                    </View>
               }
             </ScrollView>
           </View>
         </View>
-
+        {this.state.loadingServices == true ?
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)', position: 'absolute', height: '100%', width: '100%' }}>
+            <ActivityIndicator size="large" color="orange" style={{ backgroundColor: 'rgba(0,0,0,0)' }} />
+            <Text style={{ color: '#fff' }}>Loading Data...</Text>
+          </View>
+          :
+          <View>
+          </View>}
       </View>
     );
   }
@@ -194,7 +218,8 @@ const styles = StyleSheet.create({
   },
   shopContainer: {
     width: width(90),
-    height: height(10),
+    // height: height(10),
+    flex: 0,
     borderRadius: 4,
     elevation: 5,
     backgroundColor: 'white',
@@ -219,6 +244,7 @@ const styles = StyleSheet.create({
   },
   shopTxtContainer: {
     flex: 3,
+    marginVertical: height(1),
     //alignItems: 'center',
     justifyContent: 'center',
     //backgroundColor:'red'

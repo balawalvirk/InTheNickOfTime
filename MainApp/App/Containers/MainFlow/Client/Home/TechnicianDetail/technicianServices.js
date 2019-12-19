@@ -31,7 +31,7 @@ export default class TechnicianServices extends Component {
             //     { id: 6, service_name: 'Hair Diy', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service' },
             // ],
             location: null,
-            travel_locations: this.props.navigation.getParam('location_details', ''),
+            travel_locations: [],
             // [
             //     { id: 1, location: 'Sea site, New york, USA', travel_cost: 20 },
             //     { id: 2, location: 'Top Valley, New york, USA', travel_cost: 25 },
@@ -72,14 +72,14 @@ export default class TechnicianServices extends Component {
         else if (txt == "Sat") { return 6 }
     }
     goToPayment = () => {
-        console.log(this.state.servicesTotalCost, " -- ", this.state.locations, " -- ", this.state.date_time);
+        console.log(this.state.servicesTotalCost, " -- ", this.state.travel_locations[this.state.LocationIndex-1].Name, " -- ", this.state.date_time);
 
 
         this._toggelModalMessage()
         this.props.navigation.navigate('cardData', {
             services: this.state.selected_Services,
-            location: this.state.travel_locations[this.state.LocationIndex].Name,
-            travel_cost: this.state.travel_cost, 
+            location: this.state.travel_locations[this.state.LocationIndex-1].Name,
+            travel_cost: this.state.travel_cost,
             date_time: this.state.date_time,
             time_time: this.state.time_time,
             services_cost: this.state.servicesTotalCost,
@@ -134,7 +134,7 @@ export default class TechnicianServices extends Component {
         let List2 = [];
         let NewList = [];
         let TechnicianList = await firebase.firestore().collection("Technician").where("UserId", "==", this.state.technician.UserId).get()
-        TechnicianList.forEach(element3 => {
+        TechnicianList.forEach(async (element3) => {
             if (element3.data().weekly_availability !== undefined) {
                 this.state.technician.weekly_availability = element3.data().weekly_availability;
             }
@@ -174,27 +174,29 @@ export default class TechnicianServices extends Component {
             }
 
 
-            if (element3.data().locationList !== undefined && element3.data().locationList.length > 0) {
-                element3.data().locationList.forEach(element => {
-                    let CategoryList = this.state.Location_List;
-                    for (let i = 0; i < CategoryList.length; i++) {
-                        for (let m = 0; m < CategoryList[i].SubList.length; m++) {
-                            if (CategoryList[i].SubList[m].id === element.id) {
-                                element.Name = CategoryList[i].SubList[m].Name;
-                                // NewList.push(service);
-                                List2.push(element);
-                            }
-                        }
-                    }
+            await this.setState({ travel_locations: element3.data().locationList});
+
+            // if (element3.data().locationList !== undefined && element3.data().locationList.length > 0) {
+            //     element3.data().locationList.forEach(element => {
+            //         let CategoryList = this.state.Location_List;
+            //         for (let i = 0; i < CategoryList.length; i++) {
+            //             for (let m = 0; m < CategoryList[i].SubList.length; m++) {
+            //                 if (CategoryList[i].SubList[m].id === element.id) {
+            //                     element.Name = CategoryList[i].SubList[m].Name;
+            //                     // NewList.push(service);
+            //                     List2.push(element);
+            //                 }
+            //             }
+            //         }
 
 
-                });
+            //     });
 
-            }
+            // }
         });
+        console.log(List2);
         // this.setState({Services_list: List, travel_locations:element3.data().locationList })
-        this.state.Services_list = NewList;
-        this.state.travel_locations= List2;
+        await this.setState({ Services_list: NewList });
     }
 
     _toggelModalMessage = async () => {
@@ -379,27 +381,31 @@ export default class TechnicianServices extends Component {
                                                 underlineColorAndroid='transparent'
                                                 style={styles.TxtInput}
                                             /> */}
+                                    {this.state.travel_locations.length > 0 ?
+                                        <Picker
+                                            mode='dropdown'
+                                            selectedValue={this.state.showValue}
+                                            style={styles.PickerStyle}
+                                            onValueChange={(itemValue, itemIndex) => {
+                                                kk = parseInt(itemValue)
+                                                this.setState({ travel_cost: kk, showValue: itemValue, LocationIndex: itemIndex })
+                                            }
 
-                                    <Picker
-                                        mode='dropdown'
-                                        selectedValue={this.state.showValue}
-                                        style={styles.PickerStyle}
-                                        onValueChange={(itemValue, itemIndex) => {
-                                            kk = parseInt(itemValue)
-                                            this.setState({ travel_cost: kk, showValue: itemValue, LocationIndex: itemIndex })
-                                        }
+                                            }>
+                                            <Picker.Item label="Select Location" value='' />
+                                            {
+                                                this.state.travel_locations.map((item, key) => {
+                                                    return (
+                                                        <Picker.Item key={key} label={item.Name} value={item.Cost} />
+                                                    )
+                                                })
 
-                                        }>
-                                        <Picker.Item label="Select Location" value='' />
-                                        {
-                                            this.state.travel_locations.map((item, key) => {
-                                                return (
-                                                    <Picker.Item key={key} label={item.Name} value={item.Cost} />
-                                                )
-                                            })
+                                            }
+                                        </Picker>
 
-                                        }
-                                    </Picker>
+                                        :
+                                        null
+                                    }
                                 </View>
                                 <View style={[styles.txtContainer, {}]}>
                                     <Text style={[styles.txtLarg, { fontSize: totalSize(2) }]}>Enter Address</Text>

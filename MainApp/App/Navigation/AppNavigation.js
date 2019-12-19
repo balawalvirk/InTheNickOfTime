@@ -19,6 +19,7 @@ import SearchTechnician from '../Containers/MainFlow/Client/Home/searchTechnicia
 import TechniciansList from '../Containers/MainFlow/Client/Home/technicianList';
 import TechnicianDetailTab from '../Containers/ApplicationTabs/TechnicianDetailTopTab';
 import ClientBooking from '../Containers/ApplicationTabs/ClientBooking';
+import TecBooking from '../Containers/ApplicationTabs/TecBooking';
 import Payment from '../Containers/MainFlow/Client/Home/TechnicianDetail/payment';
 import WebViewOpensLink from './../Containers/MainFlow/Client/Settings/WebViewOpensLink';
 import CardData from './../Containers/MainFlow/Client/Home/TechnicianDetail/CardData'
