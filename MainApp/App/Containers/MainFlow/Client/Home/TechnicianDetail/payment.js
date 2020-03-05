@@ -57,7 +57,7 @@ class Payment extends Component {
     //     }).then(response => response.json());
     // };
 
-    async onSubmit(creditCardData) {
+    async onSubmit() {
         // const apiKey = 'pk_test_SsuRgFFnyuyzaLc8DoYx3nnU00SVBSqUIk';
         // alert(this.props.navigation.getParam('card_number', ''))
         this.setState({ loader: true });
@@ -73,10 +73,9 @@ class Payment extends Component {
             if (i.error) {
                 alert(i.error.message)
             } else {
-                console.log(i)
+                // console.log(i)
+                // console.log(i.id)
                 this.charge(i);
-
-
             }
 
 
@@ -94,7 +93,7 @@ class Payment extends Component {
             body['source'] = i.id
         body['capture'] = false;
 
-        let data = await fetch('https://api.stripe.com/v1/'+ "charges", {
+        let data = await fetch('https://api.stripe.com/v1/' + "charges", {
 
             //   const card = {
             //       'card[number]': creditCardData.values.number.replace(/ /g, ''),
@@ -122,7 +121,7 @@ class Payment extends Component {
 
         let commits = await data.json()
             .then(response => {
-                console.log()
+                console.log(response)
                 try {
 
                     let Booking = {
@@ -141,8 +140,6 @@ class Payment extends Component {
                         servicesList: '',
                         address: '',
                         payment_id: response.id,
-
-
                     }
 
                     user = AsyncStorage.getItem('user', async (error, data) => {
@@ -154,7 +151,7 @@ class Payment extends Component {
                             Booking.userName = res.name
                             Booking.Email = res.email
                             Booking.phoneNumber = res.phoneNumber
-                            Booking.UToken = res.Token
+                            Booking.UToken = res.Token !== undefined && res.Token !== null ? res.Token : ""
                         }
                         for (i = 0; i < this.props.navigation.getParam('services', 0).length; i++) {
                             Booking.servicesList = Booking.servicesList + " " + this.props.navigation.getParam('services', '')[i].service_name

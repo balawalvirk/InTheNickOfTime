@@ -10,7 +10,7 @@ import CompletedBooking from '../MainFlow/Technician/Bookings/myBookingsComplete
 import colors from '../../Themes/Colors';
 import { TechnicianRatings } from '../MainFlow/Client/Home/TechnicianDetail/technicianRatings';
 export default createMaterialTopTabNavigator({
-    Bookingss: {
+    Bookings: {
         screen: PendingBooking,
         navigationOptions: {
             header: null,
