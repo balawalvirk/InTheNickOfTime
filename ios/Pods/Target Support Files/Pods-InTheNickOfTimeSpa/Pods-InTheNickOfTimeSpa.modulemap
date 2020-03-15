@@ -1,0 +1,6 @@
+framework module Pods_InTheNickOfTimeSpa {
+  umbrella header "Pods-InTheNickOfTimeSpa-umbrella.h"
+
+  export *
+  module * { export * }
+}

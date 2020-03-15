@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Platform, View, Text, ActivityIndicator, TouchableOpacity, Image, StyleSheet, Dimensions, Picker } from 'react-native';
+import { Platform, View, Text,SafeAreaView, ActivityIndicator, TouchableOpacity, Image, StyleSheet, Dimensions, Picker } from 'react-native';
 import images from '../../../../Themes/Images';
 import colors from '../../../../Themes/Colors'
 import { Icon } from 'react-native-elements';
@@ -124,7 +124,7 @@ class HomeTechnician extends Component {
     render() {
 
         return (
-            <View style={styles.Container}>
+            <SafeAreaView style={styles.Container}>
                 <Loader ref={r => this.loader = r} />
                 <View style={{ width: width(90), flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', backgroundColor: 'transparent', marginVertical: height(2) }}>
                     <Icon name='bell' color={colors.SPA_redColor} type='octicon' size={totalSize(4)} onPress={() => this.props.navigation.navigate('notificationTechnician', { notif: this.state.user.notification })} />
@@ -211,7 +211,7 @@ class HomeTechnician extends Component {
                     <Image source={this.state.photo} style={styles.shopImage} />
                 </View>
 
-            </View>
+            </SafeAreaView>
         );
     }
 }

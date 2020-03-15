@@ -1,7 +1,7 @@
 import React from 'react';
 import { Alert, Button, View, StyleSheet, Text, ActivityIndicator } from 'react-native';
 import RNSketchCanvas from '@terrylinla/react-native-sketch-canvas';
-import RNFS from 'react-native-fs';
+// import RNFS from 'react-native-fs';
 import { uploadAsFile2,} from "../backend/firebase/auth_new";
 import { updateDocument,} from "../backend/firebase/utility";
 import firebase from 'firebase';
@@ -17,10 +17,10 @@ export default class SignatureComponent extends React.Component {
 
   upload = (path) => {
     this.setState({loader:true});
-    RNFS.readFile(path, 'base64')
-    .then(base64String =>{
-        this.uploadImage("Agrement", GlobalConst.UserId, base64String);
-    });
+    // RNFS.readFile(path, 'base64')
+    // .then(base64String =>{
+    //     this.uploadImage("Agrement", GlobalConst.UserId, base64String);
+    // });
   }
   async uploadImage(folder, imageName, imageBase64) {
     var isImageUploaded = false ;

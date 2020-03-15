@@ -1,0 +1,35 @@
+# Uncomment the next line to define a global platform for your project
+# platform :ios, '9.0'
+
+target 'InTheNickOfTimeSpa' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+  # pod 'RNFirebase', :path => '../node_modules/react-native-firebase/ios'
+  # Pods for InTheNickOfTimeSpa
+  # pod 'Firebase/Core', ' 5.20.1'
+  # pod 'Firebase/Messaging', ' 5.20.1'
+  target 'InTheNickOfTimeSpa-tvOSTests' do
+    inherit! :search_paths
+    # Pods for testing
+
+  end
+
+  target 'InTheNickOfTimeSpaTests' do
+    inherit! :search_paths
+    # Pods for testing
+  end
+
+end
+
+# target 'InTheNickOfTimeSpa-tvOS' do
+#   # Comment the next line if you don't want to use dynamic frameworks
+#   use_frameworks!
+
+#   # Pods for InTheNickOfTimeSpa-tvOS
+
+#   target 'InTheNickOfTimeSpa-tvOSTests' do
+#     inherit! :search_paths
+#     # Pods for testing
+#   end
+
+# end
