@@ -33,8 +33,8 @@ class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      email: "junaidsaleem.sd@gmail.com", //'virk@gmail.com',
-      password: "password", //'12345',
+      email: "", //'virk@gmail.com',
+      password: "", //'12345',
       loader: false,
       overlayVisible: false,
       checked: true,
