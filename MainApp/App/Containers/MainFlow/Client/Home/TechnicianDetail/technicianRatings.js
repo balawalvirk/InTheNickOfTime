@@ -154,14 +154,15 @@ export class TechnicianRatings extends Component {
                     {/* <View style={styles.iconContainerSmall}>
                                         <Icon name='person' color='rgb(180,210,53)' size={totalSize(4)} />
                                     </View> */}
-                    <Image source={img} style={[styles.profilePicReivew]} />
+                    <Image source={img} style={[styles2.shopImage]} />
                     <View
                       style={{
                         alignItems: "flex-start",
                         justifyContent: "center",
                         width: width(60),
                         backgroundColor: "transparent",
-                        marginVertical: height(3)
+                        marginVertical: height(3),
+                        marginHorizontal: width(1)
                       }}
                     >
                       <View
@@ -320,3 +321,21 @@ export class TechnicianRatings extends Component {
     );
   }
 }
+
+const styles2 = StyleSheet.create({
+  Container: {
+      flex: 1,
+      //backgroundColor: colors.SPA_LightRed
+      // backgroundColor: colors.silver,
+      //alignItems: 'center',
+
+  },
+  shopImage: {
+
+    height: totalSize(6),
+    width: totalSize(6),
+    borderRadius: 30
+
+},
+});
+

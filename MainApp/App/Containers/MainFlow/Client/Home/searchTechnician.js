@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Picker, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity,KeyboardAvoidingView, TextInput, ScrollView, Picker, ActivityIndicator, Alert } from 'react-native';
 import { height, width, totalSize } from 'react-native-dimension'
 import { Icon } from 'react-native-elements'
 //import store from '../../../Stores/orderStore';
@@ -9,7 +9,7 @@ import firebase from 'firebase';
 import Loader from '../../../../Components/Loader';
 import SearchTechConstraints from './../../../../Validations/SearchTechConstraints';
 import validate from 'validate.js';
-import { connectFirebase, saveDate, getAllOfCollection} from "../../../../backend/firebase/utility";
+import { connectFirebase, saveDate, getAllOfCollection } from "../../../../backend/firebase/utility";
 
 //import api from '../../../lib/api'
 class SearchTechnician extends Component {
@@ -20,6 +20,8 @@ class SearchTechnician extends Component {
             showServicesList: false,
             showCategoryList: false,
             showStates: false,
+            isSDisable:true,
+            isSDisable2:true,
             showLocations: false,
             Services_list: [
                 { id: 1, service_name: 'Hand massage', service_code: '025012', service_duration: '30', service_price: 50, description: 'we will provide you the full tension free service...we will provide you the full tension free service..we will provide you the full tension free service' },
@@ -37,10 +39,10 @@ class SearchTechnician extends Component {
                 { id: 4, location: 'Sea site, New york, USA', travel_cost: 30 }
             ],
             Categories_list: [
-                
+
             ],
             states_list: [
-               
+
             ]
         };
     }
@@ -60,9 +62,12 @@ class SearchTechnician extends Component {
 
     async fetchOrders() {
         let LocationList = await getAllOfCollection("Location");
-        this.setState({states_list: LocationList});
+        LocationList.sort((a, b) => a.Name.localeCompare(b.Name));
+        this.setState({ states_list: LocationList });
         let CategoriesList = await getAllOfCollection("Category");
-        this.setState({Categories_list: CategoriesList}); 
+        
+        CategoriesList.sort((a, b) => a.Name.localeCompare(b.Name));
+        this.setState({ Categories_list: CategoriesList });
     }
 
 
@@ -72,16 +77,16 @@ class SearchTechnician extends Component {
         let userIDSet = new Set()
         respServices.forEach(function (data) {
             if (data.data()['services'].includes(serviceToMatch) &&
-                data.data()['travel_locations'].includes(locationToMatch)){
-                    userIDSet.add(data.data()['UserId'])
-                    final.push(data.data())
+                data.data()['travel_locations'].includes(locationToMatch)) {
+                userIDSet.add(data.data()['UserId'])
+                final.push(data.data())
             }
         })
         respLocations.forEach(function (data) {
             if (data.data()['services'].includes(serviceToMatch) &&
-                data.data()['travel_locations'].includes(locationToMatch)&&
-                !userIDSet.has(data.data()['UserId'])){
-                    final.push(data.data())
+                data.data()['travel_locations'].includes(locationToMatch) &&
+                !userIDSet.has(data.data()['UserId'])) {
+                final.push(data.data())
             }
         })
         return final
@@ -94,7 +99,7 @@ class SearchTechnician extends Component {
                 service: this.state.service,
                 location: this.state.location,
             }
-            
+
             let err = validate(jsonObject, SearchTechConstraints, { format: 'flat' });
             if (err) {
                 Alert.alert('Error!', err.join('\n'), [{ text: 'OK', onPress: () => { } }]);
@@ -102,10 +107,11 @@ class SearchTechnician extends Component {
                 this.loader.show();
                 let respServices = await firebase.firestore().collection("Technician").where("services", "array-contains", this.state.ServiceId).get()
                 let respTravelLocations = await firebase.firestore().collection("Technician").where("travel_locations", "array-contains", this.state.LocationId).get()
-                let technicians = this.compare(respServices,respTravelLocations,this.state.ServiceId,this.state.LocationId)
+                let technicians = this.compare(respServices, respTravelLocations, this.state.ServiceId, this.state.LocationId)
                 this.loader.hide()
-                this.props.navigation.navigate('techniciansList', { data: technicians, ServiceID:this.state.ServiceId , LocationID: this.state.LocationId,
-                    ServiceID2:this.state.ServiceId2 , LocationID2: this.state.LocationId2
+                this.props.navigation.navigate('techniciansList', {
+                    data: technicians, ServiceID: this.state.ServiceId, LocationID: this.state.LocationId,
+                    ServiceID2: this.state.ServiceId2, LocationID2: this.state.LocationId2
                 })
             }
 
@@ -122,7 +128,10 @@ class SearchTechnician extends Component {
     render() {
         return (
             <View style={styles.container}>
-
+<KeyboardAvoidingView
+            behavior="position"
+            enabled
+          >
                 <Loader ref={r => this.loader = r} />
                 <ScrollView>
                     <View style={styles.lowerContainer}>
@@ -136,13 +145,14 @@ class SearchTechnician extends Component {
                                 <TextInput
                                     //onChangeText={(value) => this.getSchool_predictions(value)}
                                     onChangeText={async (text) => await this.setState({ service: text })}
-                                    placeholder={'Enter Service'}
+                                    placeholder={'Select Service'}
+                                    editable={this.state.isSDisable}
                                     placeholderTextColor='rgb(217,217,217)'
                                     value={this.state.service}
                                     //placeholderTextColor='gray'
                                     underlineColorAndroid='transparent'
                                     style={styles.TxtInput}
-                                    onFocus={() => this.setState({ showCategoryList: !this.state.showCategoryList })}
+                                    onFocus={() => this.setState({isSDisable:false,isSDisable2:true, showCategoryList: !this.state.showCategoryList })}
                                 />
                             </View>
                             <View style={{ flexDirection: 'row', width: width(90) }}>
@@ -155,7 +165,12 @@ class SearchTechnician extends Component {
                                                         return (
                                                             <TouchableOpacity key={key} style={{ marginHorizontal: 5, borderBottomWidth: 0.4, borderColor: 'gray', elevation: 0 }}
                                                                 onPress={() => {
-                                                                    this.setState({ showServicesList: !this.state.showServicesList,ServicesIndex: key,ServiceId2: item.id ,  })
+                                                                    let TempList = this.state.Categories_list;
+                                                                    if (TempList[key].SubList !== undefined &&
+                                                                        TempList[key].SubList.length > 0) {
+                                                                        TempList[key].SubList.sort((a, b) => a.Name.localeCompare(b.Name));
+                                                                    }
+                                                                    this.setState({Categories_list: TempList, showServicesList: !this.state.showServicesList, ServicesIndex: key, ServiceId2: item.id, })
                                                                 }}
                                                             >
                                                                 <View style={{ marginVertical: 10, alignItems: 'flex-start', justifyContent: 'center' }}>
@@ -180,29 +195,30 @@ class SearchTechnician extends Component {
                                             <ScrollView>
                                                 {
                                                     this.state.Categories_list[this.state.ServicesIndex].SubList !== undefined &&
-                                                    this.state.Categories_list[this.state.ServicesIndex].SubList.length > 0 ?
-                                                    this.state.Categories_list[this.state.ServicesIndex].SubList.map((item, key) => {
-                                                        return (
-                                                            <TouchableOpacity key={key} style={{ marginHorizontal: 5, borderBottomWidth: 0.4, borderColor: 'gray', elevation: 0 }}
-                                                                onPress={() => {
-                                                                    this.setState({
-                                                                        service: item.Name, 
-                                                                        ServiceId: item.id ,
-                                                                        showServicesList: false,
-                                                                        showCategoryList: false
-                                                                    })
-                                                                }}
-                                                            >
-                                                                <View style={{ marginVertical: 10, alignItems: 'flex-start', justifyContent: 'center' }}>
-                                                                    <Text style={{ fontSize: totalSize(2), color: 'black', marginVertical: 3, fontWeight: 'normal' }}>{item.Name}</Text>
-                                                                    {/* <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Price: {item.service_price} $</Text>
+                                                        this.state.Categories_list[this.state.ServicesIndex].SubList.length > 0 ?
+                                                        this.state.Categories_list[this.state.ServicesIndex].SubList.map((item, key) => {
+                                                            return (
+                                                                <TouchableOpacity key={key} style={{ marginHorizontal: 5, borderBottomWidth: 0.4, borderColor: 'gray', elevation: 0 }}
+                                                                    onPress={() => {
+                                                                        this.setState({
+                                                                            service: item.Name,
+                                                                            ServiceId: item.id,
+                                                                            showServicesList: false,
+                                                                            showCategoryList: false,
+                                                                            isSDisable:true,
+                                                                        })
+                                                                    }}
+                                                                >
+                                                                    <View style={{ marginVertical: 10, alignItems: 'flex-start', justifyContent: 'center' }}>
+                                                                        <Text style={{ fontSize: totalSize(2), color: 'black', marginVertical: 3, fontWeight: 'normal' }}>{item.Name}</Text>
+                                                                        {/* <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Price: {item.service_price} $</Text>
                                                                 <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Duration: {item.service_duration} min</Text>
                                                                 <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Description: {item.description}</Text> */}
-                                                                </View>
-                                                            </TouchableOpacity>
-                                                        )
-                                                    })
-                                                    : null
+                                                                    </View>
+                                                                </TouchableOpacity>
+                                                            )
+                                                        })
+                                                        : null
                                                 }
                                             </ScrollView>
                                         </View>
@@ -221,12 +237,13 @@ class SearchTechnician extends Component {
                                         //onFocus={() => this.getProfessors_predictions()}
                                         //onChangeText={(value) => this.getProfessors_predictions()}
                                         onChangeText={async (text) => await this.setState({ location: text })}
-                                        placeholder={'Enter Location'}
+                                        placeholder={'Select Location'}
                                         value={this.state.location}
+                                        editable={this.state.isSDisable2}
                                         placeholderTextColor='rgb(217,217,217)'
                                         underlineColorAndroid='transparent'
                                         style={styles.TxtInput}
-                                        onFocus={() => this.setState({ showStates: !this.state.showStates })}
+                                        onFocus={() => this.setState({isSDisable:true,isSDisable2:false, showStates: !this.state.showStates })}
                                     />
                                 </View>
                             </View>
@@ -238,7 +255,12 @@ class SearchTechnician extends Component {
                                                 return (
                                                     <TouchableOpacity key={key} style={{ marginHorizontal: 5, borderBottomWidth: 0.4, borderColor: 'gray', elevation: 0 }}
                                                         onPress={() => {
-                                                            this.setState({ showLocations: !this.state.showLocations,LocationIndex: key, LocationId2: item.id })
+                                                            let TempList = this.state.states_list;
+                                                            if (TempList[key].SubList !== undefined &&
+                                                                TempList[key].SubList.length > 0) {
+                                                                TempList[key].SubList.sort((a, b) => a.Name.localeCompare(b.Name));
+                                                            }
+                                                            this.setState({ states_list: TempList, showLocations: !this.state.showLocations, LocationIndex: key, LocationId2: item.id })
                                                         }}
                                                     >
                                                         <View style={{ marginVertical: 10, alignItems: 'flex-start', justifyContent: 'center' }}>
@@ -261,30 +283,31 @@ class SearchTechnician extends Component {
                                         <View style={{ width: width(40), backgroundColor: 'white', elevation: 5 }}>
                                             <ScrollView>
                                                 {
-                                                     this.state.states_list[this.state.LocationIndex].SubList !== undefined &&
-                                                     this.state.states_list[this.state.LocationIndex].SubList.length > 0 ?
-                                                     this.state.states_list[this.state.LocationIndex].SubList.map((item, key) => {
-                                                        return (
-                                                            <TouchableOpacity key={key} style={{ marginHorizontal: 5, borderBottomWidth: 0.4, borderColor: 'gray', elevation: 0 }}
-                                                                onPress={() => {
-                                                                    this.setState({
-                                                                        location: item.Name,
-                                                                        LocationId: item.id,
-                                                                        showLocations: false,
-                                                                        showStates: false
-                                                                    })
-                                                                }}
-                                                            >
-                                                                <View style={{ marginVertical: 10, alignItems: 'flex-start', justifyContent: 'center' }}>
-                                                                    <Text style={{ fontSize: totalSize(2), color: 'black', marginVertical: 3, fontWeight: 'normal' }}>{item.Name}</Text>
-                                                                    {/* <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Price: {item.service_price} $</Text>
+                                                    this.state.states_list[this.state.LocationIndex].SubList !== undefined &&
+                                                        this.state.states_list[this.state.LocationIndex].SubList.length > 0 ?
+                                                        this.state.states_list[this.state.LocationIndex].SubList.map((item, key) => {
+                                                            return (
+                                                                <TouchableOpacity key={key} style={{ marginHorizontal: 5, borderBottomWidth: 0.4, borderColor: 'gray', elevation: 0 }}
+                                                                    onPress={() => {
+                                                                        this.setState({
+                                                                            location: item.Name,
+                                                                            LocationId: item.id,
+                                                                            showLocations: false,
+                                                                            showStates: false,
+                                                                            isSDisable2:true,
+                                                                        })
+                                                                    }}
+                                                                >
+                                                                    <View style={{ marginVertical: 10, alignItems: 'flex-start', justifyContent: 'center' }}>
+                                                                        <Text style={{ fontSize: totalSize(2), color: 'black', marginVertical: 3, fontWeight: 'normal' }}>{item.Name}</Text>
+                                                                        {/* <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Price: {item.service_price} $</Text>
                                                                 <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Duration: {item.service_duration} min</Text>
                                                                 <Text style={{ fontSize: totalSize(1.5), color: 'gray' }}>Description: {item.description}</Text> */}
-                                                                </View>
-                                                            </TouchableOpacity>
-                                                        )
-                                                    })
-                                                    :null
+                                                                    </View>
+                                                                </TouchableOpacity>
+                                                            )
+                                                        })
+                                                        : null
                                                 }
                                             </ScrollView>
                                         </View>
@@ -308,6 +331,7 @@ class SearchTechnician extends Component {
                         </View>
                     </View>
                 </ScrollView>
+                </KeyboardAvoidingView>
             </View>
         );
     }

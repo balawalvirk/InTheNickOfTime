@@ -19,6 +19,7 @@ import Loader from "../../../../Components/Loader";
 import { height, width, totalSize } from "react-native-dimension";
 import { withNavigationFocus } from "react-navigation";
 import firebase from "firebase";
+import firestore from 'firebase/firestore';
 import AsyncStorage from "@react-native-community/async-storage";
 import { saveData } from "../../../../backend/firebase/utility";
 class HomeTechnician extends Component {
@@ -51,12 +52,14 @@ class HomeTechnician extends Component {
   loadUser = async () => {
     await AsyncStorage.getItem("user", (error, data) => {
       if (data) {
+        console.log("Data",data)
         user = JSON.parse(data);
-        this.checkImage(user.photo);
-        this.GetRatting(user);
+        console.log("Data",user)
+        this.checkImage(user.data.photo);
+        this.GetRatting(user.data);
         this.setState({
-          name: user.name,
-          email: user.email
+          name: user.data.name,
+          email: user.data.email
         });
       }
     });
@@ -129,12 +132,12 @@ class HomeTechnician extends Component {
     // }
   }
   async componentDidMount() {
-    this.props.navigation.addListener("willFocus", async () => {
-      if (this.state.name == null || this.state.name == "") {
+    this.props.navigation.addListener("didFocus", async () => {
+      // if (this.state.name == null || this.state.name == "") {
         this.loader.show();
         await this.loadUser();
         this.loader.hide();
-      }
+      // }
     });
   }
 
@@ -196,7 +199,7 @@ class HomeTechnician extends Component {
               </View>
 
               <Text style={styles.txt}>TODAY</Text>
-              <Text style={styles.txt}>AVAILABILTIY</Text>
+              <Text style={styles.txt}>AVAILABILITY</Text>
             </View>
             <View style={styles.sqareView}>
               <View
@@ -229,7 +232,7 @@ class HomeTechnician extends Component {
                   : null}
               </View>
               <Text style={styles.txt}>WEEKLY</Text>
-              <Text style={styles.txt}>AVAILABILTIY</Text>
+              <Text style={styles.txt}>AVAILABILITY</Text>
             </View>
             <View style={styles.sqareView}>
               <View

@@ -12,6 +12,7 @@ import firebase from 'firebase'
 import StarRating from 'react-native-star-rating';
 import Modal from 'react-native-modal'
 import styles2 from '../../../Styles/technicianDetailStyles'
+// import undefined from 'firebase/empty-import';
 // import { TouchableOpacity } from 'react-native-gesture-handler';
 class myBookingsCompleted extends Component {
   constructor(props) {
@@ -190,7 +191,7 @@ class myBookingsCompleted extends Component {
                           </View>
                           <View style={styles.shopTxtContainer}>
                             <Text style={styles.shopName}>{items.userName}</Text>
-                            <View style={{ flexDirection: 'row' }}>
+                            <View style={{ flexDirection: 'row', flexWrap:"wrap" }}>
                               <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Service: </Text>
                               {
                                 items.services.map((u, i) => {
@@ -222,13 +223,15 @@ class myBookingsCompleted extends Component {
                                 fullStarColor={colors.SPA_redColor}
                               />
                               :
-                              <TouchableOpacity style={[styles2.button, { borderRadius: 5, backgroundColor: colors.SPA_redColor, marginRight: 0, height: 30, width: 80 }]}>
-                                <Text style={[styles2.buttonTxt, { fontWeight: "bold" }]}>No Ratting</Text>
+                              <TouchableOpacity style={[styles2.button, { borderRadius: 5, backgroundColor: colors.SPA_redColor, marginRight: 0, height: 20, width: 80 }]}>
+                                <Text style={[styles2.buttonTxt, { fontWeight: "bold", fontSize: 14 }]}>No Rating</Text>
                               </TouchableOpacity>
                             }
-                            <View style={[styles.statusContainer,{marginVertical: 5, marginHorizontal: 0}]} >
-                              {items.isRated !== "" ? <Text style={[styles.shopDetail,{marginVertical: 10, marginHorizontal: 10}]}>Review: {items.Review}</Text> : null}
+                            {items.isRated !== "" && items.Review!==undefined ? 
+                            <View style={[styles.statusContainer,{marginVertical: 2, marginHorizontal: 0}]} >
+                              <Text style={[styles.shopDetail,{marginVertical: 10, marginHorizontal: 10}]}>Review: {items.Review}</Text> 
                             </View>
+                            : null}
                             <View style={[styles.statusContainer]} >
                               {
                                 items.status === 'accepted' ?
@@ -389,7 +392,7 @@ const styles = StyleSheet.create({
 
     height: totalSize(6),
     width: totalSize(6),
-    borderRadius: 100
+    borderRadius: 30
 
   },
   shopTxtContainer: {

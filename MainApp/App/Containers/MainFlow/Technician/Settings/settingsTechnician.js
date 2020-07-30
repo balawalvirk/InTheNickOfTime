@@ -30,8 +30,9 @@ class SettingTechnician extends Component {
     this.setState({ isModalVisibleLogout: !this.state.isModalVisibleLogout });
 
   logOut = async () => {
-    await signOut();
-    await AsyncStorage.getAllKeys().then(AsyncStorage.multiRemove);
+    
+    await AsyncStorage.removeItem("user");
+    // await signOut();
     this._toggleModalLogout();
     this.props.navigation.push("login");
   };

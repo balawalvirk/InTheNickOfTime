@@ -98,7 +98,7 @@ class myBookings extends Component {
                           </View>
                           <View style={styles.shopTxtContainer}>
                           <Text style={styles.shopName}>{items.technicianName}</Text>
-                          <View style={{ flexDirection: 'row' }}>
+                          <View style={{ flexDirection: 'row', flexWrap:"wrap" }}>
                             <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Service: </Text>
                             {
                               items.services.map((u, i) => {
@@ -110,10 +110,16 @@ class myBookings extends Component {
                               })
                             }
                           </View>
+                          <View style={{ flexDirection: 'row', flexWrap:"wrap" }}>
                           <Text style={styles.shopDetail}>Comments: {items.comments}</Text>
-                          <Text style={styles.shopDetail}>Total Amount : {items.amount} $</Text>
+                          </View>
+                          
+                          <Text style={styles.shopDetail}>Total Amount : ${items.amount}</Text>
                           <Text style={styles.shopDetail}>At {items.time} - {items.date_time}</Text>
-                          <Text style={styles.shopDetail}>Location: {items.location}</Text>
+                          <View style={{ flexDirection: 'row', flexWrap:"wrap" }}>
+
+                          <Text style={styles.shopDetail}>Location: {items.address+","+ items.location}</Text>
+                          </View>
                         </View>
                           <View style={[styles.shopIconContainer]}>
                             {/* <TouchableOpacity style={styles.iconContainer} >
@@ -239,7 +245,7 @@ const styles = StyleSheet.create({
 
     height: totalSize(6),
     width: totalSize(6),
-    borderRadius: 100
+    borderRadius: 30
 
   },
   shopTxtContainer: {

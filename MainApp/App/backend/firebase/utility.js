@@ -5,7 +5,8 @@ import GlobalConst from '../../config/GlobalConst';
 import { Platform, AsyncStorage } from 'react-native';
 import uuid from 'uuid';
 import MyPortfolio from '../../Containers/MainFlow/Technician/Home/myPortfolio';
-
+import ImageResizer from 'react-native-image-resizer';
+import RNFetchBlob from 'react-native-fetch-blob';
 
 export function connectFirebase() {
   // Initialize Firebase
@@ -21,21 +22,6 @@ export function connectFirebase() {
   if (!firebase.apps.length) {
     firebase.initializeApp(config);
   }
-
-  // Your web app's Firebase configuration
-  // var firebaseConfig = {
-  //   apiKey: "AIzaSyDCIxKAqUFfwdKvBfqDe2fREpJ80zoyfuE",
-  //   authDomain: "inthenickoftimespa-66dcc.firebaseapp.com",
-  //   databaseURL: "https://inthenickoftimespa-66dcc.firebaseio.com",
-  //   projectId: "inthenickoftimespa-66dcc",
-  //   storageBucket: "inthenickoftimespa-66dcc.appspot.com",
-  //   messagingSenderId: "952301872063",
-  //   appId: "1:952301872063:web:d6733ce986f657f2"
-  // };
-  // // Initialize Firebase
-  // if (!firebase.apps.length) {
-  //   firebase.initializeApp(firebaseConfig);
-  // }
 }
 
 
@@ -548,6 +534,72 @@ export async function uploadPortfolio(image, collectionInfo, progressCallback) {
         AsyncStorage.setItem('user', tmp_usr)
         console.log('Technicain',user.id,user)
         updateDocument('Technician',user.id,user).then((res)=>{
+          console.log("res",res);
+          
+        },(err)=>{
+          console.log(err);
+          
+        })
+        success = 0
+
+        // save a reference to the image for listing purposes
+        // let refAssets = firebase.database().ref('assets');
+        // refAssets.push({
+        //   'URL': downloadURL,
+        //   //'thumb': _imageData['thumb'],
+        //   'name': name,
+        //   //'coords': _imageData['coords'],
+        //   'owner': firebase.auth().currentUser && firebase.auth().currentUser.uid,
+        //   'when': new Date().getTime()
+        // }).then(r => resolve(r), e => reject(e))
+      }
+    );
+  });
+}
+export async function uploadProfileimage(image, collectionInfo, userObj) {
+
+  console.log("uploadAsFile", image)
+  const response = await fetch(image.uri);
+  const blob = await response.blob();
+
+  var metadata = {
+    contentType: image.type,
+  };
+
+  // let name = new Date().getTime() + "-" + image.fileName;
+  let name = collectionInfo.uid + "-" + image.name;
+  const ref = firebase
+    .storage()
+    .ref()
+    .child('assets/' + name)
+
+  const task = ref.put(blob, metadata);
+
+  return new Promise((resolve, reject) => {
+    task.on(
+      'state_changed',
+      (snapshot) => {
+        // progressCallback && progressCallback(snapshot.bytesTransferred / snapshot.totalBytes)
+
+        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload is ' + progress + '% done');
+      },
+      (error) => reject(error), /* this is where you would put an error callback! */
+      async () => {
+        // let downloadURL = task.snapshot.downloadURL;
+
+        let downloadURL = await ref.getDownloadURL();
+        console.log("_uploadAsByteArray ", downloadURL);
+        // user = await AsyncStorage.getItem('user')
+        // user = JSON.parse(user)
+        
+        
+        userObj.photo = downloadURL
+        tmp_usr = JSON.stringify(userObj)
+        AsyncStorage.setItem('user', tmp_usr)
+        AsyncStorage.setItem('user_detail', JSON.stringify(userObj));
+        alert(downloadURL)
+        updateDocument(collectionInfo.collection,collectionInfo.uid,userObj).then((res)=>{
           console.log("res",res);
           
         },(err)=>{

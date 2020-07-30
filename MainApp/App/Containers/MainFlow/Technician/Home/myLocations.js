@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, TextInput, Picker } from 'react-native';
+import { View, Text, StyleSheet,TouchableWithoutFeedback, ScrollView,Keyboard, Image,KeyboardAvoidingView, TouchableOpacity, TextInput, Picker } from 'react-native';
 import { width, height, totalSize } from 'react-native-dimension'
 import { Icon } from 'react-native-elements'
 import images from '../../../../Themes/Images';
@@ -10,6 +10,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { throwStatement } from '@babel/types';
 import Loader from "../../../../Components/Loader"
 import firebase from 'firebase';
+import ModalSelector from "react-native-modal-selector";
 _this = null;
 class myLocations extends Component {
   constructor(props) {
@@ -37,10 +38,10 @@ class myLocations extends Component {
       Cindex: '',
 
       Categories_list: [
-        { id: 1, category_name: 'Hair' },
-        { id: 2, category_name: 'Nails' },
-        { id: 3, category_name: 'Massage' },
-        { id: 4, category_name: 'Hands Care' },
+        // { id: 1, category_name: 'Hair' },
+        // { id: 2, category_name: 'Nails' },
+        // { id: 3, category_name: 'Massage' },
+        // { id: 4, category_name: 'Hands Care' },
       ]
     };
   }
@@ -52,7 +53,7 @@ class myLocations extends Component {
       this.loader.show()
       await this.loadUser()
       await this.loadServices()
-
+      _this=this;
       this.loader.hide()
 
     });
@@ -65,20 +66,28 @@ class myLocations extends Component {
   async loadServices() {
     let ServicesList = [];
     let SList = await getAllOfCollection("Location");
-
+    let index=0;
     SList.forEach(element => {
       if (element.SubList !== undefined) {
+
+        element.index=index;
+        index++;
+        index2=0;
+        element.SubList.forEach(Newelement=>{
+          Newelement.index=index2;
+          index2++;
+        })
         ServicesList.push(element);
       }
     });
-
-    this.setState({ Categories_list: ServicesList });
-   // this.loadServicesList();
+    // console.log("Service List: ",ServicesList)
+   await this.setState({ Categories_list: ServicesList });
+   this.loadServicesList();
   }
 
   async loadServicesList() {
     let List = [];
-    let TechnicianList = await firebase.firestore().collection("Technician").where("UserId", "==", this.state.user.UserId).get()
+    let TechnicianList = await firebase.firestore().collection("Technician").where("UserId", "==", this.state.user.data.UserId).get()
     TechnicianList.forEach(element3 => {
 
       if (element3.data().locationList !== undefined && element3.data().locationList.length > 0) {
@@ -94,8 +103,10 @@ class myLocations extends Component {
             }
           }
         });
-        this.setState({ services: List })
+        console.log("Service List: ",this.state.Categories_list)
+        this.setState({ services: element3.data().locationList })
       } else {
+        console.log("Service List: ",this.state.Categories_list)
         this.setState({ services: [] })
       }
     });
@@ -103,18 +114,18 @@ class myLocations extends Component {
 
   async loadUser() {
     sv = []
-    user = await AsyncStorage.getItem('user')
-    user = JSON.parse(user)
-    console.log(user)
+    data = await AsyncStorage.getItem('user')
+    user = JSON.parse(data)
+    console.log("User ",user)
     // try {
     //   sv = JSON.parse(user.service_details)
     // } catch (err) {
     //   sv = []
     // }
-    let Updateduser = await getData('Technician', user.id);
-    this.setState({ user: Updateduser })
-    console.log(this.state.services);
-    _this = this;
+    let Updateduser = await getData('Technician', user.data.UserId);
+    user.data=Updateduser;
+    await this.setState({ user: user })
+    console.log(Updateduser);
   }
 
   uniqueID() {
@@ -138,21 +149,22 @@ class myLocations extends Component {
       this.state.NewSCid !== ""
     ) {
       TempObj.Cost = this.state.NewCost;
-      TempObj.Name = this.state.Categories_list[this.state.Cindex - 1].SubList[this.state.CVIndex - 1].Name;
+      TempObj.Name = this.state.Categories_list[this.state.Cindex].SubList[this.state.CVIndex].Name;
       TempObj.id = this.state.NewSCid;
 
 
       let NewList = this.state.services;
       NewList.push(TempObj);
-      this.state.user.locationList = NewList;
+      this.state.user.data.locationList = NewList;
 
-      let ServiceTempList = this.state.user.travel_locations;
-      if (ServiceTempList !== undefined && !ServiceTempList.includes(this.state.NewSCid)) {
-        ServiceTempList.push(this.state.NewSCid);
+      let ServiceTempList = this.state.user.data.travel_locations;
+      if (ServiceTempList !== undefined && !ServiceTempList.includes(TempObj.id)) {
+        ServiceTempList.push(TempObj.id.id);
       }
-      this.state.user.travel_locations = ServiceTempList;
+      this.state.user.data.travel_locations = ServiceTempList;
       this.loader.show()
-      let rs = await saveData('Technician', this.state.user.id, this.state.user);
+      console.log(this.state.user)
+      let rs = await saveData('Technician', this.state.user.data.UserId, this.state.user.data);
       await AsyncStorage.setItem('user', JSON.stringify(this.state.user));
       this.setState({ isModalVisible: !this.state.isModalVisible });
       await this.loadUser();
@@ -173,7 +185,7 @@ class myLocations extends Component {
 
   updateService = async () => {
     index = this.state.idToUpdtate
-    let List = this.state.user.locationList;
+    let List = this.state.user.data.locationList;
 
     // alert (this.state.EditCost + ":" +this.state.EditDescraption + ":" + this.state.EditSCid);
     if (
@@ -182,24 +194,24 @@ class myLocations extends Component {
       this.state.EditSCid !== ""
     ) {
       List[index].Cost = this.state.EditCost
-      List[index].Name = this.state.Categories_list[this.state.Cindex - 1].SubList[this.state.CVIndex - 1].Name;
+      List[index].Name = this.state.Categories_list[this.state.Cindex].SubList[this.state.CVIndex].Name;
       List[index].id = this.state.EditSCid
 
 
 
 
-      let Obj = this.state.user
+      let Obj = this.state.user.data
       Obj.locationList = List;
 
       let ServiceTempList = Obj.travel_locations;
       if (!ServiceTempList.includes(this.state.EditSCid)) {
-        ServiceTempList.push(this.state.EditSCid);
+        ServiceTempList.push(this.state.EditSCid.id);
       }
       Obj.travel_locations = ServiceTempList;
 
 
       this.loader.show()
-      await updateDocument('Technician', this.state.user.id, Obj).then(success => {
+      await updateDocument('Technician', this.state.user.data.UserId, Obj).then(success => {
 
       })
       await this.loadUser();
@@ -219,14 +231,14 @@ class myLocations extends Component {
 
   deleteService = async (i) => {
 
-    this.state.user.locationList.splice(i, 1)
+    this.state.user.data.locationList.splice(i, 1)
 
     this.loader.show()
-    await updateDocument('Technician', this.state.user.id, this.state.user).then(success => {
+    await updateDocument('Technician', this.state.user.data.UserId, this.state.user.data).then(success => {
 
     })
     await this.loadUser();
-   // this.loadServicesList();
+   this.loadServicesList();
     this.setState(this.state)
 
     this.loader.hide()
@@ -322,7 +334,12 @@ class myLocations extends Component {
           backdropOpacity={0.50}
           onBackdropPress={this._toggleModal}>
           <View >
+          <KeyboardAvoidingView
+            behavior="padding"
+            enabled
+          >
             <View style={styles.popUpTop}>
+
               <Text style={styles.popUpTopTxt}>Create Location</Text>
               <View style={{ width: width(25) }}></View>
               <TouchableOpacity onPress={this._toggleModal} style={{ marginRight: width(1) }} >
@@ -342,13 +359,17 @@ class myLocations extends Component {
 
               <View style={styles.inputTxtContainer} >
                 <Text style={styles.popUpText}>Location</Text>
-                <View style={{ marginTop: height(1), alignItems: 'center', justifyContent: 'center', width: width(80), height: height(6), borderRadius: 5, elevation: 5, backgroundColor: 'white', }}>
-                  <Picker
+                <View style={{ marginTop: height(1), alignItems: 'center', justifyContent: 'center', width: width(80), height: height(5), borderRadius: 5, elevation: 5, backgroundColor: 'white', }}>
+                  {/* <Picker
                     mode='dropdown'
                     selectedValue={this.state.NewCid}
                     style={styles.PickerStyle}
-                    onValueChange={(itemValue, itemIndex) =>
+                    onValueChange={(itemValue, itemIndex) =>{
+                    if(itemIndex>0) {
                       this.setState({ NewCid: itemValue, Cindex: itemIndex })
+                    }
+                      
+                    }
                     }>
                     <Picker.Item label="Select Location" value='' />
                     {
@@ -359,7 +380,29 @@ class myLocations extends Component {
                       })
 
                     }
-                  </Picker>
+                  </Picker> */}
+                  <ModalSelector
+                      data={
+                        this.state.Categories_list
+                      }
+                      initValue="Select Location"
+                      // supportedOrientations={['landscape']}
+                      accessible={true}
+                      keyExtractor={(item) => item.id}
+                      labelExtractor={(item) => item.Name}
+                      scrollViewAccessibilityLabel={"Scrollable options"}
+                      cancelButtonAccessibilityLabel={"Cancel Button"}
+                      onChange={(itemValue, itemIndex) => {
+                        //  alert(itemValue.index)
+                        console.log("item value: ", itemValue)
+                        this.setState({
+                          
+                          NewCName: itemValue.Name,
+                          NewCid: itemValue.id,
+                          Cindex: itemValue.index,
+                        });
+                      }}
+                    ></ModalSelector>
                 </View>
               </View>
               {this.state.Cindex !== "" ?
@@ -370,8 +413,8 @@ class myLocations extends Component {
                 // </View> 
                 <View style={styles.inputTxtContainer} >
                   <Text style={styles.popUpText}>Sub Location</Text>
-                  <View style={{ marginTop: height(1), alignItems: 'center', justifyContent: 'center', width: width(80), height: height(6), borderRadius: 5, elevation: 5, backgroundColor: 'white', }}>
-                    <Picker
+                  <View style={{ marginTop: height(0), alignItems: 'center', justifyContent: 'center', width: width(80), height: height(5), borderRadius: 5, elevation: 5, backgroundColor: 'white', }}>
+                    {/* <Picker
                       mode='dropdown'
                       selectedValue={this.state.NewSCid}
                       style={styles.PickerStyle}
@@ -380,9 +423,9 @@ class myLocations extends Component {
                       }>
                       <Picker.Item label="Select Sub Location" value='' />
                       {
-                        this.state.Categories_list[this.state.Cindex - 1].SubList !== undefined &&
-                          this.state.Categories_list[this.state.Cindex - 1].SubList.length > 0 ?
-                          this.state.Categories_list[this.state.Cindex - 1].SubList.map((item, key) => {
+                        this.state.Categories_list[this.state.Cindex ].SubList !== undefined &&
+                          this.state.Categories_list[this.state.Cindex ].SubList.length > 0 ?
+                          this.state.Categories_list[this.state.Cindex ].SubList.map((item, key) => {
                             return (
                               <Picker.Item key={key} label={item.Name} value={item.id} />
                             )
@@ -390,7 +433,23 @@ class myLocations extends Component {
                           :
                           null
                       }
-                    </Picker>
+                    </Picker> */}
+                    <ModalSelector
+                      data={this.state.Categories_list[this.state.Cindex].SubList}
+                      initValue="Select Sub Location"
+                      // supportedOrientations={['landscape']}
+                      accessible={true}
+                      keyExtractor={(item) => item.id}
+                      labelExtractor={(item) => item.Name}
+                      scrollViewAccessibilityLabel={"Scrollable options"}
+                      cancelButtonAccessibilityLabel={"Cancel Button"}
+                      onChange={(itemValue, itemIndex) => {
+                        //  alert(itemIndex)
+                        this.setState({
+                           NewSCid: itemValue, CVIndex: itemValue.index 
+                        })
+                      }}
+                    ></ModalSelector>
                   </View>
                 </View>
                 :
@@ -406,21 +465,28 @@ class myLocations extends Component {
                   style={styles.popUpInput}
                 />
               </View> */}
-
+  
               <View style={styles.inputTxtContainer}>
+              {/* <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}> */}
+                <>
                 <Text style={styles.popUpText}>Travel Cost</Text>
                 <TextInput
-                  placeholder='100'
+                placeholderTextColor={"gray"}
+                blurOnSubmit={true}
+                  placeholder='00'
                   keyboardType='numeric'
-                  placeholderTextColor='rgb(217,217,217)'
+                  returnKeyType='done'
+                  // placeholderTextColor='rgb(217,217,217)'
                   style={styles.popUpInput}
                   onChangeText={(value) => {
                     this.setState({ NewCost: value })
                   }}
                 />
+                </>
+                {/* </TouchableWithoutFeedback> */}
               </View>
 
-
+             
 
               {/* <View style={styles.inputTxtContainer}>
                 <Text style={styles.popUpText}>Description</Text>
@@ -457,6 +523,7 @@ class myLocations extends Component {
                 }
               </TouchableOpacity>
             </View>
+         </KeyboardAvoidingView>
           </View>
 
         </Modal>
@@ -472,6 +539,12 @@ class myLocations extends Component {
           backdropOpacity={0.50}
           onBackdropPress={this._toggleModalEdite}>
           <View >
+          <KeyboardAvoidingView
+            behavior="position"
+            enabled
+          >
+           
+              <View style={styles.inputTxtContainer} >
             <View style={styles.popUpTop}>
               <Text style={styles.popUpTopTxt}>Edit Location</Text>
               <View style={{ width: width(25) }}></View>
@@ -495,16 +568,19 @@ class myLocations extends Component {
         EditCid: service.ServiceId,
         EditSCid: service.SubServiceId, */}
             <View style={styles.popUpContainerService}>
-
-              <View style={styles.inputTxtContainer} >
+            
                 <Text style={styles.popUpText}>Location</Text>
-                <View style={{ marginTop: height(1), alignItems: 'center', justifyContent: 'center', width: width(80), height: height(6), borderRadius: 5, elevation: 5, backgroundColor: 'white', }}>
-                  <Picker
+                <View style={{ marginTop: height(1), alignItems: 'center', justifyContent: 'center', width: width(80), height: height(5), borderRadius: 5, elevation: 5, backgroundColor: 'white', }}>
+                  {/* <Picker
                     mode='dropdown'
                     selectedValue={this.state.EditCid}
                     style={styles.PickerStyle}
-                    onValueChange={(itemValue, itemIndex) =>
-                      this.setState({ EditCid: itemValue, Cindex: itemIndex })
+                    onValueChange={(itemValue, itemIndex) =>{
+                      if(itemIndex>0) {
+                        this.setState({ EditCid: itemValue, Cindex: itemIndex })
+                      }
+                      
+                    }
                     }>
                     <Picker.Item label="Select Location" value='' />
                     {
@@ -515,7 +591,23 @@ class myLocations extends Component {
                       })
 
                     }
-                  </Picker>
+                  </Picker> */}
+                  <ModalSelector
+                      data={this.state.Categories_list}
+                      initValue="Select Location"
+                      // supportedOrientations={['landscape']}
+                      accessible={true}
+                      keyExtractor={(item) => item.id}
+                      labelExtractor={(item) => item.Name}
+                      scrollViewAccessibilityLabel={"Scrollable options"}
+                      cancelButtonAccessibilityLabel={"Cancel Button"}
+                      onChange={(itemValue, itemIndex) => {
+                        //  alert(itemIndex)
+                        this.setState({
+                          EditCid: itemValue, Cindex: itemValue.index,
+                        })
+                      }}
+                    ></ModalSelector>
                 </View>
               </View>
               {this.state.Cindex !== "" ?
@@ -526,8 +618,8 @@ class myLocations extends Component {
                 // </View> 
                 <View style={styles.inputTxtContainer} >
                   <Text style={styles.popUpText}>Sub Location</Text>
-                  <View style={{ marginTop: height(1), alignItems: 'center', justifyContent: 'center', width: width(80), height: height(6), borderRadius: 5, elevation: 5, backgroundColor: 'white', }}>
-                    <Picker
+                  <View style={{ marginTop: height(0), alignItems: 'center', justifyContent: 'center', width: width(80), height: height(5), borderRadius: 5, elevation: 5, backgroundColor: 'white', }}>
+                    {/* <Picker
                       mode='dropdown'
                       selectedValue={this.state.EditSCid}
                       style={styles.PickerStyle}
@@ -546,7 +638,23 @@ class myLocations extends Component {
                           :
                           null
                       }
-                    </Picker>
+                    </Picker> */}
+                    <ModalSelector
+                      data={this.state.Categories_list[this.state.Cindex].SubList}
+                      initValue="Select Location"
+                      // supportedOrientations={['landscape']}
+                      accessible={true}
+                      keyExtractor={(item) => item.id}
+                      labelExtractor={(item) => item.Name}
+                      scrollViewAccessibilityLabel={"Scrollable options"}
+                      cancelButtonAccessibilityLabel={"Cancel Button"}
+                      onChange={(itemValue, itemIndex) => {
+                        //  alert(itemIndex)
+                        this.setState({
+                          EditSCid: itemValue, CVIndex: itemValue.index,
+                        })
+                      }}
+                    ></ModalSelector>
                   </View>
                 </View>
                 :
@@ -565,19 +673,26 @@ class myLocations extends Component {
               </View> */}
 
               <View style={styles.inputTxtContainer}>
+              {/* <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}> */}
+                <>
                 <Text style={styles.popUpText}>Travel Cost</Text>
                 <TextInput
                   placeholder={this.state.EditCost}
                   keyboardType='numeric'
-                  placeholderTextColor='rgb(217,217,217)'
+                  returnKeyType='done'
+                  placeholderTextColor={"gray"}
+                      blurOnSubmit={true}
+                  // placeholderTextColor='rgb(217,217,217)'
                   style={styles.popUpInput}
                   onChangeText={(value) => {
                     this.setState({ EditCost: value })
                   }}
                   value= {this.state.EditCost}
                 />
+                </>
+                {/* </TouchableWithoutFeedback> */}
               </View>
-
+              
 
 
               {/* <View style={styles.inputTxtContainer}>
@@ -616,6 +731,8 @@ class myLocations extends Component {
                 }
               </TouchableOpacity>
             </View>
+           
+          </KeyboardAvoidingView>
           </View>
 
         </Modal>
@@ -849,7 +966,7 @@ const styles = StyleSheet.create({
   },
   PickerStyle: {
     width: width(60),
-    height: height(5),
+    // height: height(5),
     //alignItems: 'center',
     //justifyContent: 'center',
     //backgroundColor: 'white',

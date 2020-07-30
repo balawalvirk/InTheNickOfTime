@@ -147,11 +147,11 @@ class Payment extends Component {
                         if (data) {
                             res = JSON.parse(data)
                             console.log(res);
-                            Booking.userId = res.id
-                            Booking.userName = res.name
-                            Booking.Email = res.email
-                            Booking.phoneNumber = res.phoneNumber
-                            Booking.UToken = res.Token !== undefined && res.Token !== null ? res.Token : ""
+                            Booking.userId = res.data.id
+                            Booking.userName = res.data.name
+                            Booking.Email = res.data.email
+                            Booking.phoneNumber = res.data.phoneNumber
+                            Booking.UToken = res.Token !== undefined && res.data.Token !== null ? res.data.Token : ""
                         }
                         for (i = 0; i < this.props.navigation.getParam('services', 0).length; i++) {
                             Booking.servicesList = Booking.servicesList + " " + this.props.navigation.getParam('services', '')[i].service_name
@@ -196,11 +196,6 @@ class Payment extends Component {
                     // this.loader.hide();
                     this.setState({ loader: false });
                 }
-
-
-
-
-
             }).catch(err => {
                 alert(err.error.message)
             })

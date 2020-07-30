@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 // import { View, Text, StyleSheet, ScrollView, TextInput, Image, Button } from 'react-native';
-import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator, TouchableOpacity, TextInput, KeyboardAvoidingView } from 'react-native';
 
 import images from '../../../../Themes/Images';
 import { width, height, totalSize } from 'react-native-dimension'
@@ -21,6 +21,7 @@ class myBookingsCompleted extends Component {
 
     this.state = {
       loadingServices: true,
+      comment:"",
       Booking_list: [
         // { id: 1, client_name: 'Lina', client_profile_pic: images.profilePic, service_name: 'Hand massage', service_code: '025012', Address: '18002 Sea Island olace, New York, USA', service_price: '50', dateTime: '8:00AM 06-15-19', status: 'Accepted', Categories: ['Care', 'NailCare', 'Facials', 'Hair'] },
         // { id: 2, client_name: 'Salish', client_profile_pic: images.profilePic, service_name: 'Face Cleaning & Facial', Address: '18002 Sea Island olace, New York, USA', service_duration: '30', service_price: '50', dateTime: '8:00AM 06-15-19', status: 'Declined', Categories: ['Care', 'NailCare', 'Facials', 'Hair'] },
@@ -147,19 +148,19 @@ class myBookingsCompleted extends Component {
                   this.state.Booking_list.length > 0 ?
                     this.state.Booking_list.map((items, key) => {
                       let img = null;
-                      if (items.photo != null) {
-                        img = { uri: items.photo }
-                      } else {
-                        img = images.profilePic
-                      }
+                      // if (items.photo != null) {
+                      //   img = { uri: items.photo }
+                      // } else {
+                      //   img = images.profilePic
+                      // }
                       return (
                         <View key={key} style={styles.shopContainer}>
                           <View style={styles.shopImageContainer}>
-                            <Image source={img} style={styles.shopImage} />
+                            <Image source={items.photo !== undefined ? {uri:items.photo} :  images.profilePic} style={styles.shopImage} />
                           </View>
                           <View style={styles.shopTxtContainer}>
                           <Text style={styles.shopName}>{items.technicianName}</Text>
-                          <View style={{ flexDirection: 'row' }}>
+                          <View style={{ flexDirection: 'row', flexWrap:"wrap" }}>
                             <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Service: </Text>
                             {
                               items.services.map((u, i) => {
@@ -171,10 +172,16 @@ class myBookingsCompleted extends Component {
                               })
                             }
                           </View>
+                          <View style={{ flexDirection: 'row', flexWrap:"wrap" }}>
                           <Text style={styles.shopDetail}>Comments: {items.comments}</Text>
-                          <Text style={styles.shopDetail}>Total Amount : {items.amount} $</Text>
+                          </View>
+                          
+                          <Text style={styles.shopDetail}>Total Amount : ${items.amount}</Text>
                           <Text style={styles.shopDetail}>At {items.time} - {items.date_time}</Text>
-                          <Text style={styles.shopDetail}>Location: {items.location}</Text>
+                          <View style={{ flexDirection: 'row', flexWrap:"wrap" }}>
+                          <Text style={styles.shopDetail}>Location: {items.address+","+ items.location}</Text>
+                          </View>
+                          
                           </View>
                           <View style={[styles.shopIconContainer]}>
                             {items.isRated ?
@@ -222,6 +229,10 @@ class myBookingsCompleted extends Component {
           onBackdropPress={this._toggleModal}>
 
           <View>
+          <KeyboardAvoidingView
+            behavior="position"
+            enabled
+          >
             <View style={styles2.modalHeader}>
               <Text style={[styles2.txtLarg, { fontSize: totalSize(2), color: 'white' }]}>Rate a Technician</Text>
             </View>
@@ -250,11 +261,26 @@ class myBookingsCompleted extends Component {
                   <TextInput
                     onChangeText={(value) => this.setState({ comment: value })}
                     placeholder='ENTER COMMENT HERE'
-                    placeholderTextColor='rgb(245,245,238)'
+                    multiline={true}
+                    blurOnSubmit={true}
+                    // placeholderTextColor='rgb(245,245,238)'
                     style={styles2.commentInput}
                   />
                 </View>
-                <TouchableOpacity onPress={() => this.RattingSubmit()} style={styles2.buttonModal}>
+                <TouchableOpacity onPress={() => {
+                  if(this.state.comment=""){
+                    alert("Please enter comment.You cannot post a rating without comment")
+                  } else {
+                    // if(this.starCount===0){
+                    //   alert("Please rate stare.You cannot post a rating without select stars")
+                    // }else{
+                      this.RattingSubmit()
+                    // }
+                    
+                  }
+                  
+                  
+                  }} style={styles2.buttonModal}>
                   {
 
                     <Text style={{ fontSize: totalSize(2), color: 'white', fontWeight: "bold" }}>Submit</Text>
@@ -264,7 +290,7 @@ class myBookingsCompleted extends Component {
 
 
             </View>
-
+</KeyboardAvoidingView>
           </View>
         </Modal>
         {this.state.loadingServices == true ?
@@ -354,7 +380,7 @@ const styles = StyleSheet.create({
 
     height: totalSize(6),
     width: totalSize(6),
-    borderRadius: 100
+    borderRadius: 30
 
   },
   shopTxtContainer: {

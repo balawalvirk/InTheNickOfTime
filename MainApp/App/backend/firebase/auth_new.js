@@ -133,7 +133,7 @@ export async function signIn(email, password, userType) {
         if (data.length > 0) {
           profile['data'] = data[0];
         } else {
-          Alert.alert('Failure', 'Invalid user.', [{ text: 'OK', onPress: () => { } }]);
+          Alert.alert('Failure', 'This account is not Client Account.', [{ text: 'OK', onPress: () => { } }]);
           resolve(false);
         }
       } else {
@@ -141,7 +141,7 @@ export async function signIn(email, password, userType) {
         if (data.length > 0) {
           profile['data'] = data[0];
         } else {
-          Alert.alert('Failure', 'Invalid user.', [{ text: 'OK', onPress: () => { } }]);
+          Alert.alert('Failure', 'This account is not Technician Account.', [{ text: 'OK', onPress: () => { } }]);
           resolve(false);
         }
       }
@@ -546,7 +546,7 @@ export async function updateProfile(user_profile) {
   return new Promise(async (resolve, reject) => {
     try {
 
-      let image = user_profile.avatarSource;
+      let image = null;
       delete user_profile.avatarSource;
       let docID = user_profile.id;
       delete user_profile.id;
@@ -570,31 +570,8 @@ export async function updateProfile(user_profile) {
         };
         await updateDocument('Technician', docID, technician)
       }
-
-      if (image != null)
-        await uploadAsFile(image, { collection: collection, uid: docID });
-
-      let profile = await getCurrentUserProfile();
-
-      if (user_profile.userType == 'client') {
-        let data = await getDocuments('Users', { key: 'UserId', value: profile.user_id });
-        if (data.length > 0) {
-          profile['data'] = data[0];
-        } else {
-          Alert.alert('Failure', 'Something went wrong.', [{ text: 'OK', onPress: () => { } }]);
-          resolve(false);
-        }
-      } else {
-        let data = await getDocuments('Technician', { key: 'UserId', value: profile.user_id });
-        if (data.length > 0) {
-          profile['data'] = data[0];
-        } else {
-          Alert.alert('Failure', 'Something went wrong.', [{ text: 'OK', onPress: () => { } }]);
-          resolve(false);
-        }
-      }
-      Alert.alert('Success', 'Profile has been updated successfully.', [{ text: 'OK', onPress: () => { } }]);
-      resolve(profile);
+      // alert(user_profile.userType)
+      resolve(true);
     } catch (err) {
       console.log(err);
       Alert.alert('Failure', 'Profile could not be updated.', [{ text: 'OK', onPress: () => { } }]);

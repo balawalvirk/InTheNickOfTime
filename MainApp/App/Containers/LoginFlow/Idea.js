@@ -46,7 +46,7 @@ class Idea extends Component {
                 <ScrollView
                     showsVerticalScrollIndicator={false}>
                     <View style={styles.lowerContainer}>
-                        <View style={{ flex: 1, width: width(95), alignItems: 'center', backgroundColor: 'transparent', marginTop: height(5) }}>
+                        <View style={{ flex: 1, width: width(85), alignItems: 'center', backgroundColor: 'transparent', marginTop: height(5) }}>
                             <Image source={images.logo} style={styles.logo} />
                             <View style={[styles.txtContainer, {}]}>
                                 <Text style={[styles.welcome2, { fontSize: totalSize(2.3), fontWeight: "bold" }]}>

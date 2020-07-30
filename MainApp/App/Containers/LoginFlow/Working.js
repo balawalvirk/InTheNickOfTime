@@ -46,7 +46,7 @@ class Working extends Component {
                 <ScrollView
                     showsVerticalScrollIndicator={false}>
                     <View style={styles.lowerContainer}>
-                        <View style={{ flex: 1, width: width(95), alignItems: 'center', backgroundColor: 'transparent', marginTop: height(5) }}>
+                        <View style={{ flex: 1, width: width(85), alignItems: 'center', backgroundColor: 'transparent', marginTop: height(5) }}>
                             <Image source={images.logo} style={styles.logo} />
                             <View style={[styles.txtContainer, {}]}>
                                 <Text style={[styles.welcome2, { fontSize: totalSize(2.3), fontWeight: "bold" }]}>
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: 'center',
         marginVertical: height(3),
-        marginHorizontal: height(3),
+        marginHorizontal: height(1),
         marginVertical: height(1),
     },
     welcome: {
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     welcome2: {
         fontSize: totalSize(5),
         textAlign: "center",
-        margin: 10,
+        margin: 5,
         color: 'rgb(66,67,69)',
 
         //opacity: 0.6

@@ -6,9 +6,11 @@ import {
   Image,
   ScrollView,
   TextInput,
+  KeyboardAvoidingView,
   Picker,
   ImageBackground
 } from "react-native";
+import RNPickerSelect from 'react-native-picker-select';
 import images from "../../../../../Themes/Images";
 import { totalSize, height, width } from "react-native-dimension";
 import { Icon } from "react-native-elements";
@@ -25,6 +27,7 @@ import { isGenericTypeAnnotation } from "@babel/types";
 import firebase from "firebase";
 import moment from "moment";
 import { getAllOfCollection } from "../../../../../backend/firebase/utility";
+import ModalSelector from "react-native-modal-selector";
 export default class TechnicianServices extends Component {
   constructor(props) {
     super(props);
@@ -56,10 +59,10 @@ export default class TechnicianServices extends Component {
       loadingUnSelectedServices: false,
       servicesTotalCost: 0,
       totalCost: 0.0,
-      date_time: new Date(),
+      date_time: "03-23-2020",
       isDateChange: false,
       isTimeChange: false,
-      time_time: new Date().toTimeString(),
+      time_time: "11:38 am",
       isDateTimePickerVisible: false,
       isModalVisibleMessage: false,
       comment: null,
@@ -92,7 +95,7 @@ export default class TechnicianServices extends Component {
     console.log(
       this.state.servicesTotalCost,
       " -- ",
-      this.state.travel_locations[this.state.LocationIndex - 1].Name,
+      this.state.travel_locations[this.state.LocationIndex].Name,
       " -- ",
       this.state.date_time
     );
@@ -100,7 +103,7 @@ export default class TechnicianServices extends Component {
     this._toggelModalMessage();
     this.props.navigation.navigate("cardData", {
       services: this.state.selected_Services,
-      location: this.state.travel_locations[this.state.LocationIndex - 1].Name,
+      location: this.state.travel_locations[this.state.LocationIndex].Name,
       travel_cost: this.state.travel_cost,
       date_time: this.state.date_time,
       time_time: this.state.time_time,
@@ -115,7 +118,7 @@ export default class TechnicianServices extends Component {
   };
 
   async componentDidMount() {
-    this.props.navigation.addListener("willFocus", async () => {
+    this.props.navigation.addListener("didFocus", async () => {
       await this.loadServices();
     });
   }
@@ -194,8 +197,14 @@ export default class TechnicianServices extends Component {
           }
         });
       }
-
-      await this.setState({ travel_locations: element3.data().locationList });
+      Location_ListNew=[];
+      let indexcounter=0;
+      let OldList= element3.data().locationList;
+      OldList.forEach(item => {
+        item.index=indexcounter;
+        Location_ListNew.push(item);
+      });
+      await this.setState({ travel_locations: Location_ListNew });
 
       // if (element3.data().locationList !== undefined && element3.data().locationList.length > 0) {
       //     element3.data().locationList.forEach(element => {
@@ -501,64 +510,139 @@ export default class TechnicianServices extends Component {
                   })}
                 </View>
               ) : (
-                <Text>No Service Selected yet</Text>
-              )}
+                  <Text>No Service Selected yet</Text>
+                )}
               <View>
                 <View style={[styles.txtContainer, {}]}>
-                  <Text style={[styles.txtLarg, { fontSize: totalSize(2) }]}>
+                  <Text style={[styles.txtLarg, { fontSize: totalSize(2) , marginBottom: 10}]}>
                     Select Location
                   </Text>
                 </View>
                 <View style={styles.schoolInputContainer}>
-                  {/* <Icon name='location-pin' color={colors.SPA_graycolor} size={totalSize(4)} type='entypo' />
-                                            <TextInput
-                                                //onFocus={() => this.getProfessors_predictions()}
-                                                //onChangeText={(value) => this.getProfessors_predictions()}
-                                                placeholder={this.state.professor}
-                                                placeholderTextColor='rgb(217,217,217)'
-                                                underlineColorAndroid='transparent'
-                                                style={styles.TxtInput}
-                                            /> */}
+
                   {this.state.travel_locations.length > 0 ? (
-                    <Picker
-                      mode="dropdown"
-                      selectedValue={this.state.showValue}
-                      style={styles.PickerStyle}
-                      onValueChange={(itemValue, itemIndex) => {
-                        kk = parseInt(itemValue);
+                    // <Picker
+                    //   mode="dropdown"
+                    //   selectedValue={this.state.showValue}
+                    //   style={[styles.PickerStyle, ]}
+                    //   onValueChange={(itemValue, itemIndex) => {
+                    //     kk = parseInt(itemValue);
+                    //     this.setState({
+                    //       travel_cost: kk,
+                    //       showValue: itemValue,
+                    //       LocationIndex: itemIndex
+                    //     });
+                    //   }}
+                    // >
+                    //   <Picker.Item label="Select Location" value="" />
+                    //   {this.state.travel_locations.map((item, key) => {
+                    //     return (
+                    //       <Picker.Item
+                    //         key={key}
+                    //         label={item.Name}
+                    //         value={item.Cost}
+                    //       />
+                    //     );
+                    //   })}
+                    // </Picker>
+                    <ModalSelector
+                        data={
+                          this.state.travel_locations
+                        }
+                        initValue="Select Location"
+                        // supportedOrientations={['landscape']}
+                        accessible={true}
+                        keyExtractor={(item) => item.id}
+                        labelExtractor={(item) => item.Name}
+                        scrollViewAccessibilityLabel={"Scrollable options"}
+                        cancelButtonAccessibilityLabel={"Cancel Button"}
+                        onChange={(itemValue) => {
+                          // alert(itemValue.Name)
+                          kk = parseInt(itemValue.Cost);
                         this.setState({
                           travel_cost: kk,
-                          showValue: itemValue,
-                          LocationIndex: itemIndex
+                          showValue: itemValue.Cost,
+                          LocationIndex: itemValue.index,
+                          LocationName: itemValue.Name,
                         });
-                      }}
-                    >
-                      <Picker.Item label="Select Location" value="" />
-                      {this.state.travel_locations.map((item, key) => {
-                        return (
-                          <Picker.Item
-                            key={key}
-                            label={item.Name}
-                            value={item.Cost}
-                          />
-                        );
-                      })}
-                    </Picker>
+                          // this.setState({
+                          //   NewSCid: itemValue.id,
+                          //   NewSCName: itemValue.Name,
+                          // });
+                        }}
+                      >
+                        <TextInput
+                        blurOnSubmit={true}
+                          style={styles.popUpInput}
+                          editable={false}
+                          placeholderTextColor="rgb(217,217,217)"
+                          placeholderTextColor={"gray"}
+                          placeholder="Select Location"
+                          value={this.state.LocationName}
+                        />
+                      </ModalSelector>
+                    // <View style={{ width: '60%', marginRight: 5, flex: 1 }}>
+                    //   <RNPickerSelect
+                    //     placeholder={{
+                    //       label: 'Select Location',
+                    //       value: "",
+                    //       color: 'red',
+                    //     }}
+                    //     items={this.state.travel_locations.map((item, key) => {
+                    //       return (
+                    //         <Picker.Item
+                    //           key={key}
+                    //           label={item.Name}
+                    //           value={item.Cost}
+                    //         />
+                    //       );
+                    //     })}
+                    //     style={{
+                    //       ...pickerSelectStyles,
+                    //       iconContainer: {
+                    //         top: 1,
+                    //         right: 7,
+                    //       },
+                    //       placeholder: {
+                    //         color: 'gray',
+                    //         fontSize: 12,
+                    //         fontWeight: 'bold',
+                    //       },
+                    //     }}
+                    //     onValueChange={(itemValue, itemIndex) => {
+                    //       kk = parseInt(itemValue);
+                    //       this.setState({
+                    //         travel_cost: kk,
+                    //         showValue: itemValue,
+                    //         LocationIndex: itemIndex
+                    //       });
+                    //     }}
+
+                    //     value={this.state.pickerValue}
+                    //     useNativeAndroidPickerStyle={false}
+                    //     textInputProps={{ underlineColor: 'yellow' }}
+                    //     Icon={() => {
+                    //       return <Icon name="caret-down" type="font-awesome" size={23} />;
+                    //     }}
+                    //   />
+                    // </View>
                   ) : null}
                 </View>
-                <View style={[styles.txtContainer, {}]}>
+                <View style={[styles.txtContainer, { marginTop: 10 }]}>
                   <Text style={[styles.txtLarg, { fontSize: totalSize(2) }]}>
                     Enter Address
                   </Text>
                 </View>
-                <View style={styles.schoolInputContainer}>
+                <View style={[styles.schoolInputContainer, { height: height(12) }]}>
                   <TextInput
+                    style={styles.TxtInput}
                     onChangeText={text => this.setState({ address: text })}
                     placeholder={"Enter Full Address"}
                     placeholderTextColor="rgb(217,217,217)"
                     underlineColorAndroid="transparent"
                     multiline={true}
-                    // style={styles.TxtInput}
+                    blurOnSubmit={true}
+                  // style={styles.TxtInput}
                   />
                 </View>
                 <View style={[styles.txtContainer, {}]}>
@@ -566,14 +650,16 @@ export default class TechnicianServices extends Component {
                     Select Date
                   </Text>
                 </View>
-                <TouchableOpacity style={styles.schoolInputContainer}>
+                <View style={styles.schoolInputContainer}>
                   <DateTimePicker
+                    // style={{width:'100%'}}
                     style={{ width: width(75) }}
                     date={this.state.date_time}
                     mode="date"
                     // is24Hour={false}
                     placeholder="Select Date"
                     showIcon={false}
+                    display="default"
                     androidMode="spinner"
                     placeholderTextColor={"rgb(217,217,217)"}
                     //   format="MM-DD-YYYY h:mm a"
@@ -594,13 +680,13 @@ export default class TechnicianServices extends Component {
                       type="material-community"
                     />
                   </View>
-                </TouchableOpacity>
+                </View>
                 <View style={[styles.txtContainer, {}]}>
                   <Text style={[styles.txtLarg, { fontSize: totalSize(2) }]}>
                     Select Time
                   </Text>
                 </View>
-                <TouchableOpacity style={styles.schoolInputContainer}>
+                <View style={styles.schoolInputContainer}>
                   <DateTimePicker
                     style={{ width: width(75) }}
                     date={this.state.time_time}
@@ -628,7 +714,7 @@ export default class TechnicianServices extends Component {
                       type="material-community"
                     />
                   </View>
-                </TouchableOpacity>
+                </View>
               </View>
               <View
                 style={{
@@ -646,41 +732,41 @@ export default class TechnicianServices extends Component {
                   Technician Availability:{" "}
                 </Text>
                 {this.state.technician.weekly_availability != "" &&
-                this.state.technician.weekly_availability != null &&
-                typeof this.state.technician.weekly_availability != "string" ? (
-                  this.state.technician.weekly_availability.map(i => {
-                    return (
-                      <View style={{ width: width(90), flexDirection: "row" }}>
-                        <Text
-                          style={[
-                            styles.welcome,
-                            {
-                              fontSize: totalSize(2),
-                              fontWeight: "normal",
-                              marginVertical: 5,
-                              marginHorizontal: 5
-                            }
-                          ]}
-                        >
-                          {i.item}
-                        </Text>
-                        <View
-                          style={{
-                            flex: 1,
-                            alignItems: "flex-end",
-                            justifyContent: "center"
-                          }}
-                        >
-                          <Text style={{ textAlign: "left" }}>
-                            {i.time_from} - {i.time_to}
+                  this.state.technician.weekly_availability != null &&
+                  typeof this.state.technician.weekly_availability != "string" ? (
+                    this.state.technician.weekly_availability.map(i => {
+                      return (
+                        <View style={{ width: width(90), flexDirection: "row" }}>
+                          <Text
+                            style={[
+                              styles.welcome,
+                              {
+                                fontSize: totalSize(2),
+                                fontWeight: "normal",
+                                marginVertical: 5,
+                                marginHorizontal: 5
+                              }
+                            ]}
+                          >
+                            {i.item}
                           </Text>
+                          <View
+                            style={{
+                              flex: 1,
+                              alignItems: "flex-end",
+                              justifyContent: "center"
+                            }}
+                          >
+                            <Text style={{ textAlign: "left" }}>
+                              {i.time_from} - {i.time_to}
+                            </Text>
+                          </View>
                         </View>
-                      </View>
-                    );
-                  })
-                ) : (
-                  <Text></Text>
-                )}
+                      );
+                    })
+                  ) : (
+                    <Text></Text>
+                  )}
               </View>
               <View
                 style={[
@@ -814,8 +900,8 @@ export default class TechnicianServices extends Component {
                     {this.state.loading_getProfessors_by_departmet === true ? (
                       <ActivityIndicator color="white" />
                     ) : (
-                      <Text style={styles.btnTxt}>Next</Text>
-                    )}
+                        <Text style={styles.btnTxt}>Next</Text>
+                      )}
                   </View>
                 </TouchableOpacity>
               </View>
@@ -832,7 +918,10 @@ export default class TechnicianServices extends Component {
           backdropOpacity={0.5}
           onBackdropPress={this._toggelModalMessage}
         >
-          <View>
+          <KeyboardAvoidingView
+            behavior="position"
+            enabled
+          >
             {/* <View style={styles.modalHeader}>
                             <Text style={[styles.txtLarg, { fontSize: totalSize(2), color: 'white' }]}>Rate a Technician</Text>
                         </View> */}
@@ -850,10 +939,10 @@ export default class TechnicianServices extends Component {
                 ]}
               >
                 <Text style={[styles.txtLarg, { fontSize: totalSize(1.8) }]}>
-                  Is there is anything else your technician
+                  Is there is anything else your technician should know?
                 </Text>
                 <Text style={[styles.txtLarg, { fontSize: totalSize(1.8) }]}>
-                  should know?
+
                 </Text>
                 <Text
                   style={[
@@ -861,14 +950,12 @@ export default class TechnicianServices extends Component {
                     {
                       fontSize: totalSize(1.8),
                       alignItems: "center",
-                      justifyContent: "center"
+                      justifyContent: "center",
+                      textAlign: "justify", marginHorizontal: 20
                     }
                   ]}
                 >
-                  There are no refunds for services that are unable to
-                </Text>
-                <Text style={[styles.txtLarg, { fontSize: totalSize(1.8) }]}>
-                  be provided due to lack of disclosure from client.
+                  There are no refunds for services that are unable to be provided due to lack of disclosure from client.
                 </Text>
               </View>
               <View
@@ -884,27 +971,12 @@ export default class TechnicianServices extends Component {
                 <Text
                   style={[
                     styles.txtSmall,
-                    { fontSize: totalSize(1.5), color: "gray" }
+                    { fontSize: totalSize(1.5), color: "gray", textAlign: "justify", marginHorizontal: 20 }
                   ]}
                 >
-                  Please list ALL information that we not be able
+                  Please list ALL information that we not be able to ascertain because we are coming to your location sight unseen.
                 </Text>
-                <Text
-                  style={[
-                    styles.txtSmall,
-                    { fontSize: totalSize(1.5), color: "gray" }
-                  ]}
-                >
-                  to ascertain because we are coming to your location
-                </Text>
-                <Text
-                  style={[
-                    styles.txtSmall,
-                    { fontSize: totalSize(1.5), color: "gray" }
-                  ]}
-                >
-                  sight unseen.
-                </Text>
+
               </View>
               <View
                 style={[
@@ -925,11 +997,11 @@ export default class TechnicianServices extends Component {
                       fontSize: totalSize(1.5),
                       color: "gray",
                       flexWrap: "wrap",
-                      width: "80%"
+                      width: "90%",
+                      textAlign: "justify", marginHorizontal: 20
                     }
                   ]}
                 >
-                  {" "}
                   If you are requesting nail service, do you have anything on
                   your nails currently, do you have diabetes, mobility
                   difficulty. If you are requesting a chemical hair process,
@@ -953,21 +1025,26 @@ export default class TechnicianServices extends Component {
                     placeholder="Type Your Request"
                     multiline={true}
                     scrollEnabled={true}
-                    placeholderTextColor="rgb(245,245,238)"
-                    style={[styles.commentInput, {}]}
+                    // placeholderTextColor="rgb(245,245,238)"
+                    style={[styles.commentInput, {
+                      shadowOffset: { width: 2, height: 0 },
+                      shadowColor: 'gray',
+                      backgroundColor: "white",
+                      shadowOpacity: 0.5,
+                    }]}
                   />
                 </View>
               </View>
               <View
-                style={[styles.btnContainer, { marginVertical: height(5) }]}
+                style={[styles.btnContainer, { marginVertical: height(5), marginHorizontal: height(2), width: "90%", }]}
               >
                 <Text
-                  style={[styles.txtLarg, { fontSize: totalSize(1.8) }]}
+                  style={[styles.txtLarg, { fontSize: totalSize(1.8), marginHorizontal: 0 }]}
                   onPress={() => this.goToPayment()}
                 >
                   NO, THANKS
                 </Text>
-                <View style={{ marginHorizontal: width(20) }}></View>
+                <View style={{ marginHorizontal: width(15) }}></View>
                 <Text
                   style={[styles.txtLarg, { fontSize: totalSize(1.8) }]}
                   onPress={() => this.goToPayment()}
@@ -976,9 +1053,49 @@ export default class TechnicianServices extends Component {
                 </Text>
               </View>
             </View>
-          </View>
+          </KeyboardAvoidingView>
         </Modal>
       </View>
     );
   }
 }
+
+const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
+    fontSize: 12,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 4,
+    color: 'black',
+    paddingRight: 30, // to ensure the text is never behind the icon
+  },
+  popUpInput: {
+    height: height(30),
+    width: width(80),
+    //borderWidth: 0.25,
+    backgroundColor: "white",
+    elevation: 5,
+    //borderColor: 'rgb(66,67,69)',
+    shadowOffset: { width: 1, height: 1 },
+    shadowColor: "gray",
+    shadowOpacity: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 10,
+},
+  inputAndroid: {
+    fontSize: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 0.5,
+    borderColor: 'purple',
+    borderRadius: 8,
+    color: 'black',
+    paddingRight: 30, // to ensure the text is never behind the icon
+  },
+});
+
+
+

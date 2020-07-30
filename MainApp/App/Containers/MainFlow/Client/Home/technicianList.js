@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
 
         height: totalSize(6),
         width: totalSize(6),
-        borderRadius: 100
+        borderRadius: 30
 
     },
     shopTxtContainer: {

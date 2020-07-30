@@ -101,7 +101,7 @@ class myBookingInCancel extends Component {
                           </View>
                           <View style={styles.shopTxtContainer}>
                             <Text style={styles.shopName}>{items.technicianName}</Text>
-                            <View style={{ flexDirection: 'row' }}>
+                            <View style={{ flexDirection: 'row', flexWrap:"wrap" }}>
                               <Text style={[styles.shopDetail, { color: colors.SPA_graycolor }]}>Service: </Text>
                               {
                                 items.services.map((u, i) => {
@@ -113,10 +113,16 @@ class myBookingInCancel extends Component {
                                 })
                               }
                             </View>
+                            <View style={{ flexDirection: 'row', flexWrap:"wrap" }}>
                             <Text style={styles.shopDetail}>Comments: {items.comments}</Text>
-                            <Text style={styles.shopDetail}>Total Amount : {items.amount} $</Text>
+                            </View>
+                            
+                            <Text style={styles.shopDetail}>Total Amount : $ {items.amount}</Text>
                             <Text style={styles.shopDetail}>At {items.time} - {items.date_time}</Text>
-                            <Text style={styles.shopDetail}>Location: {items.location}</Text>
+                            <View style={{ flexDirection: 'row', flexWrap:"wrap" }}>
+                            <Text style={styles.shopDetail}>Location: {items.address+","+ items.location}</Text>
+                            </View>
+                            
                           </View>
                           <View style={[styles.shopIconContainer]}>
                             {/* <TouchableOpacity style={styles.iconContainer} >
@@ -124,7 +130,7 @@ class myBookingInCancel extends Component {
                                </TouchableOpacity> */}
                             <View style={[styles.statusContainer]} >
 
-                              <Text style={[styles.shopName, { fontSize: totalSize(1.5), color: colors.SPA_redColor, fontWeight: 'normal' }]}>{items.status}</Text>
+                              <Text style={[styles.shopName, { fontSize: totalSize(1.5), color: colors.SPA_redColor, fontWeight: 'normal' }]}>{"cancelled"}</Text>
                             </View>
                             {
                               items.status === 'accepted' ?
@@ -243,7 +249,7 @@ const styles = StyleSheet.create({
 
     height: totalSize(6),
     width: totalSize(6),
-    borderRadius: 100
+    borderRadius: 30
 
   },
   shopTxtContainer: {

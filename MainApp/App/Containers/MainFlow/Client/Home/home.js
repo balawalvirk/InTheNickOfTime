@@ -44,12 +44,13 @@ class Home extends Component {
     let UserObj = {};
     await AsyncStorage.getItem("user", (error, data) => {
       console.log("Splash", error);
-      console.log("Splash", data);
+      
 
       if (data) {
         user = JSON.parse(data);
-        this.state.user = user;
-        UserObj = user;
+        this.state.user = user.data;
+        console.log("Splash", user);
+        UserObj = user.data;
       }
     });
     let fcmToken = await AsyncStorage.getItem("fcmToken");
@@ -105,26 +106,8 @@ class Home extends Component {
             </View>
             <Text style={styles.welcome}> SALON & SPA</Text>
           </View>
-          <View style={{ marginBottom: 100, ...styles.txtContainer }}>
-            <Text
-              style={[
-                styles.welcome,
-                { fontSize: totalSize(2), fontWeight: "normal" }
-              ]}
-            >
-              BOOK BEAUTY & WELLNESS PROFESSIONALS
-            </Text>
-            <Text
-              style={[
-                styles.welcome,
-                { fontSize: totalSize(2), fontWeight: "normal" }
-              ]}
-            >
-              {" "}
-              TO COME TO YOU!
-            </Text>
-          </View>
-          <View style={{ marginTop: 100, ...styles.btnContainer }}>
+          
+          <View style={{ marginTop: 300, ...styles.btnContainer }}>
             <TouchableOpacity
               style={styles.button}
               onPress={() => this.props.navigation.navigate("searchTechnician")}
@@ -140,6 +123,17 @@ class Home extends Component {
                 </Text>
               </View>
             </TouchableOpacity>
+          </View>
+          <View style={{ marginBottom: 0, ...styles.txtContainer }}>
+            <Text
+              style={[
+                styles.welcome,
+                { fontSize: totalSize(2),textAlign: "center", fontWeight: "normal" }
+              ]}
+            >
+              BOOK BEAUTY & WELLNESS PROFESSIONALS TO COME TO YOU!
+            </Text>
+            
           </View>
         </ImageBackground>
         {/* </SafeAreaView> */}

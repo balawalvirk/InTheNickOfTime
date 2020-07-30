@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   FlatList,
   StyleSheet,
+  Easing,
   Image
 } from "react-native";
 import { Icon } from "react-native-elements";
@@ -14,7 +15,7 @@ import colors from "../../../../../Themes/Colors";
 import { totalSize, height, width } from "react-native-dimension";
 import images from "../../../../../Themes/Images";
 import firebase from "firebase";
-
+import ZoomImage from "react-native-zoom-image";
 const numColums = 2;
 
 const formatData = (data, numColumns) => {
@@ -78,11 +79,13 @@ class TechnicianPortfolio extends Component {
           justifyContent: "center"
         }}
       >
-        <Image
-          style={{ width: "100%", height: "100%", alignSelf: "center" }}
+        <ZoomImage
+          imgStyle={{ width: "100%", height: "100%", alignSelf: "center" }}
           resizeMode="contain"
           source={{ uri: item }}
-        ></Image>
+          duration={200}
+                  easingFunc={Easing.ease}
+        />
       </View>
     );
   }

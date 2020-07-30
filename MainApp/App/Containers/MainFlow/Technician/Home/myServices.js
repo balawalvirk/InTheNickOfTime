@@ -1,15 +1,33 @@
-import React, { Component } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, TextInput, Picker } from 'react-native';
-import { width, height, totalSize } from 'react-native-dimension'
-import { Icon } from 'react-native-elements'
-import images from '../../../../Themes/Images';
-import Modal from 'react-native-modal'
-import colors from '../../../../Themes/Colors';
-import { getData, updateDocument, getAllOfCollection, saveData } from '../../../../backend/firebase/utility';
-import AsyncStorage from '@react-native-community/async-storage';
-import { throwStatement } from '@babel/types';
-import Loader from "../../../../Components/Loader"
-import firebase from 'firebase';
+import React, { Component } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  TextInput,
+  KeyboardAvoidingView,
+  Picker,
+} from "react-native";
+import { width, height, totalSize } from "react-native-dimension";
+import { Icon } from "react-native-elements";
+import images from "../../../../Themes/Images";
+import Modal from "react-native-modal";
+import colors from "../../../../Themes/Colors";
+import IOSPicker from "react-native-ios-picker";
+import {
+  getData,
+  updateDocument,
+  getAllOfCollection,
+  saveData,
+} from "../../../../backend/firebase/utility";
+import AsyncStorage from "@react-native-community/async-storage";
+import { throwStatement } from "@babel/types";
+import Loader from "../../../../Components/Loader";
+import firebase from "firebase";
+import RNPickerSelect from "react-native-picker-select";
+import ModalSelector from "react-native-modal-selector";
 _this = null;
 class myServices extends Component {
   constructor(props) {
@@ -20,52 +38,46 @@ class myServices extends Component {
       loadingServices: false,
       isModalVisible: false,
       isModalVisibleEdite: false,
-      idToUpdtate: '',
-      s_name: '',
-      s_duration: '',
-      s_description: '',
-      s_price: '',
-      s_category: '',
+      idToUpdtate: "",
+      s_name: "",
+      s_duration: "",
+      s_description: "",
+      s_price: "",
+      s_category: "",
 
-      e_name: '',
-      e_duration: '',
-      e_description: '',
-      e_price: '',
-      e_category: '',
-      Cindex: '',
+      e_name: "",
+      e_duration: "",
+      e_description: "",
+      e_price: "",
+      e_category: "",
+      Cindex: "",
 
       Categories_list: [
-        { id: 1, category_name: 'Hair' },
-        { id: 2, category_name: 'Nails' },
-        { id: 3, category_name: 'Massage' },
-        { id: 4, category_name: 'Hands Care' },
-      ]
+        { id: 1, category_name: "Hair" },
+        { id: 2, category_name: "Nails" },
+        { id: 3, category_name: "Massage" },
+        { id: 4, category_name: "Hands Care" },
+      ],
     };
   }
   async componentDidMount() {
-
-
     this.props.navigation.addListener("willFocus", async () => {
+      this.loader.show();
+      await this.loadUser();
+      await this.loadServices();
 
-      this.loader.show()
-      await this.loadUser()
-      await this.loadServices()
-
-      this.loader.hide()
-
+      this.loader.hide();
     });
-
   }
-
-
- 
 
   async loadServices() {
     let ServicesList = [];
     let SList = await getAllOfCollection("Category");
-
-    SList.forEach(element => {
+    let index=0;
+    SList.forEach((element) => {
       if (element.SubList !== undefined) {
+        element.index= index;
+        index+=1;
         ServicesList.push(element);
       }
     });
@@ -76,136 +88,151 @@ class myServices extends Component {
 
   async loadServicesList() {
     let List = [];
-    let TechnicianList = await firebase.firestore().collection("Technician").where("UserId", "==", this.state.user.UserId).get()
-    TechnicianList.forEach(element3 => {
-
-      if (element3.data().servicesList !== undefined && element3.data().servicesList.length > 0) {
-       
-        element3.data().servicesList.forEach(service => {
-          let CategoryList=this.state.Categories_list;
-          for(let i=0; i< CategoryList.length;i++) {
-            for(let m=0; m<CategoryList[i].SubList.length; m++) {
-                if(CategoryList[i].SubList[m].id === service.SubServiceId) {
-                  service.Name=CategoryList[i].SubList[m].Name;
-                  List.push(service);
-                }
+    let TechnicianList = await firebase
+      .firestore()
+      .collection("Technician")
+      .where("UserId", "==", this.state.user.UserId)
+      .get();
+    TechnicianList.forEach((element3) => {
+      if (
+        element3.data().servicesList !== undefined &&
+        element3.data().servicesList.length > 0
+      ) {
+        element3.data().servicesList.forEach((service) => {
+          let CategoryList = this.state.Categories_list;
+          for (let i = 0; i < CategoryList.length; i++) {
+            for (let m = 0; m < CategoryList[i].SubList.length; m++) {
+              if (CategoryList[i].SubList[m].id === service.SubServiceId) {
+                service.Name = CategoryList[i].SubList[m].Name;
+                List.push(service);
+              }
             }
           }
         });
-        this.setState({ services: List })
+        this.setState({ services: List });
       } else {
-        this.setState({ services: [] })
+        this.setState({ services: [] });
       }
     });
   }
 
   async loadUser() {
-    sv = []
-    user = await AsyncStorage.getItem('user')
-    user = JSON.parse(user)
-    console.log(user)
+    sv = [];
+    user = await AsyncStorage.getItem("user");
+    user = JSON.parse(user);
+    console.log(user);
     // try {
     //   sv = JSON.parse(user.service_details)
     // } catch (err) {
     //   sv = []
     // }
-    let Updateduser= await getData('Technician', user.id);
-    this.setState({ user: Updateduser })
+    let Updateduser = await getData("Technician", user.data.UserId);
+    this.setState({ user: Updateduser });
     console.log(this.state.services);
     _this = this;
   }
 
   uniqueID() {
     function chr4() {
-        return Math.random().toString(16).slice(-4);
+      return Math.random().toString(16).slice(-4);
     }
-    return chr4() + chr4() +
-        '-' + chr4() +
-        '-' + chr4() +
-        '-' + chr4() +
-        '-' + chr4() + chr4() + chr4();
-}
+    return (
+      chr4() +
+      chr4() +
+      "-" +
+      chr4() +
+      "-" +
+      chr4() +
+      "-" +
+      chr4() +
+      "-" +
+      chr4() +
+      chr4() +
+      chr4()
+    );
+  }
 
   addService = async () => {
     let TempObj = {};
-    TempObj.id= this.uniqueID();
-    
-    TempObj.Cost= this.state.NewCost;
-    
-    TempObj.Duration= this.state.NewDuration;
-    TempObj.Descraption= this.state.NewDescraption;
-    TempObj.ServiceId= this.state.NewCid;
-    TempObj.SubServiceId= this.state.NewSCid;
+    TempObj.id = this.uniqueID();
 
+    TempObj.Cost = this.state.NewCost;
+    TempObj.Name= this.state.NewSCName;
+    TempObj.Duration = this.state.NewDuration;
+    TempObj.Descraption = this.state.NewDescraption;
+    TempObj.ServiceId = this.state.NewCid;
+    TempObj.SubServiceId = this.state.NewSCid;
 
-    let NewList= this.state.services;
+    let NewList = this.state.services;
     NewList.push(TempObj);
     this.state.user.servicesList = NewList;
 
-    let ServiceTempList= this.state.user.services;
-    if (ServiceTempList !== undefined  && !ServiceTempList.includes(this.state.NewSCid)) {
+    let ServiceTempList = this.state.user.services;
+    if (
+      ServiceTempList !== undefined &&
+      !ServiceTempList.includes(this.state.NewSCid)
+    ) {
       ServiceTempList.push(this.state.NewSCid);
     }
-    this.state.user.services= ServiceTempList;
-    this.loader.show()
-    let rs = await saveData('Technician', this.state.user.id, this.state.user);
-    await AsyncStorage.setItem('user', JSON.stringify(this.state.user));
+    this.state.user.services = ServiceTempList;
+    this.loader.show();
+    let rs = await saveData("Technician", this.state.user.id, this.state.user);
+    // await AsyncStorage.setItem("user", JSON.stringify(this.state.user));
     this.setState({ isModalVisible: !this.state.isModalVisible });
     await this.loadUser();
     this.loadServicesList();
-    this.loader.hide()
-  }
+    this.loader.hide();
+  };
 
   updateService = async () => {
-    index = this.state.idToUpdtate
-    let List= this.state.user.servicesList;
-   
-    List[index].Cost = this.state.EditCost
-    
-    List[index].Duration = this.state.EditDuration
-    List[index].Descraption = this.state.EditDescraption
-    List[index].ServiceId = this.state.EditCid
-    List[index].SubServiceId = this.state.EditSCid
-    
+    index = this.state.idToUpdtate;
+    let List = this.state.user.servicesList;
 
+    List[index].Cost = this.state.EditCost;
 
+    List[index].Duration = this.state.EditDuration;
+    List[index].Descraption = this.state.EditDescraption;
+    List[index].ServiceId = this.state.EditCid;
+    List[index].SubServiceId = this.state.EditSCid;
 
-    let Obj = this.state.user
-    Obj.servicesList=List;
+    let Obj = this.state.user;
+    Obj.servicesList = List;
 
-    let ServiceTempList= Obj.services;
+    let ServiceTempList = Obj.services;
     if (!ServiceTempList.includes(this.state.EditSCid)) {
       ServiceTempList.push(this.state.EditSCid);
     }
-    Obj.services= ServiceTempList;
-    
-    
-    this.loader.show()
-    await updateDocument('Technician', this.state.user.id,Obj).then(success => {
-     
-    })
+    Obj.services = ServiceTempList;
+
+    this.loader.show();
+    await updateDocument(
+      "Technician",
+      this.state.user.id,
+      Obj
+    ).then((success) => {});
     await this.loadUser();
     this.setState({
-      isModalVisibleEdite: !this.state.isModalVisibleEdite
+      isModalVisibleEdite: !this.state.isModalVisibleEdite,
     });
     this.loadServicesList();
-    this.loader.hide()
-  }
+    this.loader.hide();
+  };
 
   deleteService = async (i) => {
+    this.state.user.servicesList.splice(i, 1);
 
-    this.state.user.servicesList.splice(i, 1)
-    
-    this.loader.show()
-    await updateDocument('Technician', this.state.user.id, this.state.user).then(success => {
-     
-    })
+    this.loader.show();
+    await updateDocument(
+      "Technician",
+      this.state.user.id,
+      this.state.user
+    ).then((success) => {});
     await this.loadUser();
     this.loadServicesList();
-    this.setState(this.state)
-    
-    this.loader.hide()
-  }
+    this.setState(this.state);
+
+    this.loader.hide();
+  };
 
   _toggleModal = () =>
     this.setState({ isModalVisible: !this.state.isModalVisible });
@@ -213,102 +240,155 @@ class myServices extends Component {
   _toggleModalEdite = (service) => {
     if (this.state.isModalVisibleEdite) {
       this.setState({
-        isModalVisibleEdite: !this.state.isModalVisibleEdite
+        isModalVisibleEdite: !this.state.isModalVisibleEdite,
       });
-    }
-    else {
+    } else {
       this.setState({
-        
         EditCost: service.Cost,
-        
+
         EditDuration: service.Duration,
         EditDescraption: service.Descraption,
         EditCid: service.ServiceId,
         EditSCid: service.SubServiceId,
-        isModalVisibleEdite: !this.state.isModalVisibleEdite
+        isModalVisibleEdite: !this.state.isModalVisibleEdite,
       });
     }
-  }
+  };
 
   static navigationOptions = {
-    title: 'My Services',
+    title: "My Services",
     headerRight: (
-      <TouchableOpacity onPress={() => _this._toggleModal()} style={{ backgroundColor: colors.SPA_redColor, borderRadius: 5, marginHorizontal: 5 }} >
-        <View style={{ flexDirection: 'row', marginVertical: 5, marginHorizontal: 5, alignItems: 'center', justifyContent: 'center' }}>
-          <Icon name='add' color='white' size={totalSize(3)} />
+      <TouchableOpacity
+        onPress={() => _this._toggleModal()}
+        style={{
+          backgroundColor: colors.SPA_redColor,
+          borderRadius: 5,
+          marginHorizontal: 5,
+        }}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            marginVertical: 5,
+            marginHorizontal: 5,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Icon name="add" color="white" size={totalSize(3)} />
           <View style={{ width: width(1) }}></View>
-          <Text style={{ fontSize: totalSize(2), color: 'white' }}>Add</Text>
+          <Text style={{ fontSize: totalSize(2), color: "white" }}>Add</Text>
         </View>
       </TouchableOpacity>
-    )
+    ),
   };
   render() {
     return (
       <View style={styles.Container}>
-        <Loader ref={r => this.loader = r} />
-        <ScrollView
-          showsVerticalScrollIndicator={false}>
-          {
-            this.state.loadingServices === true ?
-              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size='large' color="rgb(0,41,132)" />
-              </View>
-              :
-              (
-                this.state.services.length > 0 ?
-                  this.state.services.map((service, key) => {
-                    return (
-                      <View key={key} style={styles.shopContainer}>
-                        <View style={{ flex: 0.1 }}>
-                        </View>
-                        <View style={styles.shopTxtContainer}>
-                          <Text style={styles.shopName}>{service.Name}</Text>
-                          <Text style={styles.shopDetail}>Price: $ {service.Cost}</Text>
-                          <Text style={styles.shopDetail}>Duration: {service.Duration} min</Text>
-                        </View>
-                        <View style={styles.shopIconContainer}>
-                          <TouchableOpacity style={styles.iconContainer} onPress={() => {
-                            this._toggleModalEdite(service)
-                            this.setState({ idToUpdtate: key })
-                          }} >
-                            <Icon name="pencil" size={totalSize(2)} color="white" type='font-awesome' />
-                          </TouchableOpacity>
-                          <View style={{ width: width(2) }}></View>
-                          <TouchableOpacity onPress={() => {
-                            this.deleteService(key)
-                          }} style={[styles.iconContainer, { backgroundColor: colors.SPA_graycolor }]} >
-                            <Icon name="delete" size={totalSize(2)} color="white" />
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    );
-
-                  })
-                  :
-                  <View style={{ flex: 1, alignItems: "center", justifyContent: "center", }}>
-                    <Text style={[styles.shopName, { color: colors.SPA_graycolor, fontSize: totalSize(2), left: width(0), marginTop: "50%" }]}>No Service</Text>
+        <Loader ref={(r) => (this.loader = r)} />
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {this.state.loadingServices === true ? (
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <ActivityIndicator size="large" color="rgb(0,41,132)" />
+            </View>
+          ) : this.state.services.length > 0 ? (
+            this.state.services.map((service, key) => {
+              return (
+                <View key={key} style={styles.shopContainer}>
+                  <View style={{ flex: 0.1 }}></View>
+                  <View style={styles.shopTxtContainer}>
+                    <Text style={styles.shopName}>{service.Name}</Text>
+                    <Text style={styles.shopDetail}>
+                      Price: $ {service.Cost}
+                    </Text>
+                    <Text style={styles.shopDetail}>
+                      Duration: {service.Duration} min
+                    </Text>
                   </View>
-              )
-          }
+                  <View style={styles.shopIconContainer}>
+                    <TouchableOpacity
+                      style={styles.iconContainer}
+                      onPress={() => {
+                        this._toggleModalEdite(service);
+                        this.setState({ idToUpdtate: key });
+                      }}
+                    >
+                      <Icon
+                        name="pencil"
+                        size={totalSize(2)}
+                        color="white"
+                        type="font-awesome"
+                      />
+                    </TouchableOpacity>
+                    <View style={{ width: width(2) }}></View>
+                    <TouchableOpacity
+                      onPress={() => {
+                        this.deleteService(key);
+                      }}
+                      style={[
+                        styles.iconContainer,
+                        { backgroundColor: colors.SPA_graycolor },
+                      ]}
+                    >
+                      <Icon name="delete" size={totalSize(2)} color="white" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              );
+            })
+          ) : (
+            <View
+              style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text
+                style={[
+                  styles.shopName,
+                  {
+                    color: colors.SPA_graycolor,
+                    fontSize: totalSize(2),
+                    left: width(0),
+                    marginTop: "50%",
+                  },
+                ]}
+              >
+                No Service
+              </Text>
+            </View>
+          )}
         </ScrollView>
         <Modal
           isVisible={this.state.isModalVisible}
-          animationIn='slideInUp'
-          animationOut='slideOutDown'
-          backdropColor='black'
+          animationIn="slideInUp"
+          animationOut="slideOutDown"
+          backdropColor="black"
           animationInTiming={250}
           animationOutTiming={250}
-          backdropOpacity={0.50}
-          onBackdropPress={this._toggleModal}>
-          <View >
-            <View style={styles.popUpTop}>
-              <Text style={styles.popUpTopTxt}>Create Sub Service</Text>
-              <View style={{ width: width(25) }}></View>
-              <TouchableOpacity onPress={this._toggleModal} style={{ marginRight: width(1) }} >
-                <Icon name="close" size={totalSize(4)} color="white" />
-              </TouchableOpacity>
-            </View>
-            {/* TempObj.Name= this.state.NewName;
+          backdropOpacity={0.5}
+          onBackdropPress={this._toggleModal}
+        >
+          <View>
+            <KeyboardAvoidingView behavior="padding" enabled>
+              <View style={styles.popUpTop}>
+                <Text style={styles.popUpTopTxt}>Create Sub Service</Text>
+                <View style={{ width: width(25) }}></View>
+                <TouchableOpacity
+                  onPress={this._toggleModal}
+                  style={{ marginRight: width(1) }}
+                >
+                  <Icon name="close" size={totalSize(4)} color="white" />
+                </TouchableOpacity>
+              </View>
+              {/* TempObj.Name= this.state.NewName;
     TempObj.Cost= this.state.NewCost;
     TempObj.Code= this.state.NewCode;
     TempObj.Duration= this.state.NewDuration;
@@ -316,68 +396,159 @@ class myServices extends Component {
     TempObj.ServiceId= this.state.NewCid;
     TempObj.SubServiceId= this.state.NewSCid; */}
 
-
-            <View style={styles.popUpContainerService}>
-
-              <View style={styles.inputTxtContainer} >
-                <Text style={styles.popUpText}>Category</Text>
-                <View style={{ marginTop: height(1), alignItems: 'center', justifyContent: 'center', width: width(80), height: height(6), borderRadius: 5, elevation: 5, backgroundColor: 'white', }}>
-                  <Picker
-                    mode='dropdown'
-                    selectedValue={this.state.NewCid}
-                    style={styles.PickerStyle}
-                    onValueChange={(itemValue, itemIndex) =>
-                      this.setState({ NewCid: itemValue, Cindex: itemIndex })
-                    }>
-                    <Picker.Item label="Select category" value='' />
-                    {
-                      this.state.Categories_list.map((item, key) => {
+              <View style={styles.popUpContainerService}>
+                <View style={styles.inputTxtContainer}>
+                  <Text style={styles.popUpText}>Category</Text>
+                  <View
+                    style={{
+                      marginTop: height(1),
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: width(80),
+                      height: height(10),
+                      borderRadius: 5,
+                      elevation: 5,
+                      backgroundColor: "white",
+                    }}
+                  >
+                    {/* <Picker
+                      mode="dropdown"
+                      selectedValue={this.state.NewCid}
+                      style={styles.PickerStyle}
+                      onValueChange={(itemValue, itemIndex) => {
+                        if (itemIndex > 0) {
+                          this.setState({
+                            NewCid: itemValue,
+                            Cindex: itemIndex,
+                          });
+                        }
+                      }}
+                    >
+                      <Picker.Item label="Select category" value="" />
+                      {this.state.Categories_list.map((item, key) => {
                         return (
-                          <Picker.Item key={key} label={item.Name} value={item.id} />
-                        )
-                      })
+                          <Picker.Item
+                            key={key}
+                            label={item.Name}
+                            value={item.id}
+                          />
+                        );
+                      })}
+                    </Picker> */}
 
-                    }
-                  </Picker>
+                    <ModalSelector
+                      data={
+                        this.state.Categories_list
+                      }
+                      initValue="Select Category"
+                      // supportedOrientations={['landscape']}
+                      accessible={true}
+                      keyExtractor={(item) => item.id}
+                      labelExtractor={(item) => item.Name}
+                      scrollViewAccessibilityLabel={"Scrollable options"}
+                      cancelButtonAccessibilityLabel={"Cancel Button"}
+                      onChange={(itemValue, itemIndex) => {
+                        //  alert(itemIndex)
+                        this.setState({
+                          
+                          NewCName: itemValue.Name,
+                          NewCid: itemValue.id,
+                            Cindex: itemValue.index,
+                        });
+                      }}
+                    >
+                      <TextInput
+                      placeholderTextColor={"gray"}
+                      blurOnSubmit={true}
+                        style={styles.popUpInput}
+                        editable={false}
+                        
+                        placeholder="Select Category"
+                        value={this.state.NewCName}
+                      />
+                    </ModalSelector>
+                  </View>
                 </View>
-              </View>
-              {this.state.Cindex !== "" ?
-                // <View>
-                //   <Text>
-                //     {this.state.Cindex}
-                //   </Text>
-                // </View> 
-                <View style={styles.inputTxtContainer} >
-                  <Text style={styles.popUpText}>Sub Category</Text>
-                  <View style={{ marginTop: height(1), alignItems: 'center', justifyContent: 'center', width: width(80), height: height(6), borderRadius: 5, elevation: 5, backgroundColor: 'white', }}>
-                    <Picker
-                      mode='dropdown'
+                {this.state.Cindex !== "" ? (
+                  // <View>
+                  //   <Text>
+                  //     {this.state.Cindex}
+                  //   </Text>
+                  // </View>
+                  <View style={styles.inputTxtContainer}>
+                    <Text style={styles.popUpText}>Sub Category</Text>
+                    <View
+                      style={{
+                        marginTop: height(0),
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: width(80),
+                        height: height(12),
+                        borderRadius: 5,
+                        elevation: 5,
+                        backgroundColor: "white",
+                      }}
+                    >
+                      {/* <Picker
+                      mode="dropdown"
                       selectedValue={this.state.NewSCid}
                       style={styles.PickerStyle}
                       onValueChange={(itemValue, itemIndex) =>
                         this.setState({ NewSCid: itemValue })
-                      }>
-                      <Picker.Item label="Select Sub category" value='' />
-                      {
-                        this.state.Categories_list[this.state.Cindex - 1].SubList !== undefined &&
-                          this.state.Categories_list[this.state.Cindex - 1].SubList.length > 0 ?
-                          this.state.Categories_list[this.state.Cindex - 1].SubList.map((item, key) => {
-                            return (
-                              <Picker.Item key={key} label={item.Name} value={item.id} />
-                            )
-                          })
-                          :
-                          null
                       }
-                    </Picker>
+                    >
+                      <Picker.Item label="Select Sub category" value="" />
+                      {this.state.Categories_list[this.state.Cindex - 1]
+                        .SubList !== undefined &&
+                      this.state.Categories_list[this.state.Cindex - 1].SubList
+                        .length > 0
+                        ? this.state.Categories_list[
+                            this.state.Cindex - 1
+                          ].SubList.map((item, key) => {
+                            return (
+                              <Picker.Item
+                                key={key}
+                                label={item.Name}
+                                value={item.id}
+                              />
+                            );
+                          })
+                        : null}
+                    </Picker> */}
+                      <ModalSelector
+                        data={
+                          this.state.Categories_list[this.state.Cindex ]
+                            .SubList
+                        }
+                        initValue="Select Sub Category"
+                        // supportedOrientations={['landscape']}
+                        accessible={true}
+                        keyExtractor={(item) => item.id}
+                        labelExtractor={(item) => item.Name}
+                        scrollViewAccessibilityLabel={"Scrollable options"}
+                        cancelButtonAccessibilityLabel={"Cancel Button"}
+                        onChange={(itemValue) => {
+                          // alert(itemValue.Name)
+                          this.setState({
+                            NewSCid: itemValue.id,
+                            NewSCName: itemValue.Name,
+                          });
+                        }}
+                      >
+                        <TextInput
+                        blurOnSubmit={true}
+                          style={styles.popUpInput}
+                          editable={false}
+                          placeholderTextColor={"gray"}
+                          placeholder="Select Sub Category"
+                          value={this.state.NewSCName}
+                        />
+                      </ModalSelector>
+                    </View>
                   </View>
-                </View>
-                :
-                null
-              }
+                ) : null}
 
-
-              {/* <View style={styles.inputTxtContainer}>
+                {/* <View style={styles.inputTxtContainer}>
                 <Text style={styles.popUpText}>Service Code</Text>
                 <TextInput
                   placeholder='125547845'
@@ -386,45 +557,53 @@ class myServices extends Component {
                 />
               </View> */}
 
-              <View style={styles.inputTxtContainer}>
-                <Text style={styles.popUpText}>Service Price</Text>
-                <TextInput
-                  placeholder='100'
-                  keyboardType='numeric'
-                  placeholderTextColor='rgb(217,217,217)'
-                  style={styles.popUpInput}
-                  onChangeText={(value) => {
-                    this.setState({ NewCost: value })
-                  }}
-                />
-              </View>
+                <View style={styles.inputTxtContainer}>
+                  <Text style={styles.popUpText}>Service Price</Text>
+                  <TextInput
+                  blurOnSubmit={true}
+                  placeholderTextColor={"gray"}
+                    placeholder="$100"
+                    keyboardType="numeric"
+                    // placeholderTextColor="rgb(217,217,217)"
+                    style={styles.popUpInput}
+                    // value={"$ "+this.state.NewCost}
+                    onChangeText={(value) => {
+                      this.setState({ NewCost: value });
+                    }}
+                  />
+                </View>
 
-              <View style={styles.inputTxtContainer}>
-                <Text style={styles.popUpText}>Service Duration</Text>
-                <TextInput
-                  placeholder='In minutes'
-                  placeholderTextColor='rgb(217,217,217)'
-                  keyboardType='numeric'
-                  style={styles.popUpInput}
-                  onChangeText={(value) => {
-                    this.setState({ NewDuration: value })
-                  }}
-                />
-              </View>
+                <View style={styles.inputTxtContainer}>
+                  <Text style={styles.popUpText}>Service Duration</Text>
+                  <TextInput
+                  blurOnSubmit={true}
+                    placeholder="In minutes"
+                    placeholderTextColor={"gray"}
 
-              <View style={styles.inputTxtContainer}>
-                <Text style={styles.popUpText}>Description</Text>
-                <TextInput
-                  placeholder='About Your Service'
-                  placeholderTextColor='rgb(217,217,217)'
-                  style={styles.popUpInput}
-                  onChangeText={(value) => {
-                    this.setState({ NewDescraption: value })
-                  }}
-                />
-              </View>
-              
-              {/* <View style={styles.uploadContainer}>
+                    // placeholderTextColor="rgb(217,217,217)"
+                    keyboardType="numeric"
+                    style={styles.popUpInput}
+                    onChangeText={(value) => {
+                      this.setState({ NewDuration: value });
+                    }}
+                  />
+                </View>
+
+                <View style={styles.inputTxtContainer}>
+                  <Text style={styles.popUpText}>Description</Text>
+                  <TextInput
+                  blurOnSubmit={true}
+                  placeholderTextColor={"gray"}
+                    placeholder="About Your Service"
+                    // placeholderTextColor="rgb(217,217,217)"
+                    style={styles.popUpInput}
+                    onChangeText={(value) => {
+                      this.setState({ NewDescraption: value });
+                    }}
+                  />
+                </View>
+
+                {/* <View style={styles.uploadContainer}>
                 <TouchableOpacity style={styles.btnUpload} onPress={this.imagePicker}>
                   <Text style={styles.btnUploadTxt}>Upload Image</Text>
                 </TouchableOpacity>
@@ -436,40 +615,46 @@ class myServices extends Component {
                 }
               </View> */}
 
-              <TouchableOpacity style={styles.btnFinish} onPress={() => {
-                this.addService()
-              }}>
-                {
-                  this.state.loading === true ?
+                <TouchableOpacity
+                  style={styles.btnFinish}
+                  onPress={() => {
+                    this.addService();
+                  }}
+                >
+                  {this.state.loading === true ? (
                     <ActivityIndicator size="small" color="white" />
-                    :
+                  ) : (
                     <Text style={styles.btnFinishTxt}>Add</Text>
-                }
-              </TouchableOpacity>
-            </View>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </KeyboardAvoidingView>
           </View>
-
         </Modal>
-
 
         <Modal
           isVisible={this.state.isModalVisibleEdite}
-          animationIn='slideInUp'
-          animationOut='slideOutDown'
-          backdropColor='black'
+          animationIn="slideInUp"
+          animationOut="slideOutDown"
+          backdropColor="black"
           animationInTiming={250}
           animationOutTiming={250}
-          backdropOpacity={0.50}
-          onBackdropPress={this._toggleModalEdite}>
-          <View >
-            <View style={styles.popUpTop}>
-              <Text style={styles.popUpTopTxt}>Edit Sub Service</Text>
-              <View style={{ width: width(25) }}></View>
-              <TouchableOpacity onPress={this._toggleModalEdite} style={{ marginRight: width(1) }} >
-                <Icon name="close" size={totalSize(4)} color="white" />
-              </TouchableOpacity>
-            </View>
-            {/* TempObj.Name= this.state.NewName;
+          backdropOpacity={0.5}
+          onBackdropPress={this._toggleModalEdite}
+        >
+          <View>
+            <KeyboardAvoidingView behavior="padding" enabled>
+              <View style={styles.popUpTop}>
+                <Text style={styles.popUpTopTxt}>Edit Sub Service</Text>
+                <View style={{ width: width(25) }}></View>
+                <TouchableOpacity
+                  onPress={this._toggleModalEdite}
+                  style={{ marginRight: width(1) }}
+                >
+                  <Icon name="close" size={totalSize(4)} color="white" />
+                </TouchableOpacity>
+              </View>
+              {/* TempObj.Name= this.state.NewName;
     TempObj.Cost= this.state.NewCost;
     TempObj.Code= this.state.NewCode;
     TempObj.Duration= this.state.NewDuration;
@@ -477,26 +662,97 @@ class myServices extends Component {
     TempObj.ServiceId= this.state.NewCid;
     TempObj.SubServiceId= this.state.NewSCid; */}
 
-{/* EditName: service.Name,
+              {/* EditName: service.Name,
         EditCost: service.Cost,
         EditCode: service.Code,
         EditDuration: service.Duration,
         EditDescraption: service.Descraption,
         EditCid: service.ServiceId,
         EditSCid: service.SubServiceId, */}
-            <View style={styles.popUpContainerService}>
-
-              <View style={styles.inputTxtContainer} >
-                <Text style={styles.popUpText}>Category</Text>
-                <View style={{ marginTop: height(1), alignItems: 'center', justifyContent: 'center', width: width(80), height: height(6), borderRadius: 5, elevation: 5, backgroundColor: 'white', }}>
-                  <Picker
-                    mode='dropdown'
+              <ScrollView>
+                <View style={styles.popUpContainerService}>
+                  <View
+                    style={[
+                      styles.inputTxtContainer,
+                      { height: height(10), justifyContent: "center" },
+                    ]}
+                  >
+                    <Text style={styles.popUpText}>Category</Text>
+                    <View
+                      style={{
+                        marginVertical: height(1),
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: width(80),
+                        height: height(6),
+                        borderRadius: 5,
+                        elevation: 5,
+                        backgroundColor: "white",
+                      }}
+                    >
+                      {/* <Picker
+                        mode="dropdown"
+                        selectedValue={this.state.EditCid}
+                        style={styles.PickerStyle}
+                        onValueChange={(itemValue, itemIndex) => {
+                          if (itemIndex > 0) {
+                            this.setState({
+                              EditCid: itemValue,
+                              Cindex: itemIndex,
+                            });
+                          }
+                        }}
+                      >
+                        <Picker.Item label="Select category" value="1" />
+                        {this.state.Categories_list.map((item, key) => {
+                          return (
+                            <Picker.Item
+                              key={key}
+                              label={item.Name}
+                              value={item.id}
+                            />
+                          );
+                        })}
+                      </Picker> */}
+                      <ModalSelector
+                      data={
+                        this.state.Categories_list
+                      }
+                      initValue="Select Category"
+                      // supportedOrientations={['landscape']}
+                      accessible={true}
+                      keyExtractor={(item) => item.id}
+                      labelExtractor={(item) => item.Name}
+                      scrollViewAccessibilityLabel={"Scrollable options"}
+                      cancelButtonAccessibilityLabel={"Cancel Button"}
+                      onChange={(itemValue, itemIndex) => {
+                        //  alert(itemIndex)
+                        this.setState({
+                          
+                          EditCName: itemValue.Name,
+                          EditCid: itemValue.id,
+                            Cindex: itemValue.index,
+                        });
+                      }}
+                    >
+                      <TextInput
+                      blurOnSubmit={true}
+                      placeholderTextColor={"gray"}
+                        style={styles.popUpInput}
+                        editable={false}
+                        placeholder="Select Category"
+                        value={this.state.EditCName}
+                      />
+                    </ModalSelector>
+                      {/* <IOSPicker
+                    // mode='dropdown'
+                    data={this.state.Categories_list}
                     selectedValue={this.state.EditCid}
                     style={styles.PickerStyle}
                     onValueChange={(itemValue, itemIndex) =>
                       this.setState({ EditCid: itemValue, Cindex: itemIndex })
                     }>
-                    <Picker.Item label="Select category" value='' />
+                    
                     {
                       this.state.Categories_list.map((item, key) => {
                         return (
@@ -505,47 +761,98 @@ class myServices extends Component {
                       })
 
                     }
-                  </Picker>
-                </View>
-              </View>
-              {this.state.Cindex !== "" ?
-                // <View>
-                //   <Text>
-                //     {this.state.Cindex}
-                //   </Text>
-                // </View> 
-                <View style={styles.inputTxtContainer} >
-                  <Text style={styles.popUpText}>Sub Category</Text>
-                  <View style={{ marginTop: height(1), alignItems: 'center', justifyContent: 'center', width: width(80), height: height(6), borderRadius: 5, elevation: 5, backgroundColor: 'white', }}>
-                    <Picker
-                      mode='dropdown'
-                      selectedValue={this.state.EditSCid}
-                      style={styles.PickerStyle}
-                      onValueChange={(itemValue, itemIndex) =>
-                        this.setState({ EditSCid: itemValue })
-                      }>
-                      <Picker.Item label="Select Sub category" value='' />
-                      {
-                        this.state.Categories_list[this.state.Cindex - 1].SubList !== undefined &&
-                          this.state.Categories_list[this.state.Cindex - 1].SubList.length > 0 ?
-                          this.state.Categories_list[this.state.Cindex - 1].SubList.map((item, key) => {
-                            return (
-                              <Picker.Item key={key} label={item.Name} value={item.id} />
-                            )
-                          })
-                          :
-                          null
-                      }
-                    </Picker>
+                  </IOSPicker> */}
+                      {/* <RNPickerSelect
+                    onValueChange={(value) => console.log(value)}
+                    items={this.state.Categories_list}
+                  /> */}
+                    </View>
                   </View>
-                </View>
-                :
-                null
-              }
+                  {this.state.Cindex !== "" ? (
+                    // <View>
+                    //   <Text>
+                    //     {this.state.Cindex}
+                    //   </Text>
+                    // </View>
+                    <View
+                      style={[
+                        styles.inputTxtContainer,
+                        { height: height(6), justifyContent: "center" },
+                      ]}
+                    >
+                      <Text style={styles.popUpText}>Sub Category</Text>
+                      <View
+                        style={{
+                          marginTop: height(0),
+                          alignItems: "center",
+                          justifyContent: "center",
+                          width: width(80),
+                          height: height(6),
+                          borderRadius: 5,
+                          elevation: 5,
+                          backgroundColor: "white",
+                        }}
+                      >
+                        {/* <Picker
+                          mode="dropdown"
+                          selectedValue={this.state.EditSCid}
+                          style={styles.PickerStyle}
+                          onValueChange={(itemValue, itemIndex) =>
+                            this.setState({ EditSCid: itemValue })
+                          }
+                        >
+                          <Picker.Item label="Select Sub category" value="" />
+                          {this.state.Categories_list[this.state.Cindex]
+                            .SubList !== undefined &&
+                          this.state.Categories_list[this.state.Cindex]
+                            .SubList.length > 0
+                            ? this.state.Categories_list[
+                                this.state.Cindex
+                              ].SubList.map((item, key) => {
+                                return (
+                                  <Picker.Item
+                                    key={key}
+                                    label={item.Name}
+                                    value={item.id}
+                                  />
+                                );
+                              })
+                            : null}
+                        </Picker> */}
+                        <ModalSelector
+                        data={
+                          this.state.Categories_list[this.state.Cindex ]
+                            .SubList
+                        }
+                        initValue="Select Sub Category"
+                        // supportedOrientations={['landscape']}
+                        accessible={true}
+                        keyExtractor={(item) => item.id}
+                        labelExtractor={(item) => item.Name}
+                        scrollViewAccessibilityLabel={"Scrollable options"}
+                        cancelButtonAccessibilityLabel={"Cancel Button"}
+                        onChange={(itemValue) => {
+                          // alert(itemValue.Name)
+                          this.setState({
+                            EditSCid: itemValue.id,
+                            EditSCName: itemValue.Name,
+                          });
+                        }}
+                      >
+                        <TextInput
+                        blurOnSubmit={true}
+                        placeholderTextColor={"gray"}
+                          style={styles.popUpInput}
+                          editable={false}
+                          placeholder="Select Sub Category"
+                          value={this.state.EditSCName}
+                        />
+                      </ModalSelector>
+                      </View>
+                    </View>
+                  ) : null}
 
-              
-
-              {/* <View style={styles.inputTxtContainer}>
+                  {/* <View style={styles.inputTxtContainer}>
                 <Text style={styles.popUpText}>Service Code</Text>
                 <TextInput
                   placeholder='125547845'
@@ -554,45 +861,52 @@ class myServices extends Component {
                 />
               </View> */}
 
-              <View style={styles.inputTxtContainer}>
-                <Text style={styles.popUpText}>Service Price</Text>
-                <TextInput
-                  placeholder={this.state.EditCost}
-                  keyboardType='numeric'
-                  placeholderTextColor='rgb(217,217,217)'
-                  style={styles.popUpInput}
-                  onChangeText={(value) => {
-                    this.setState({ EditCost: value })
-                  }}
-                />
-              </View>
+                  <View style={styles.inputTxtContainer}>
+                    <Text style={styles.popUpText}>Service Price</Text>
+                    <TextInput
+                    blurOnSubmit={true}
+                    placeholderTextColor={"gray"}
+                      placeholder={"$ " + this.state.EditCost}
+                      keyboardType="numeric"
+                      // placeholderTextColor="rgb(217,217,217)"
+                      style={styles.popUpInput}
+                      // value={"$ "+this.state.EditCost}
+                      onChangeText={(value) => {
+                        this.setState({ EditCost: value });
+                      }}
+                    />
+                  </View>
 
-              <View style={styles.inputTxtContainer}>
-                <Text style={styles.popUpText}>Service Duration</Text>
-                <TextInput
-                  placeholder={this.state.EditDuration}
-                  placeholderTextColor='rgb(217,217,217)'
-                  keyboardType='numeric'
-                  style={styles.popUpInput}
-                  onChangeText={(value) => {
-                    this.setState({ EditDuration: value })
-                  }}
-                />
-              </View>
+                  <View style={styles.inputTxtContainer}>
+                    <Text style={styles.popUpText}>Service Duration</Text>
+                    <TextInput
+                    blurOnSubmit={true}
+                      placeholder={this.state.EditDuration}
+                      // placeholderTextColor="rgb(217,217,217)"
+                      keyboardType="numeric"
+                      placeholderTextColor={"gray"}
+                      style={styles.popUpInput}
+                      onChangeText={(value) => {
+                        this.setState({ EditDuration: value });
+                      }}
+                    />
+                  </View>
 
-              <View style={styles.inputTxtContainer}>
-                <Text style={styles.popUpText}>Description</Text>
-                <TextInput
-                  placeholder={this.state.EditDescraption}
-                  placeholderTextColor='rgb(217,217,217)'
-                  style={styles.popUpInput}
-                  onChangeText={(value) => {
-                    this.setState({ EditDescraption: value })
-                  }}
-                />
-              </View>
-              
-              {/* <View style={styles.uploadContainer}>
+                  <View style={styles.inputTxtContainer}>
+                    <Text style={styles.popUpText}>Description</Text>
+                    <TextInput
+                    blurOnSubmit={true}
+                      placeholder={this.state.EditDescraption}
+                      // placeholderTextColor="rgb(217,217,217)"
+                      placeholderTextColor={"gray"}
+                      style={styles.popUpInput}
+                      onChangeText={(value) => {
+                        this.setState({ EditDescraption: value });
+                      }}
+                    />
+                  </View>
+
+                  {/* <View style={styles.uploadContainer}>
                 <TouchableOpacity style={styles.btnUpload} onPress={this.imagePicker}>
                   <Text style={styles.btnUploadTxt}>Upload Image</Text>
                 </TouchableOpacity>
@@ -604,22 +918,23 @@ class myServices extends Component {
                 }
               </View> */}
 
-              <TouchableOpacity style={styles.btnFinish} onPress={() => {
-                this.updateService()
-              }}>
-                {
-                  this.state.loading === true ?
-                    <ActivityIndicator size="small" color="white" />
-                    :
-                    <Text style={styles.btnFinishTxt}>Update</Text>
-                }
-              </TouchableOpacity>
-            </View>
+                  <TouchableOpacity
+                    style={styles.btnFinish}
+                    onPress={() => {
+                      this.updateService();
+                    }}
+                  >
+                    {this.state.loading === true ? (
+                      <ActivityIndicator size="small" color="white" />
+                    ) : (
+                      <Text style={styles.btnFinishTxt}>Update</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            </KeyboardAvoidingView>
           </View>
-
         </Modal>
-
-        
       </View>
     );
   }
@@ -631,61 +946,57 @@ const styles = StyleSheet.create({
   Container: {
     flex: 1,
     //backgroundColor: colors.SPA_LightRed,
-    alignItems: 'center',
-
+    alignItems: "center",
   },
   btnAddSservice: {
-    backgroundColor: 'rgb(0,41,132)',
+    backgroundColor: "rgb(0,41,132)",
     height: height(4),
     width: width(15),
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: width(5),
     borderRadius: 3,
     elevation: 2,
-    flexDirection: 'row'
+    flexDirection: "row",
   },
   btnAddServiceTxt: {
-    color: 'white',
-    fontSize: totalSize(1)
+    color: "white",
+    fontSize: totalSize(1),
   },
   searchInputContainer: {
     width: width(80),
     height: height(6),
-    backgroundColor: 'rgb(255,255,255)',
+    backgroundColor: "rgb(255,255,255)",
     elevation: 5,
     borderRadius: 5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
     marginVertical: height(1),
-
   },
   searchInput: {
     width: width(70),
     height: height(4),
-    fontSize: totalSize(0.8)
-
+    fontSize: totalSize(0.8),
   },
   btnSearch: {
-    justifyContent: 'center',
-    alignItems: 'center'
+    justifyContent: "center",
+    alignItems: "center",
   },
   searchIcon: {
     width: totalSize(1.5),
-    height: totalSize(1.5)
+    height: totalSize(1.5),
   },
   shopContainer: {
     width: width(90),
     height: height(10),
     borderRadius: 4,
     elevation: 5,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     marginVertical: height(0.5),
     marginHorizontal: width(2),
-    flexDirection: 'row',
-    alignItems: 'center',
-
+    flexDirection: "row",
+    alignItems: "center",
   },
   shopImageContainer: {
     width: width(30),
@@ -698,56 +1009,52 @@ const styles = StyleSheet.create({
     height: height(10),
     borderTopLeftRadius: 4,
     borderBottomLeftRadius: 4,
-
   },
   shopTxtContainer: {
     flex: 3,
     //alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: "center",
     //backgroundColor:'red'
   },
   shopIconContainer: {
     flex: 1.5,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
     // backgroundColor:'green'
   },
   iconContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     width: totalSize(5),
     height: totalSize(5),
     borderRadius: 100,
     //backgroundColor: 'rgb(0,41,132)',
-    backgroundColor: colors.SPA_redColor
+    backgroundColor: colors.SPA_redColor,
   },
 
   shopName: {
-
     fontSize: totalSize(2),
-    fontWeight: '500',
-
+    fontWeight: "500",
   },
   shopDetail: {
     fontSize: totalSize(1.5),
-    color: 'gray',
-
+    color: "gray",
   },
   popUpContainer: {
     height: height(60),
     width: width(90),
     elevation: 10,
-    alignItems: 'center',
-    backgroundColor: 'white',
+    alignItems: "center",
+    backgroundColor: "white",
     borderTopRightRadius: 5,
     borderTopLeftRadius: 5,
   },
   popUpContainerService: {
     width: width(90),
     elevation: 10,
-    alignItems: 'center',
-    backgroundColor: 'white',
+    alignItems: "center",
+    backgroundColor: "white",
     borderBottomRightRadius: 5,
     borderBottomLeftRadius: 5,
   },
@@ -758,15 +1065,15 @@ const styles = StyleSheet.create({
     height: height(7),
     width: width(90),
     backgroundColor: colors.SPA_redColor,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
+    alignItems: "center",
+    justifyContent: "flex-end",
     //alignSelf: 'center'
-    flexDirection: 'row'
+    flexDirection: "row",
   },
   popUpTopTxt: {
     fontSize: totalSize(2),
-    fontWeight: '300',
-    color: 'white'
+    fontWeight: "300",
+    color: "white",
   },
   inputTxtContainer: {
     width: width(80),
@@ -774,28 +1081,28 @@ const styles = StyleSheet.create({
     //backgroundColor:'blue'
   },
   inputContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     width: width(80),
     height: height(6),
     elevation: 5,
     borderRadius: 5,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     marginTop: height(1),
-    shadowColor: 'gray',
-    shadowOpacity: 0.4
+    shadowColor: "gray",
+    shadowOpacity: 0.4,
   },
   pickerStyle: {
-    color: 'rgb(217,217,217)',
-    height: height(6),
+    color: "rgb(217,217,217)",
+    // height: height(6),
     width: width(78),
-    alignSelf: 'center'
+    alignSelf: "center",
   },
   popUpText: {
     fontSize: totalSize(1.3),
     color: colors.SPA_redColor,
-    fontWeight: '200',
-    left: width(2)
+    fontWeight: "200",
+    left: width(2),
   },
   popUpInput: {
     width: width(80),
@@ -804,58 +1111,57 @@ const styles = StyleSheet.create({
     elevation: 5,
     borderRadius: 5,
     paddingLeft: 10,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     marginTop: height(1),
-    shadowColor: 'gray',
-    shadowOpacity: 0.4
+    shadowColor: "gray",
+    shadowOpacity: 0.4,
   },
   uploadContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     width: width(80),
     marginTop: height(2),
-    alignItems: 'center'
+    alignItems: "center",
   },
   btnUpload: {
     height: height(3),
     width: width(20),
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: 5,
-    backgroundColor: 'rgb(0,41,132)',
-    marginRight: width(2)
+    backgroundColor: "rgb(0,41,132)",
+    marginRight: width(2),
   },
   btnUploadTxt: {
-    color: 'white',
-    fontSize: totalSize(1.2)
+    color: "white",
+    fontSize: totalSize(1.2),
   },
   filesTxt: {
-    color: 'gray',
-    fontSize: totalSize(1.2)
+    color: "gray",
+    fontSize: totalSize(1.2),
   },
 
   btnFinish: {
     width: width(80),
     height: height(6),
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: colors.SPA_redColor,
     borderRadius: 5,
-    marginVertical: height(3)
+    marginVertical: height(3),
   },
   btnFinishTxt: {
-    color: 'white',
-    fontSize: totalSize(1.8)
+    color: "white",
+    fontSize: totalSize(1.8),
   },
   PickerStyle: {
     width: width(60),
-    height: height(5),
+    // height: height(5),
     //alignItems: 'center',
     //justifyContent: 'center',
     //backgroundColor: 'white',
     //fontSize: totalSize(2.5),
-    color: 'rgb(66,67,69)'
+    color: "rgb(66,67,69)",
     //marginVertical:height(2),
     //borderRadius: 25,
   },
-
-})
+});

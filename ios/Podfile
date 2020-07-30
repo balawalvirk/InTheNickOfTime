@@ -8,9 +8,18 @@ target 'InTheNickOfTimeSpa' do
   # Pods for InTheNickOfTimeSpa
   # pod 'Firebase/Core', ' 5.20.1'
   # pod 'Firebase/Messaging', ' 5.20.1'
+  # pod 'react-native-image-resizer', :path => '../node_modules/react-native-image-resizer'
+  # pod 'react-native-fetch-blob',
+  #   :path => '../node_modules/react-native-fetch-blob'
+
   target 'InTheNickOfTimeSpa-tvOSTests' do
     inherit! :search_paths
     # Pods for testing
+    # pod 'react-native-fetch-blob',
+    # :path => '../node_modules/react-native-fetch-blob/ios'
+    # pod 'react-native-fetch-blob', :path => '../node_modules/react-native-fetch-blob/ios'
+
+    # pod 'react-native-image-resizer', :path => '../node_modules/react-native-image-resizer/ios'
 
   end
 

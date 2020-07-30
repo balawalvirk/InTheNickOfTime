@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { AppRegistry, StyleSheet, View, Text, Image } from "react-native";
+import { AppRegistry, StyleSheet, View, Text,SafeAreaView, Image } from "react-native";
 import { ViewPager } from "rn-viewpager";
 
 import StepIndicator from "react-native-step-indicator";
@@ -183,7 +183,7 @@ export default class App extends Component {
 
   render() {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
           
         <View style={styles.stepIndicator}>
           <StepIndicator
@@ -212,10 +212,11 @@ export default class App extends Component {
             this.setState({ currentPage: page.position });
           }}
           horizontalScroll={false}
+          scrollEnabled={false}
         >
           {PAGES.map(page => this.renderViewPagerPage(page))}
         </ViewPager>
-      </View>
+      </SafeAreaView>
     );
   }
 

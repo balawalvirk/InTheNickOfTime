@@ -130,14 +130,12 @@ class Services extends Component {
                             <Image source={images.logo} style={styles.logo} />
                             <View style={[styles.txtContainer, {}]}>
 
-                                <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>We have a great reputation for providing amazing services to clients on location.​</Text>
-                                <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: "bold" }]}>
-                                    Only offer services you are experienced in and are authorized to provide as by your license/certification. You must also have or be willing to purchase all supplies and equipment to provide the services you offer.
+                                <Text style={[styles.welcome, { fontSize: totalSize(1.7) }]}>We have a great reputation for providing amazing services to clients on location.​</Text>
+                                <Text style={[styles.welcome, { fontSize: totalSize(1.7), fontWeight: "bold" ,marginTop: height(1)}]}>
+                                Only offer services you are experienced in and are authorized to provide as by your license/certification. You must also have or be willing to purchase all supplies and equipment to provide the services you offer.
                                 </Text>
-                                <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>By proceeding you acknowledge that you understand  the requirements to work with In the Nick of Time Inc. ​​</Text>
-                                <Text style={[styles.welcome, { fontSize: totalSize(2), fontWeight: "bold" }]}>
-                                What services are you licensed/certified to provide:
-                                </Text>
+                                <Text style={[styles.welcome, { fontSize: totalSize(1.7), marginTop: height(1) }]}>By proceeding you acknowledge that you understand  the requirements to work with In the Nick of Time Inc.</Text>
+                                <Text style={[styles.welcome, { fontSize: totalSize(1.7), fontWeight: "bold",marginTop: height(1)}]}>What services are you licensed/certified to provide:</Text>
                             </View>
                             {
                                 this.CheckBoxRenderer()
@@ -281,7 +279,7 @@ const styles = StyleSheet.create({
     },
     welcome2: {
         fontSize: totalSize(5),
-        textAlign: "center",
+        textAlign: "right",
         margin: 10,
         color: 'rgb(66,67,69)',
 

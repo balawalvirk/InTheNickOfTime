@@ -3,9 +3,11 @@ package com.inthenickoftimespa;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import fr.bamlab.rnimageresizer.ImageResizerPackage;
+import com.RNFetchBlob.RNFetchBlobPackage;
 import com.reactcommunity.rndatetimepicker.RNDateTimePickerPackage;
 import io.invertase.firebase.RNFirebasePackage;
-import com.rnfs.RNFSPackage;
+// import com.rnfs.RNFSPackage;
 import com.terrylinla.rnsketchcanvas.SketchCanvasPackage;
 import cl.json.RNSharePackage;
 import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
@@ -34,9 +36,11 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new ImageResizerPackage(),
+            new RNFetchBlobPackage(),
             new RNDateTimePickerPackage(),
             
-            new RNFSPackage(),
+            // new RNFSPackage(),
             new SketchCanvasPackage(),
             new RNSharePackage(),
             new AsyncStoragePackage(),

@@ -14,6 +14,8 @@ import colors from "../../../../Themes/Colors";
 import images from "../../../../Themes/Images";
 import firebase from "firebase";
 import { withNavigationFocus } from "react-navigation";
+import Loader from "./../../../../Components/Loader";
+import { uploadProfileimage, connectFirebase, getData, saveData } from "./../../../../backend/firebase/utility";
 
 class ProfileClient extends Component {
   constructor(props) {
@@ -30,27 +32,34 @@ class ProfileClient extends Component {
   };
 
   loadUser = () => {
-    AsyncStorage.getItem("user", (error, data) => {
+    AsyncStorage.getItem('user', async(error, data) => {
       if (data) {
-        user = JSON.parse(data);
-        console.log(user);
-        let img = null;
-        if (user.photo != null) {
-          img = { uri: user.photo };
-        } else {
-          img = images.profilePic;
-        }
-        this.setState({
-          name: user.name,
-          email: user.email,
-          photo: img
-        });
+          user = JSON.parse(data)
+          console.log(user);
+          let img = null;
+          if (user.photo != null) {
+              img = user.photo
+          }
+          let Obj = await getData("Users",user.id);
+          this.setState({
+              id: Obj.id,
+              name: Obj.name,
+              email: Obj.email,
+              imageUrl2: Obj.photo,
+              loading: false,
+          })
+          // AsyncStorage.setItem("user", JSON.stringify(Obj));
+
       }
-    });
+  })
+  // this.loader.hide()
   };
 
-  componentDidMount() {
+  async componentDidMount() {
+    const {navigation} = this.props;
+    this.focusListener = navigation.addListener('didFocus', async () => {
     this.loadUser();
+    });
   }
 
   render() {
@@ -121,7 +130,7 @@ class ProfileClient extends Component {
             <View style={{ marginBottom: 20 }}></View>
           </View>
           <View style={styles.imageContainer}>
-            <Image source={this.state.photo} style={styles.imageProfile} />
+          <Image source={this.state.imageUrl2 !== null ? { uri: this.state.imageUrl2 } : images.profilePic} style={styles.profileImage} />
             <Text style={[styles.welcome, { fontSize: totalSize(3) }]}>
               {this.state.name}
             </Text>
@@ -189,6 +198,13 @@ const styles = StyleSheet.create({
     //marginVertical:height(2),
     //borderRadius: 25,
   },
+  profileImage: {
+    width: totalSize(15),
+    height: totalSize(15),
+    // position: 'absolute',
+    borderRadius: 100,
+
+},
   uperContainer: {
     flex: 0.25,
     flexDirection: "row",

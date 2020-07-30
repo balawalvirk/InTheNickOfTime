@@ -9,7 +9,7 @@ import {
   CheckBox,
   ScrollView,
   SafeAreaView,
-  Picker
+  Picker,
 } from "react-native";
 import { height, width, totalSize } from "react-native-dimension";
 import DateTimePicker from "react-native-datepicker";
@@ -22,7 +22,7 @@ import AsyncStorage from "@react-native-community/async-storage";
 import {
   updateDocument,
   getAllOfCollection,
-  saveData
+  saveData,
 } from "../../../../backend/firebase/utility";
 import Toast from "react-native-simple-toast";
 import Loader from "../../../../Components/Loader";
@@ -50,7 +50,7 @@ class ProfileTechnician extends Component {
           color: "#000",
           time_from: "",
           time_to: "",
-          isAvailable: false
+          isAvailable: false,
         },
         {
           id: 1,
@@ -59,7 +59,7 @@ class ProfileTechnician extends Component {
           color: "blue",
           time_from: "",
           time_to: "",
-          isAvailable: false
+          isAvailable: false,
         },
         {
           id: 2,
@@ -68,7 +68,7 @@ class ProfileTechnician extends Component {
           color: "#000",
           time_from: "",
           time_to: "",
-          isAvailable: false
+          isAvailable: false,
         },
         {
           id: 3,
@@ -77,7 +77,7 @@ class ProfileTechnician extends Component {
           color: "#000",
           time_from: "",
           time_to: "",
-          isAvailable: false
+          isAvailable: false,
         },
         {
           id: 4,
@@ -86,7 +86,7 @@ class ProfileTechnician extends Component {
           color: "#000",
           time_from: "",
           time_to: "",
-          isAvailable: false
+          isAvailable: false,
         },
         {
           id: 5,
@@ -95,7 +95,7 @@ class ProfileTechnician extends Component {
           color: "#000",
           time_from: "",
           time_to: "",
-          isAvailable: false
+          isAvailable: false,
         },
         {
           id: 6,
@@ -104,37 +104,37 @@ class ProfileTechnician extends Component {
           color: "#000",
           time_from: "",
           time_to: "",
-          isAvailable: false
-        }
+          isAvailable: false,
+        },
       ],
       locations: [
         { id: 1, location: "Sea site, New york, USA", travel_cost: 20 },
         { id: 2, location: "Top Valley, New york, USA", travel_cost: 25 },
         { id: 3, location: "Down Town, New york, USA", travel_cost: 45 },
-        { id: 4, location: "Sea site, New york, USA", travel_cost: 30 }
+        { id: 4, location: "Sea site, New york, USA", travel_cost: 30 },
       ],
       states_list: [
         { id: 1, state_name: "MaryLand" },
         { id: 2, state_name: "Verginia" },
-        { id: 3, state_name: "Washingtn, DC" }
+        { id: 3, state_name: "Washingtn, DC" },
       ],
       cost: 0,
       location: "",
-      loc_id: null
+      loc_id: null,
     };
   }
 
   static navigationOptions = {
     title: "Profile",
     headerStyle: {
-      backgroundColor: "rgb(66,67,69)"
+      backgroundColor: "rgb(66,67,69)",
       //height:height(5)
     },
     headerTintColor: colors.appGreen,
     headerTitleStyle: {
-      fontSize: totalSize(2)
+      fontSize: totalSize(2),
       //textAlign: 'center'
-    }
+    },
   };
 
   async AvailableFn() {
@@ -156,7 +156,7 @@ class ProfileTechnician extends Component {
       tmp = {
         id: this.state.loc_id,
         location: this.state.location,
-        travel_cost: this.state.cost
+        travel_cost: this.state.cost,
       };
       console.log(this.state.user.travel_locations);
       if (this.state.user.travel_locations.length == 0) {
@@ -186,13 +186,13 @@ class ProfileTechnician extends Component {
   }
 
   async componentDidMount() {
-    this.props.navigation.addListener("willFocus", async () => {
-      if (this.state.name == null || this.state.name == "") {
+    this.props.navigation.addListener("didFocus", async () => {
+      // if (this.state.name == null || this.state.name == "") {
         this.loader.show();
         await this.loadUser();
         await this.loadLocations();
         this.loader.hide();
-      }
+      // }
     });
 
     // this.loader.show()
@@ -204,7 +204,7 @@ class ProfileTechnician extends Component {
   async loadLocations() {
     let LList = [];
     let LocationList = await getAllOfCollection("Location");
-    LocationList.forEach(element => {
+    LocationList.forEach((element) => {
       if (element.SubList !== undefined) {
         LList.push(element);
       }
@@ -215,10 +215,11 @@ class ProfileTechnician extends Component {
     await AsyncStorage.getItem("user", (error, data) => {
       if (data) {
         user = JSON.parse(data);
-        this.GetRatting(user);
+        this.GetRatting(user.data);
         this.setState({
-          name: user.name,
-          email: user.email
+          name: user.data.name,
+          email: user.data.email,
+          OldUser: user,
         });
       }
     });
@@ -229,7 +230,7 @@ class ProfileTechnician extends Component {
       .collection("Technician")
       .where("UserId", "==", element.UserId)
       .get();
-    TechnicianList.forEach(element3 => {
+    TechnicianList.forEach((element3) => {
       if (
         element3.data().weekly_availability !== undefined &&
         element3.data().weekly_availability.length > 0
@@ -252,8 +253,10 @@ class ProfileTechnician extends Component {
 
     console.log("WA", weekly_availability);
     this.loader.show();
-    await updateDocument("Technician", this.state.user.id, this.state.user);
-    let tmpState = JSON.stringify(this.state.user);
+    await updateDocument("Technician", this.state.user.UserId, this.state.user);
+    let OldUser= this.state.OldUser;
+    OldUser.data= this.state.user;
+    let tmpState = JSON.stringify(OldUser);
     await AsyncStorage.setItem("user", tmpState);
     this.loader.hide();
   }
@@ -264,7 +267,7 @@ class ProfileTechnician extends Component {
       .collection("Technician")
       .where("UserId", "==", this.state.user.UserId)
       .get();
-    TechnicianList.forEach(element3 => {
+    TechnicianList.forEach((element3) => {
       let Obj = element3.data();
       let TempList = Obj.travel_locations;
 
@@ -287,19 +290,19 @@ class ProfileTechnician extends Component {
 
   _toggleModalForgetPassword = () =>
     this.setState({
-      isModalVisibleForgetPassword: !this.state.isModalVisibleForgetPassword
+      isModalVisibleForgetPassword: !this.state.isModalVisibleForgetPassword,
     });
 
   _toggleModalLocation = () =>
     this.setState({
-      isModalVisibleLocation: !this.state.isModalVisibleLocation
+      isModalVisibleLocation: !this.state.isModalVisibleLocation,
     });
 
   render() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.container}>
-          <Loader ref={r => (this.loader = r)} />
+          <Loader ref={(r) => (this.loader = r)} />
           <View style={styles.uperContainer}>
             <TouchableOpacity
               onPress={() =>
@@ -313,7 +316,7 @@ class ProfileTechnician extends Component {
                 alignItems: "center",
                 justifyContent: "center",
                 marginTop: 5,
-                marginRight: 5
+                marginRight: 5,
               }}
             >
               <Icon
@@ -348,7 +351,7 @@ class ProfileTechnician extends Component {
                 <Text
                   style={[
                     styles.instructions,
-                    { fontSize: totalSize(1.5), color: "gray" }
+                    { fontSize: totalSize(1.5), color: "gray" },
                   ]}
                 >
                   Manage your daily/weekly availability{" "}
@@ -398,7 +401,7 @@ class ProfileTechnician extends Component {
                 <Text
                   style={[
                     styles.instructions,
-                    { fontSize: totalSize(1.5), color: "gray" }
+                    { fontSize: totalSize(1.5), color: "gray" },
                   ]}
                 >
                   Manage your travel locations
@@ -430,7 +433,7 @@ class ProfileTechnician extends Component {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                justifyContent: "center"
+                justifyContent: "center",
               }}
             >
               <Icon name="email" size={totalSize(1.5)} color="gray" />
@@ -441,8 +444,8 @@ class ProfileTechnician extends Component {
                     fontSize: totalSize(1.5),
                     fontWeight: "normal",
                     color: "gray",
-                    left: 2
-                  }
+                    left: 2,
+                  },
                 ]}
               >
                 {this.state.user.email}
@@ -465,7 +468,7 @@ class ProfileTechnician extends Component {
                 height: height(80),
                 width: width(95),
                 alignSelf: "center",
-                borderRadius: 5
+                borderRadius: 5,
               }}
             >
               <Text
@@ -474,27 +477,54 @@ class ProfileTechnician extends Component {
                   color: "gray",
                   flexDirection: "row",
                   alignSelf: "center",
-                  margin: 15
+                  margin: 15,
                 }}
               >
                 Daily Availability
               </Text>
               <View style={styles.schoolInputContainer}>
+                <Text>From </Text>
                 <DateTimePicker
-                  style={{ width: width(75) }}
+                // textColor={"red"}
+                  style={{ width: width(75), }}
                   //date={this.state.time_from}
-
+                  customStyles={{
+                    textColor:{
+                      color: "red"
+                    },
+                    placeholderText: {
+                      color: 'black'
+                    },
+                    dateText: {
+                      color: 'red'
+                    },
+                    datePickerCon: {
+                      color: 'red'
+                    },
+                    btnTextConfirm: {
+                      color: "red",
+                    },
+                    btnTextCancel: {
+                      color: "red",
+                    },
+                    TextFormate: {
+                      color: "red",
+                    },
+                    btnTextText: {
+                      color: "red",
+                    },
+                  }}
                   mode="time"
                   placeholder={this.state.time_from}
                   showIcon={false}
                   androidMode="spinner"
-                  placeholderTextColor={"rgb(217,217,217)"}
+                  
                   format="h:mm a"
                   //minDate="2018-05-01"
                   //maxDate="2020-06-01"
                   confirmBtnText="Confirm"
                   cancelBtnText="Cancel"
-                  onDateChange={date => {
+                  onDateChange={(date) => {
                     this.setState({ time_from: date });
                     if (
                       this.state.time_to != "-" &&
@@ -510,6 +540,7 @@ class ProfileTechnician extends Component {
                 />
               </View>
               <View style={styles.schoolInputContainer}>
+                <Text> To </Text>
                 <DateTimePicker
                   style={{ width: width(75) }}
                   //date={this.state.time_to}
@@ -517,13 +548,39 @@ class ProfileTechnician extends Component {
                   placeholder={this.state.time_to}
                   showIcon={false}
                   androidMode="spinner"
-                  placeholderTextColor={"rgb(217,217,217)"}
+                  placeholderTextColor={"black"}
                   format="h:mm a"
+                  customStyles={{
+                    textColor:{
+                      color: "red"
+                    },
+                    placeholderText: {
+                      color: 'black'
+                    },
+                    dateText: {
+                      color: 'red'
+                    },
+                    datePickerCon: {
+                      color: 'red'
+                    },
+                    btnTextConfirm: {
+                      color: "red",
+                    },
+                    btnTextCancel: {
+                      color: "red",
+                    },
+                    TextFormate: {
+                      color: "red",
+                    },
+                    btnTextText: {
+                      color: "red",
+                    },
+                  }}
                   //minDate="2018-05-01"
                   //maxDate="2020-06-01"
                   confirmBtnText="Confirm"
                   cancelBtnText="Cancel"
-                  onDateChange={date => {
+                  onDateChange={(date) => {
                     this.setState({ time_to: date });
                     if (
                       this.state.time_from != "-" &&
@@ -532,7 +589,12 @@ class ProfileTechnician extends Component {
                       this.state.days[
                         this.state.index
                       ].time_from = this.state.time_from;
-                      this.state.days[this.state.index].time_to = date;
+                      // if (this.state.days[this.state.index].time_from > date) {
+                     
+                        this.state.days[this.state.index].time_to = date;
+                      // } else {
+                      //   alert("Please select feature time");
+                      // }
                     }
                   }}
                 />
@@ -562,7 +624,7 @@ class ProfileTechnician extends Component {
                   color: "gray",
                   flexDirection: "row",
                   alignSelf: "center",
-                  margin: 15
+                  margin: 15,
                 }}
               >
                 Weekly Availability
@@ -573,7 +635,7 @@ class ProfileTechnician extends Component {
                   width: width(90),
                   flexDirection: "row",
                   flexWrap: "wrap",
-                  justifyContent: "center"
+                  justifyContent: "center",
                 }}
               >
                 {this.state.days.map((i, index) => {
@@ -584,7 +646,7 @@ class ProfileTechnician extends Component {
                         width: width(30),
                         alignItems: "center",
                         justifyContent: "center",
-                        flexDirection: "row"
+                        flexDirection: "row",
                       }}
                       onPress={() => {
                         if (this.state.index != index) {
@@ -610,7 +672,7 @@ class ProfileTechnician extends Component {
                                 ? "-"
                                 : b[index].time_from,
                             time_to:
-                              b[index].time_to == "" ? "-" : b[index].time_to
+                              b[index].time_to == "" ? "-" : b[index].time_to,
                           });
 
                           console.log(b);
@@ -657,7 +719,7 @@ class ProfileTechnician extends Component {
 
               <Button
                 containerStyle={{
-                  margin: 2
+                  margin: 2,
                 }}
                 title="Update"
                 buttonStyle={{ backgroundColor: colors.SPA_redColor }}
@@ -668,7 +730,7 @@ class ProfileTechnician extends Component {
               <Button
                 containerStyle={{
                   margin: 2,
-                  backgroundColor: colors.SPA_redColor
+                  backgroundColor: colors.SPA_redColor,
                 }}
                 buttonStyle={{ backgroundColor: colors.SPA_redColor }}
                 title="Close"
@@ -714,7 +776,7 @@ class ProfileTechnician extends Component {
                       height: height(6),
                       borderRadius: 5,
                       elevation: 5,
-                      backgroundColor: "white"
+                      backgroundColor: "white",
                     }}
                   >
                     <Picker
@@ -724,7 +786,7 @@ class ProfileTechnician extends Component {
                       onValueChange={(itemValue, itemIndex) =>
                         this.setState({
                           s_category: itemValue,
-                          Cindex: itemIndex
+                          Cindex: itemIndex,
                         })
                       }
                     >
@@ -758,7 +820,7 @@ class ProfileTechnician extends Component {
                         height: height(6),
                         borderRadius: 5,
                         elevation: 5,
-                        backgroundColor: "white"
+                        backgroundColor: "white",
                       }}
                     >
                       <Picker
@@ -797,7 +859,7 @@ class ProfileTechnician extends Component {
                     keyboardType="numeric"
                     placeholderTextColor="rgb(217,217,217)"
                     style={styles.popUpInput}
-                    onChangeText={value => {
+                    onChangeText={(value) => {
                       this.setState({ NewCost: value });
                     }}
                   />
@@ -834,7 +896,7 @@ const styles = StyleSheet.create({
     //alignItems: 'center',
     //backgroundColor: 'rgb(66,67,69)',
     //backgroundColor: 'rgb(180,210,53)',
-    backgroundColor: colors.SPA_redColor
+    backgroundColor: colors.SPA_redColor,
   },
   popUpContainerService: {
     width: width(90),
@@ -842,11 +904,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "white",
     borderBottomRightRadius: 5,
-    borderBottomLeftRadius: 5
+    borderBottomLeftRadius: 5,
   },
   inputTxtContainer: {
     width: width(80),
-    marginVertical: height(1)
+    marginVertical: height(1),
     //backgroundColor:'blue'
   },
   btnRed: {
@@ -860,12 +922,12 @@ const styles = StyleSheet.create({
     elevation: 5,
     borderRadius: 3,
     marginRight: width(2),
-    marginBottom: 15
+    marginBottom: 15,
   },
   btnTxtNew: {
     color: "white",
     fontSize: totalSize(2),
-    fontWeight: "300"
+    fontWeight: "300",
   },
   popUpTop: {
     borderTopRightRadius: 5,
@@ -876,12 +938,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-end",
     //alignSelf: 'center'
-    flexDirection: "row"
+    flexDirection: "row",
   },
   popUpTopTxt: {
     fontSize: totalSize(2),
     fontWeight: "300",
-    color: "white"
+    color: "white",
   },
   btnFinish: {
     width: width(80),
@@ -890,11 +952,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: colors.SPA_redColor,
     borderRadius: 5,
-    marginVertical: height(3)
+    marginVertical: height(3),
   },
   btnFinishTxt: {
     color: "white",
-    fontSize: totalSize(1.8)
+    fontSize: totalSize(1.8),
   },
   searchContainer: {
     width: width(70),
@@ -905,7 +967,7 @@ const styles = StyleSheet.create({
     backgroundColor: "gray",
     marginVertical: height(1),
     borderRadius: 25,
-    flexDirection: "row"
+    flexDirection: "row",
   },
   TxtInput: {
     width: width(65),
@@ -914,7 +976,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     //backgroundColor: 'white',
     fontSize: totalSize(2.5),
-    color: "rgb(217,217,217)"
+    color: "rgb(217,217,217)",
     //marginVertical:height(2),
     //borderRadius: 25,
   },
@@ -924,7 +986,7 @@ const styles = StyleSheet.create({
     //width: width(100),
     //height: null,
     //justifyContent: 'center',
-    justifyContent: "flex-end"
+    justifyContent: "flex-end",
     //backgroundColor: 'rgb(0,173,238)'
     //backgroundColor:'rgb(180,210,53)'
     //backgroundColor:'rgb(217,217,217)'
@@ -943,7 +1005,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     borderColor: "black",
     borderStyle: "solid",
-    margin: 5
+    margin: 5,
   },
   lowerContainer: {
     flex: 1,
@@ -955,13 +1017,13 @@ const styles = StyleSheet.create({
     //backgroundColor:'rgb(180,210,53)'
     //backgroundColor:'rgb(217,217,217)'
     //backgroundColor: colors.SPA_LightRed,
-    backgroundColor: "white"
+    backgroundColor: "white",
     // marginTop: height(20),
   },
   txtContainer: {
     alignItems: "center",
     justifyContent: "center",
-    marginVertical: height(3)
+    marginVertical: height(3),
   },
   schoolInputContainer: {
     flexDirection: "row",
@@ -973,7 +1035,7 @@ const styles = StyleSheet.create({
     //backgroundColor: 'rgb(0,173,238)',
     //backgroundColor: 'white',
     //marginBottom: height(1),
-    elevation: 10
+    elevation: 10,
     //borderRadius: 5
   },
   schoolInputContainer2: {
@@ -989,7 +1051,7 @@ const styles = StyleSheet.create({
     //elevation: 10,
     borderRadius: 5,
     borderStyle: "solid",
-    borderColor: "black"
+    borderColor: "black",
   },
   welcome: {
     fontSize: totalSize(5),
@@ -997,32 +1059,32 @@ const styles = StyleSheet.create({
     //margin: 10,
     //color: 'white',
     color: "rgb(66,67,69)",
-    fontWeight: "bold"
+    fontWeight: "bold",
     //opacity: 0.6
   },
   instructions: {
     fontSize: totalSize(1.5),
     textAlign: "center",
     color: "rgb(217,217,217)",
-    marginBottom: 5
+    marginBottom: 5,
   },
   btnTxtContainer: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-start"
+    justifyContent: "flex-start",
   },
   btnTxt: {
     fontSize: totalSize(1.5),
     //color: 'white',
     //color: 'rgb(66,67,69)',
     fontWeight: "normal",
-    color: "gray"
+    color: "gray",
   },
   btnContainer: {
     alignItems: "center",
     justifyContent: "center",
-    flexDirection: "row"
+    flexDirection: "row",
   },
 
   button: {
@@ -1035,7 +1097,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     //backgroundColor: 'rgb(245,245,238)',
     borderRadius: 5,
-    backgroundColor: "white"
+    backgroundColor: "white",
     // borderWidth: 1,
   },
   button2: {
@@ -1052,7 +1114,7 @@ const styles = StyleSheet.create({
     // borderWidth: 1,
     flexDirection: "row",
     borderBottomWidth: 0.5,
-    borderColor: "rgb(66,67,69)"
+    borderColor: "rgb(66,67,69)",
   },
   iconContainer: {
     width: totalSize(5),
@@ -1062,7 +1124,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 100,
     marginHorizontal: width(2),
-    marginVertical: height(1)
+    marginVertical: height(1),
   },
   imageContainer: {
     //flex:1,
@@ -1070,12 +1132,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     position: "absolute",
-    marginTop: height(5)
+    marginTop: height(5),
     // backgroundColor:'black'
   },
   imageProfile: {
     height: totalSize(20),
     width: totalSize(20),
-    borderRadius: 100
-  }
+    borderRadius: 100,
+  },
 });

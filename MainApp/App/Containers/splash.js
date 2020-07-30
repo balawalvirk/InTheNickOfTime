@@ -25,10 +25,10 @@ class Splash extends Component {
                 user = JSON.parse(data);
                 console.log(user);
                 
-                if (user.userType == "client") {
+                if (user.data.userType == "client") {
                     setTimeout(() => { this.props.navigation.replace('clientTab') }, 5000);
 
-                } else if (user.userType == "technician") {
+                } else if (user.data.userType == "technician") {
                     setTimeout(() => { this.props.navigation.replace('technicianTab') }, 5000);
 
                 } else {

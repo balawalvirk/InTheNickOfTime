@@ -9,7 +9,7 @@ import {
   ScrollView,
   Image,
   Alert,
-  AsyncStorage
+  AsyncStorage,
 } from "react-native";
 import { height, width, totalSize } from "react-native-dimension";
 import { Icon, Overlay, CheckBox } from "react-native-elements";
@@ -21,11 +21,12 @@ import Modal from "react-native-modal";
 import images from "../../Themes/Images";
 import colors from "../../Themes/Colors";
 import firebase from "firebase";
+import firestore from "firebase/firestore";
 import Loader from "../../Components/Loader";
 import {
   signIn,
   uploadImage,
-  sendPasswordReset
+  sendPasswordReset,
 } from "./../../backend/firebase/auth_new";
 import validate from "validate.js";
 
@@ -41,22 +42,22 @@ class Login extends Component {
       userType: "client",
       isModalVisibleForgetPassword: false,
       IsModalVisibleSelectSignUp: false,
-      reset_email: ""
+      reset_email: "",
     };
   }
 
   static navigationOptions = {
-    header: null
+    header: null,
   };
 
   _toggleModalForgetPassword = () =>
     this.setState({
-      isModalVisibleForgetPassword: !this.state.isModalVisibleForgetPassword
+      isModalVisibleForgetPassword: !this.state.isModalVisibleForgetPassword,
     });
 
   _toggleModalSelectSignUp = () =>
     this.setState({
-      IsModalVisibleSelectSignUp: !this.state.IsModalVisibleSelectSignUp
+      IsModalVisibleSelectSignUp: !this.state.IsModalVisibleSelectSignUp,
     });
 
   manageOverlay = () =>
@@ -71,57 +72,86 @@ class Login extends Component {
     this._toggleModalSelectSignUp();
   };
 
-  saveLogin = obj => {
+  saveLogin = (obj) => {
     //user = JSON.parse(obj)
     //console.log(user);
 
     AsyncStorage.setItem("user", JSON.stringify(obj.data));
     AsyncStorage.setItem("user_detail", JSON.stringify(obj));
   };
+  async CheckValidateFn() {
+    //EmailCheck
+    let reg2 = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (reg2.test(this.state.email) === false) {
+      console.log("Email is Not Correct");
+      this.state.email !== undefined && this.state.email !== ""
+        ? alert("Email is badly formated.Please enter proper Email Id")
+        : alert("Email cannot be empty");
+      // this.setState({ email: text })
+      return 1;
+    }
 
+    let reg1 = /^[\w\d@$!%*#?&]{6,30}$/;
+    if (reg1.test(this.state.password) === false) {
+      console.log("UserName is Not Correct");
+      this.state.password === ""
+        ? alert("Password cannot Not be empty")
+        : this.state.password.length > 5
+        ? alert("Please enter proper Password")
+        : alert("Password should be atleast 6 characters!");
+      // this.setState({ email: text })
+      return 1;
+    }
+    return 0;
+  }
   Login = async () => {
     try {
       jsonObect = {
         email: this.state.email,
-        password: this.state.password
+        password: this.state.password,
       };
 
-      let err = validate(jsonObect, LoginConstraints, { format: "flat" });
-      if (err) {
-        // this.loader.hide();
-        Alert.alert("Error!", err.join("\n"), [
-          { text: "OK", onPress: () => {} }
-        ]);
-      } else {
-        // this.loader.show();
-        this.setState({ loader: true });
-        // let url = await uploadImage(this.state.avatarSource.uri)
-        // .then(url => this.setState({ image: url }))
-        // .catch(error => console.log(error))
-        // jsonObect['photo'] = url;
-        let success = await signIn(
-          jsonObect.email,
-          jsonObect.password,
-          this.state.userType,
-          this.loader
-        );
-        if (success != false && this.state.checked) {
-          this.saveLogin(success);
-          Toast.show("Logged In", Toast.SHORT);
-          this.props.navigation.replace("clientTab");
-        } else if (success != false && !this.state.checked) {
-          this.saveLogin(success);
-          Toast.show("Logged In", Toast.SHORT);
-          this.props.navigation.replace("technicianTab");
+      await this.CheckValidateFn().then(async (err) => {
+        console.log("Error: ", err);
+        if (err === 1) {
+          // this.loader.hide();
+          // alert(this.state.ErrorMessege)
+          return 0;
+          // Alert.alert("Error!", this.state.ErrorMessege, [
+          //   { text: "OK", onPress: () => {} }
+          // ]);
         } else {
-          this.setState({ loader: false });
+          // this.loader.show();
+          this.setState({ loader: true });
+          // let url = await uploadImage(this.state.avatarSource.uri)
+          // .then(url => this.setState({ image: url }))
+          // .catch(error => console.log(error))
+          // jsonObect['photo'] = url;
+          let success = await signIn(
+            jsonObect.email,
+            jsonObect.password,
+            this.state.userType,
+            this.loader
+          );
+          if (success != false && this.state.checked) {
+            this.saveLogin(success);
+            Toast.show("Logged In", Toast.SHORT);
+            this.props.navigation.replace("clientTab");
+          } else if (success != false && !this.state.checked) {
+            this.saveLogin(success);
+            Toast.show("Logged In", Toast.SHORT);
+            this.props.navigation.replace("technicianTab");
+          } else {
+            this.setState({ loader: false });
+          }
         }
-      }
+      });
+      console.log(err);
     } catch (e) {
       console.log(e);
-      Alert.alert("Failure", "Failed to sign in. Please try again.", [
-        { text: "OK", onPress: () => {} }
-      ]);
+      // Alert.alert("Failure", "Failed to sign in. Please try again.", [
+      //   { text: "OK", onPress: () => {} },
+      // ]);
     } finally {
       // this.loader.hide();
       this.setState({ loader: false });
@@ -129,18 +159,19 @@ class Login extends Component {
   };
 
   resetPassword(email) {
+    if(email!==""){
     sendPasswordReset(email).then(() => {
       this._toggleModalForgetPassword();
     });
+  } else{
+    alert("Please enter Password reset email")
+  }
   }
 
   // <Loader ref={r => this.loader = r} />
   render() {
     return (
       <View style={styles.container}>
-        {this.state.loader ? (
-          <ActivityIndicator size="large" color="#0000ff" />
-        ) : null}
         <View style={styles.lowerContainer}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <View
@@ -149,7 +180,7 @@ class Login extends Component {
                 width: width(95),
                 alignItems: "center",
                 backgroundColor: "transparent",
-                marginTop: height(5)
+                marginTop: height(5),
               }}
             >
               <Image source={images.logo} style={styles.logo} />
@@ -167,7 +198,7 @@ class Login extends Component {
                 <Text
                   style={[
                     styles.welcome,
-                    { fontSize: totalSize(1.5), fontWeight: "normal" }
+                    { fontSize: totalSize(1.5), fontWeight: "normal" },
                   ]}
                 >
                   DON'T HAVE AN ACCOUNT?{" "}
@@ -181,8 +212,8 @@ class Login extends Component {
                       {
                         fontSize: totalSize(1.5),
                         color: "rgb(219,0,0)",
-                        fontWeight: "normal"
-                      }
+                        fontWeight: "normal",
+                      },
                     ]}
                   >
                     SIGN UP!
@@ -216,26 +247,26 @@ class Login extends Component {
               <View style={styles.InputContainer}>
                 <Icon name="email" color="rgb(66,67,69)" size={totalSize(3)} />
                 <TextInput
-                  onChangeText={value => this.setState({ email: value })}
+                  onChangeText={(value) => this.setState({ email: value })}
                   placeholder="EMAIL"
                   placeholderTextColor="rgb(217,217,217)"
                   underlineColorAndroid="transparent"
                   style={styles.TxtInput}
                   value={this.state.email}
-                  onChangeText={text => this.setState({ email: text })}
+                  onChangeText={(text) => this.setState({ email: text })}
                 />
               </View>
               <View style={styles.InputContainer}>
                 <Icon name="lock" color="rgb(66,67,69)" size={totalSize(3)} />
                 <TextInput
-                  onChangeText={value => this.setState({ password: value })}
+                  onChangeText={(value) => this.setState({ password: value })}
                   placeholder="PASSWORD"
                   placeholderTextColor="rgb(217,217,217)"
                   underlineColorAndroid="transparent"
                   secureTextEntry={true}
                   style={styles.TxtInput}
                   value={this.state.password}
-                  onChangeText={text => this.setState({ password: text })}
+                  onChangeText={(text) => this.setState({ password: text })}
                 />
               </View>
               <View
@@ -245,8 +276,8 @@ class Login extends Component {
                     backgroundColor: "transparent",
                     elevation: 0,
                     justifyContent: "flex-start",
-                    marginVertical: height(1)
-                  }
+                    marginVertical: height(1),
+                  },
                 ]}
               >
                 <CheckBox
@@ -256,7 +287,7 @@ class Login extends Component {
                   uncheckedIcon="checkbox-blank-circle-outline"
                   containerStyle={{
                     backgroundColor: "transparent",
-                    borderWidth: 0
+                    borderWidth: 0,
                   }}
                   textStyle={{ fontSize: totalSize(1.8), fontWeight: "normal" }}
                   size={totalSize(2.5)}
@@ -265,7 +296,7 @@ class Login extends Component {
                   onPress={() =>
                     this.setState({
                       checked: true,
-                      userType: "client"
+                      userType: "client",
                     })
                   }
                 />
@@ -276,7 +307,7 @@ class Login extends Component {
                   uncheckedIcon="checkbox-blank-circle-outline"
                   containerStyle={{
                     backgroundColor: "transparent",
-                    borderWidth: 0
+                    borderWidth: 0,
                   }}
                   textStyle={{ fontSize: totalSize(1.8), fontWeight: "normal" }}
                   size={totalSize(2.5)}
@@ -285,7 +316,7 @@ class Login extends Component {
                   onPress={() =>
                     this.setState({
                       checked: false,
-                      userType: "technician"
+                      userType: "technician",
                     })
                   }
                 />
@@ -297,14 +328,14 @@ class Login extends Component {
                     backgroundColor: "transparent",
                     elevation: 0,
                     justifyContent: "flex-end",
-                    marginVertical: 0
-                  }
+                    marginVertical: 0,
+                  },
                 ]}
               >
                 <Text
                   style={[
                     styles.welcome,
-                    { fontSize: totalSize(1.5), color: colors.SPA_redColor }
+                    { fontSize: totalSize(1.5), color: colors.SPA_redColor },
                   ]}
                   onPress={() => this._toggleModalForgetPassword()}
                 >
@@ -317,8 +348,8 @@ class Login extends Component {
                   onPress={() => this.Login()}
                 >
                   <View style={styles.btnTxtContainer}>
-                    {this.state.loading === true ? (
-                      <ActivityIndicator size={"small"} color="white" />
+                    {this.state.loader ? (
+                      <ActivityIndicator size="large" color="white" />
                     ) : (
                       <Text style={styles.btnTxt}>Login</Text>
                     )}
@@ -343,7 +374,7 @@ class Login extends Component {
               height: height(35),
               width: width(95),
               alignSelf: "center",
-              borderRadius: 5
+              borderRadius: 5,
             }}
           >
             {this.state.LoadingForgetPassword === true ? (
@@ -351,7 +382,7 @@ class Login extends Component {
                 style={{
                   flex: 1,
                   alignItems: "center",
-                  justifyContent: "center"
+                  justifyContent: "center",
                 }}
               >
                 <ActivityIndicator
@@ -367,7 +398,7 @@ class Login extends Component {
                     flexDirection: "row",
                     justifyContent: "flex-end",
                     alignItems: "center",
-                    backgroundColor: "transparent"
+                    backgroundColor: "transparent",
                   }}
                 >
                   <TouchableOpacity
@@ -376,7 +407,7 @@ class Login extends Component {
                       backgroundColor: "Transparent",
                       alignItems: "center",
                       justifyContent: "center",
-                      borderRadius: 0
+                      borderRadius: 0,
                     }}
                   >
                     <Icon name="close" color={colors.SPA_redColor} />
@@ -388,7 +419,7 @@ class Login extends Component {
                     flex: 1,
                     justifyContent: "center",
                     alignItems: "center",
-                    backgroundColor: "transparent"
+                    backgroundColor: "transparent",
                   }}
                 >
                   <Text style={[styles.welcome, { fontSize: totalSize(3) }]}>
@@ -400,11 +431,11 @@ class Login extends Component {
                     flex: 1,
                     backgroundColor: "transparent",
                     justifyContent: "center",
-                    alignItems: "center"
+                    alignItems: "center",
                   }}
                 >
                   <TextInput
-                    onChangeText={value =>
+                    onChangeText={(value) =>
                       this.setState({ reset_email: value })
                     }
                     placeholder="Email Address"
@@ -419,7 +450,7 @@ class Login extends Component {
                       borderRadius: 5,
                       paddingLeft: width(4),
                       backgroundColor: "white",
-                      fontSize: totalSize(2)
+                      fontSize: totalSize(2),
                     }}
                   />
                 </View>
@@ -428,13 +459,13 @@ class Login extends Component {
                     flex: 1,
                     justifyContent: "center",
                     alignItems: "center",
-                    backgroundColor: "transparent"
+                    backgroundColor: "transparent",
                   }}
                 >
                   <TouchableOpacity
                     style={[
                       styles.button,
-                      { height: height(6), width: width(40) }
+                      { height: height(6), width: width(40) },
                     ]}
                     onPress={() => {
                       this.resetPassword(this.state.reset_email);
@@ -465,7 +496,7 @@ class Login extends Component {
               height: height(35),
               width: width(95),
               alignSelf: "center",
-              borderRadius: 5
+              borderRadius: 5,
             }}
           >
             {this.state.LoadingForgetPassword === true ? (
@@ -473,7 +504,7 @@ class Login extends Component {
                 style={{
                   flex: 1,
                   alignItems: "center",
-                  justifyContent: "center"
+                  justifyContent: "center",
                 }}
               >
                 <ActivityIndicator
@@ -489,7 +520,7 @@ class Login extends Component {
                     flexDirection: "row",
                     justifyContent: "flex-end",
                     alignItems: "center",
-                    backgroundColor: "transparent"
+                    backgroundColor: "transparent",
                   }}
                 >
                   <TouchableOpacity
@@ -498,7 +529,7 @@ class Login extends Component {
                       backgroundColor: "Transparent",
                       alignItems: "center",
                       justifyContent: "center",
-                      borderRadius: 0
+                      borderRadius: 0,
                     }}
                   >
                     <Icon name="close" color={colors.SPA_redColor} />
@@ -510,7 +541,7 @@ class Login extends Component {
                     flex: 1,
                     justifyContent: "center",
                     alignItems: "center",
-                    backgroundColor: "transparent"
+                    backgroundColor: "transparent",
                   }}
                 >
                   <Text style={[styles.welcome, { fontSize: totalSize(2) }]}>
@@ -526,7 +557,7 @@ class Login extends Component {
                     backgroundColor: "transparent",
                     justifyContent: "center",
                     flexDirection: "row",
-                    alignItems: "center"
+                    alignItems: "center",
                   }}
                 >
                   {/* <TextInput
@@ -542,13 +573,16 @@ class Login extends Component {
                       flex: 1,
                       justifyContent: "center",
                       alignItems: "flex-end",
-                      backgroundColor: "transparent"
+                      backgroundColor: "transparent",
                     }}
                   >
                     <Text
                       style={[
                         styles.welcome,
-                        { fontSize: totalSize(2.5), color: colors.SPA_redColor }
+                        {
+                          fontSize: totalSize(2.5),
+                          color: colors.SPA_redColor,
+                        },
                       ]}
                       onPress={() => this.goto_signup_Client()}
                     >
@@ -560,7 +594,7 @@ class Login extends Component {
                       flex: 0.5,
                       justifyContent: "center",
                       alignItems: "center",
-                      backgroundColor: "transparent"
+                      backgroundColor: "transparent",
                     }}
                   >
                     <Text style={[styles.welcome, { fontSize: totalSize(6) }]}>
@@ -572,13 +606,16 @@ class Login extends Component {
                       flex: 1,
                       justifyContent: "center",
                       alignItems: "flex-start",
-                      backgroundColor: "transparent"
+                      backgroundColor: "transparent",
                     }}
                   >
                     <Text
                       style={[
                         styles.welcome,
-                        { fontSize: totalSize(2.5), color: colors.SPA_redColor }
+                        {
+                          fontSize: totalSize(2.5),
+                          color: colors.SPA_redColor,
+                        },
                       ]}
                       onPress={() => this.goto_signup_Technician()}
                     >
@@ -591,7 +628,7 @@ class Login extends Component {
                     flex: 1,
                     justifyContent: "center",
                     alignItems: "center",
-                    backgroundColor: "transparent"
+                    backgroundColor: "transparent",
                   }}
                 >
                   {/* <TouchableOpacity  style={[styles.button, { height: height(6), width: width(40) }]}>
@@ -611,7 +648,7 @@ export default Login;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
     //width: null,
     //height: null,
     //justifyContent: 'center',
@@ -621,13 +658,13 @@ const styles = StyleSheet.create({
   txt: {
     marginTop: height(2.5),
     fontSize: totalSize(2),
-    color: "black"
+    color: "black",
     //color: 'rgb(219,0,0)'
   },
   logo: {
     //marginTop: height(2),
     height: totalSize(15),
-    width: totalSize(12)
+    width: totalSize(12),
   },
   TxtInput: {
     width: width(70),
@@ -635,7 +672,7 @@ const styles = StyleSheet.create({
     //alignItems: 'center',
     //justifyContent: 'center',
     //backgroundColor: 'red',
-    fontSize: totalSize(1.5)
+    fontSize: totalSize(1.5),
     //color: 'rgb(217,217,217)'
     //color: 'rgb(180,210,53)',
     //marginVertical:height(2),
@@ -646,7 +683,7 @@ const styles = StyleSheet.create({
     // width: width(100),
     //height: null,
     //justifyContent: 'center',
-    alignItems: "center"
+    alignItems: "center",
     //backgroundColor: 'rgb(245,245,238)',
     //backgroundColor: 'rgb(217,217,217)'
     // backgroundColor: 'rgb(0,173,238)'
@@ -657,36 +694,36 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     //marginVertical: height(3)
-    marginVertical: height(2)
+    marginVertical: height(2),
   },
   welcome: {
     fontSize: totalSize(5),
     //textAlign: 'center',
     //margin: 10,
     color: "rgb(66,67,69)",
-    fontWeight: "bold"
+    fontWeight: "bold",
     //opacity: 0.6
   },
   instructions: {
     fontSize: totalSize(2),
     textAlign: "center",
-    color: "rgb(66,67,69)"
+    color: "rgb(66,67,69)",
     //color: 'rgb(217,217,217)',
     //marginBottom: 5,
   },
   btnTxtContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
   },
   btnTxt: {
     fontSize: totalSize(2.5),
-    color: "white"
+    color: "white",
   },
 
   btnContainer: {
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
     //backgroundColor: 'black'
   },
   InputContainer: {
@@ -704,7 +741,7 @@ const styles = StyleSheet.create({
     marginVertical: height(2),
     //borderWidth: 0.5,
     //borderColor: 'rgb(180,210,53)'
-    borderColor: "rgb(66,67,69)"
+    borderColor: "rgb(66,67,69)",
   },
   button: {
     width: width(80),
@@ -716,6 +753,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgb(219,0,0)",
     marginVertical: height(5),
     elevation: 5,
-    borderRadius: 5
-  }
+    borderRadius: 5,
+  },
 });

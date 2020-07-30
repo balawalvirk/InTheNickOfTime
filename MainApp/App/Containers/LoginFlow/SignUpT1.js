@@ -230,6 +230,7 @@ class SignUpTechnician extends Component {
                                     placeholderTextColor='rgb(217,217,217)'
                                     underlineColorAndroid='transparent'
                                     style={styles.TxtInput}
+                                    returnKeyType='done'
                                     keyboardType={'number-pad'}
                                 />
                             </View>

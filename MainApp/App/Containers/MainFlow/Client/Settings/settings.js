@@ -32,8 +32,12 @@ class Settings extends Component {
     this.setState({ isModalVisibleLogout: !this.state.isModalVisibleLogout });
 
   logOut = async () => {
-    await signOut();
-    await AsyncStorage.clear();
+    // await signOut();
+    // await AsyncStorage.clear();
+    // this._toggleModalLogout();
+    // this.props.navigation.push("login");
+    await AsyncStorage.removeItem("user");
+    // await signOut();
     this._toggleModalLogout();
     this.props.navigation.push("login");
   };
@@ -43,8 +47,8 @@ class Settings extends Component {
       const result = await Share.share({
         title: "In the nick of time",
         message:
-          "Hi, I am using this awesome app you should also try this app. ",
-        url: "google.com"
+          "I am a mobile pro with In the Nick of Time: The Elite Mobile Salon & Spa. It’s a great opportunity, you should check it out!",
+        url: "https://apps.apple.com/us/app/in-the-nick-of-time-spa-final/id1503662492?ls=1"
       });
 
       if (result.action === Share.sharedAction) {
@@ -70,7 +74,7 @@ class Settings extends Component {
           {/* <Icon name="ios-settings" size={totalSize(40)} />
         <Text style={styles.Txt}> Settings </Text>
         <Text>This is the settings screen</Text> */}
-          <TouchableOpacity style={styles.mainBtn}>
+          {/* <TouchableOpacity style={styles.mainBtn}>
             <View style={styles.btnIconContainer}>
               <View style={styles.IconContainer}>
                 <EntypoIcons name="tools" size={totalSize(2)} color="white" />
@@ -86,13 +90,13 @@ class Settings extends Component {
                 color="rgb(217,217,217)"
               />
             </View>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <TouchableOpacity
             style={styles.mainBtn}
             onPress={() => {
               Linking.openURL(
-                "mailto:testing@mailinator.com?subject=In the Nick of Time &body=Hi Team,"
+                "mailto:info@inthenickoftimespa.com?subject=In the Nick of Time &body=Hi Team,"
               );
             }}
           >
@@ -162,7 +166,7 @@ class Settings extends Component {
             onPress={() => {
               this.props.navigation.navigate("WebViewOpensLink", {
                 uri:
-                  "https://play.google.com/store/apps/details?id=com.whatsapp"
+                  "https://apps.apple.com/us/app/in-the-nick-of-time-spa-final/id1503662492"
               });
             }}
           >

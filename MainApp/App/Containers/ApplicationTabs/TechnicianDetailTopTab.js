@@ -24,7 +24,7 @@ export default createMaterialTopTabNavigator(
         )
       }
     },
-    Portfolio: {
+    pics: {
       screen: TechnicianPortfolio,
       navigationOptions: {
         header: null,

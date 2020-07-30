@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, ActivityIndicator, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView,KeyboardAvoidingView, ActivityIndicator, Image, Alert } from 'react-native';
 import { height, width, totalSize } from 'react-native-dimension'
 import { Icon } from 'react-native-elements'
 import ImagePicker from 'react-native-image-picker';
@@ -143,11 +143,16 @@ class Data extends Component {
     }
     async MoveNext() {
         this.register();
-       // this.props.selectedData();
+    //    this.props.selectedData();
     }
     render() {
         return (
+            
             <View style={styles.container}>
+                <KeyboardAvoidingView
+            behavior="padding"
+            enabled
+          >
                 <Loader ref={r => this.loader = r} />
                 <ScrollView
                     showsVerticalScrollIndicator={false}>
@@ -203,6 +208,7 @@ class Data extends Component {
                                     placeholderTextColor='rgb(217,217,217)'
                                     underlineColorAndroid='transparent'
                                     style={styles.TxtInput}
+                                    returnKeyType='done'
                                     keyboardType={'number-pad'}
                                 />
                             </View>
@@ -308,7 +314,9 @@ class Data extends Component {
                         </View>
                     </View>
                 </ScrollView>
+                </KeyboardAvoidingView>
             </View>
+            // </KeyboardAvoidingView>
         );
     }
 }
